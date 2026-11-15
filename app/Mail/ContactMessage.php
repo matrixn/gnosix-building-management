@@ -2,12 +2,13 @@
 
 namespace App\Mail;
 
+use App\Support\ContactSubjects;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 
-class PilotEnquiry extends Mailable
+class ContactMessage extends Mailable
 {
     public function __construct(public array $enquiry) {}
 
@@ -15,12 +16,12 @@ class PilotEnquiry extends Mailable
     {
         return new Envelope(
             replyTo: [new Address($this->enquiry['email'], $this->enquiry['name'])],
-            subject: 'GNOSIX — Cerere parteneriat pilot',
+            subject: 'GNOSIX — '.ContactSubjects::SUBJECTS[$this->enquiry['subject']],
         );
     }
 
     public function content(): Content
     {
-        return new Content(text: 'mail.pilot-enquiry');
+        return new Content(text: 'mail.contact-message');
     }
 }

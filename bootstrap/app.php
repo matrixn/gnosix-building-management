@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(\App\Http\Middleware\PlatformAdminSession::class);
+        $middleware->prepend(\App\Http\Middleware\PublicLocale::class);
         $middleware->trimStrings(except: ['smtp_password']);
         $middleware->alias([
             'platform.admin' => \App\Http\Middleware\RequirePlatformAdmin::class,

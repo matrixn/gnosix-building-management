@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\Support\PilotAvailability;
+use App\Support\ContactAvailability;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
 class CheckLanding extends Command
 {
-    protected $signature = 'gnosix:check {--production : Check production without requiring public pilot activation} {--launch : Require production and live enquiry configuration}';
+    protected $signature = 'gnosix:check {--production : Check production without requiring public contact activation} {--launch : Require production and live contact configuration}';
 
     protected $description = 'Verify landing assets and configuration without sending email.';
 
@@ -23,6 +23,7 @@ class CheckLanding extends Command
             'Application key configured' => filled(config('app.key')),
             'Vite manifest exists' => is_file(public_path('build/manifest.json')),
             'Social image exists' => is_file(public_path('images/gnosix-social.png')),
+            'English social image exists' => is_file(public_path('images/gnosix-social-en.png')),
             'Storage is writable' => is_writable(storage_path('framework/sessions')) && is_writable(storage_path('framework/cache/data')) && is_writable(storage_path('framework/views')),
             'Bootstrap cache is writable' => is_writable(base_path('bootstrap/cache')),
             'Design studies outside public root' => ! is_dir(public_path('concepts')),
@@ -43,7 +44,7 @@ class CheckLanding extends Command
         }
         if ($this->option('launch')) {
             $checks['Search indexing enabled'] = config('gnosix.indexable');
-            $checks['Pilot delivery configured'] = $databaseReady && PilotAvailability::ready();
+            $checks['Contact delivery configured'] = $databaseReady && ContactAvailability::ready();
         }
 
         foreach ($checks as $label => $passed) {

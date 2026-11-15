@@ -50,7 +50,7 @@ Pagina **Email & SMTP** permite salvarea serverului, portului, criptării, utili
 - Toate emailurile aplicației prin API-urile Laravel Mail, inclusiv mailere numite, mailere create la cerere, notificări și emailuri procesate în queue, folosesc SMTP centralizat. Transporturile `log`, `array` și fallback nu sunt folosite la livrarea reală. `Mail::fake()` rămâne disponibil exclusiv pentru teste.
 - Managerul reîncarcă setările pentru fiecare mesaj, inclusiv în procese persistente. Nu trebuie refăcut `config:cache` când salvezi SMTP din admin.
 
-Formularul pilot are separat `GNOSIX_PILOT_ENABLED=true` și destinatarul `GNOSIX_PILOT_RECIPIENT=raduta.alex@gmail.com`. Acestea nu schimbă contul administratorului și nu reprezintă credențiale SMTP.
+Formularul pilot are separat `GNOSIX_CONTACT_ENABLED=true` și destinatarul `GNOSIX_CONTACT_RECIPIENT=raduta.alex@gmail.com`. Acestea nu schimbă contul administratorului și nu reprezintă credențiale SMTP.
 
 ## Înregistrarea și folosirea unui passkey
 
@@ -113,7 +113,7 @@ Această opțiune revocă toate passkey-urile administratorului indicat; înregi
 
 Fă backup pentru baza de date și pentru cheia aplicației. Pierderea sau înlocuirea `APP_KEY` împiedică decriptarea setărilor SMTP și invalidează sesiunile criptate. Păstrează `storage` partajat între release-uri și limita de cereri activă. Secretele nu trebuie incluse în Git sau în arhiva de release.
 
-Au fost verificate 24 de teste / 179 de aserțiuni: separarea client/admin, parole, provisioning idempotent, sesiuni, criptarea SMTP, transportul global, proprietatea passkeys și validarea criptografică a înregistrării/autentificării WebAuthn. În browser au fost verificate loginul, salvarea SMTP, testul către un SMTP sink pe loopback, logoutul și paginile mobile. Nu a fost înregistrat un passkey pe dispozitivul real al utilizatorului și nu a fost trimis email extern.
+Au fost verificate 42 de teste / 287 de aserțiuni: separarea client/admin, parole, provisioning idempotent, sesiuni, criptarea SMTP, transportul global, proprietatea passkeys și validarea criptografică a înregistrării/autentificării WebAuthn. În browser au fost verificate loginul, salvarea SMTP, testul către un SMTP sink pe loopback, logoutul și paginile mobile. Nu a fost înregistrat un passkey pe dispozitivul real al utilizatorului și nu a fost trimis email extern.
 
 Testele WebAuthn generează un autentificator ES256 sintetic. Pe Windows, dacă OpenSSL nu găsește configurația, setează `OPENSSL_CONF` către `extras/ssl/openssl.cnf` din instalarea PHP înainte de `php vendor/bin/phpunit`. Pe acest host calea este `C:\php-8.4.14-nts\extras\ssl\openssl.cnf`.
 

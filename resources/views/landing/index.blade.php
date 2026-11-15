@@ -9,7 +9,7 @@
     @include('landing.sections.segments')
     @include('landing.sections.pilot')
     @include('landing.sections.faq')
+    @include('landing.sections.contact')
 </main>
 @include('landing.footer')
-@include('landing.pilot-dialog')
 @endsection

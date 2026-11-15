@@ -1,2 +1,1 @@
-<div class="ticker">
-<div>DOCUMENTE <span>↗</span> ECHIPAMENTE <span>↗</span> INTERVENȚII <span>↗</span> CONTINUITATE <span>↗</span> DOCUMENTE <span>↗</span> ECHIPAMENTE <span>↗</span> INTERVENȚII <span>↗</span> CONTINUITATE <span>↗</span></div></div>
+<div class="ticker" aria-hidden="true"><div>@for ($i = 0; $i < 2; $i++)@foreach (['DOCUMENTE', 'ECHIPAMENTE', 'INTERVENȚII', 'CONTINUITATE'] as $word){{ __($word) }} <span>↗</span> @endforeach @endfor</div></div>
