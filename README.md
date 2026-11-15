@@ -4,7 +4,8 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 
 ## Implementat
 
-- Landing Atlas responsive, straturi interactive, scenarii, contact direct în pagină, confidențialitate, sitemap și SEO.
+- Landing Atlas responsive în paleta bleumarin/violet/lime, straturi interactive, scenarii, contact direct în pagină, confidențialitate, sitemap și SEO.
+- Experiență interactivă RO/EN: Time Machine, Evidence Engine, Building DNA și checklist de predare. Date fictive, funcționalități planificate, conținut accesibil și fără JavaScript.
 - Landing bilingv: română implicit la `/`, engleză la `/en`, selector RO/EN și confidențialitate în ambele limbi.
 - Contact direct în pagină: nume complet, email, telefon, șase subiecte cu pilotul selectat implicit și mesaj. Toate câmpurile sunt obligatorii, cu validare email și telefon internațional pe server.
 - SEO multilingv: canonical, hreflang reciproc și x-default, sitemap cu alternative, Open Graph/Twitter localizat, imagini RO/EN și JSON-LD.
@@ -48,6 +49,7 @@ Pentru un `.env` mai vechi folosește `SESSION_DRIVER=file`, `CACHE_STORE=file` 
 - [Publicare pe Laravel Forge](docs/DEPLOY-FORGE.md)
 - [Formular de contact, traduceri și SEO](docs/CONTACT-AND-SEO.md)
 - [Setări de sistem și migrarea vechilor valori din mediu](docs/SYSTEM-SETTINGS.md)
+- [Experiența interactivă și limitele demonstrației](docs/LANDING-EXPERIENCE.md)
 - [Brief-ul și explorările inițiale](docs/DESIGN-BRIEF.md)
 
 Parolele nu se trimit ca argumente Artisan și nu se pun în Git. După provisioning, `ADMIN_PASSWORD` poate fi eliminată din mediu. Loginul folosește hash-ul din baza de date; schimbarea valorii din mediu nu resetează automat parola. Folosește explicit `gnosix:admin --reset-password` când este necesar.
@@ -61,7 +63,7 @@ composer validate --no-check-publish
 php artisan gnosix:check
 ```
 
-56 de teste / 354 de aserțiuni au verificat setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
+57 de teste / 378 de aserțiuni au verificat setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
 
 Au fost verificate în browser loginul cu parolă, setările SMTP, un test de email către un SMTP sink local, logoutul și paginile mobile. Nu a fost înregistrată o cheie pe dispozitivul real al utilizatorului și nu s-a trimis email extern. Infrastructura Forge nu a fost modificată.
 
@@ -75,6 +77,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.4.1.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.5.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

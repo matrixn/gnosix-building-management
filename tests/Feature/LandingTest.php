@@ -76,4 +76,20 @@ class LandingTest extends TestCase
         $this->assertCount(4, $xml->url);
         foreach ($xml->url as $url) $this->assertCount(3, $url->children('http://www.w3.org/1999/xhtml')->link);
     }
+
+    public function test_product_experience_is_readable_and_honest_in_both_languages(): void
+    {
+        $this->get('/')->assertOk()
+            ->assertSee('Concept interactiv · date fictive')
+            ->assertSee('Time Machine')->assertSee('Evidence Engine')->assertSee('Building DNA')
+            ->assertSee('Centrală CT-01 instalată')->assertSee('Pompa P-02 înlocuită')->assertSee('4 incidente de apă caldă')
+            ->assertSee('Funcționalități planificate.')->assertSee('nu analizează documente reale')
+            ->assertSee('AX-204 și AX-240')->assertSee('Istoricul ar urma clădirea');
+        $this->get('/en')->assertOk()
+            ->assertSee('Interactive concept · fictional data')->assertSee('Explore what we are building.')
+            ->assertSee('Boiler CT-01 installed')->assertSee('Pump P-02 replaced')->assertSee('4 hot-water incidents')
+            ->assertSee('Planned features.')->assertSee('does not analyse real documents')
+            ->assertSee('Claims with provenance.')->assertSee('0 of 3 categories reviewed')
+            ->assertDontSee('Centrală CT-01 instalată')->assertDontSee('Ce predai mai departe?');
+    }
 }

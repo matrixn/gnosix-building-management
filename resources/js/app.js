@@ -49,6 +49,52 @@
     $('.building-stage').dataset.layer=button.dataset.layer;
     $('[data-layer-label]').textContent=button.dataset.layerDescription;
   }));
+  // Progressive enhancement: all example content remains readable without JS.
+  $$('[data-demo-tabs]').forEach(group => {
+    const buttons = $$(':scope > button[data-demo-target]', group);
+    const panels = buttons.map(button => document.getElementById(button.dataset.demoTarget));
+    group.setAttribute('role', 'tablist');
+    function activate(index) {
+      buttons.forEach((button, i) => {
+        button.setAttribute('aria-selected', String(i === index));
+        button.tabIndex = i === index ? 0 : -1;
+        panels[i].hidden = i !== index;
+      });
+    }
+    buttons.forEach((button, i) => {
+      button.setAttribute('role', 'tab');
+      button.setAttribute('aria-controls', panels[i].id);
+      panels[i].setAttribute('role', 'tabpanel');
+      panels[i].setAttribute('aria-labelledby', button.id);
+      panels[i].tabIndex = 0;
+      button.addEventListener('click', () => activate(i));
+      button.addEventListener('keydown', event => {
+        let next;
+        if (['ArrowRight', 'ArrowDown'].includes(event.key)) next = (i + 1) % buttons.length;
+        if (['ArrowLeft', 'ArrowUp'].includes(event.key)) next = (i + buttons.length - 1) % buttons.length;
+        if (event.key === 'Home') next = 0;
+        if (event.key === 'End') next = buttons.length - 1;
+        if (next !== undefined) { event.preventDefault(); activate(next); buttons[next].focus(); }
+      });
+    });
+    activate(0);
+  });
+  const systems = $$('[data-dna]');
+  function selectSystem(button) {
+    systems.forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+    $$('[data-dna-room]').forEach(room => room.classList.toggle('is-dependent', room.dataset.dnaRoom.split(' ').includes(button.dataset.dna)));
+    $('[data-dna-result]').textContent = button.dataset.summary;
+  }
+  systems.forEach(button => button.addEventListener('click', () => selectSystem(button)));
+  if (systems.length) selectSystem(systems[0]);
+  const handover = $$('[data-handover]'), handoverResult = $('[data-handover-result]');
+  function updateHandover() {
+    const count = handover.filter(input => input.checked).length;
+    $('[data-handover-bar]').style.width = `${count / handover.length * 100}%`;
+    handoverResult.textContent = count === handover.length ? handoverResult.dataset.complete : handoverResult.dataset.progress.replace(':count', String(count));
+  }
+  handover.forEach(input => input.addEventListener('change', updateHandover));
+  if (handover.length) updateHandover();
   const form=$('#contact-form');
   if (form) {
     $$('input,textarea,select', form).forEach(input => {

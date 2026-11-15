@@ -59,6 +59,8 @@ Rulează `php artisan gnosix:check --launch`. Verifică `/robots.txt`, `/sitemap
 
 ## Validare efectuată
 
-56 de teste / 354 de aserțiuni au trecut, inclusiv câmpuri obligatorii, selecția implicită din șase subiecte, emailuri/telefoane invalide, normalizare, feedback localizat, erori SMTP, canonical/hreflang, sitemap, JSON-LD și regresiile admin/passkey. Au fost verificate în browser selectorul RO/EN, contactul în ambele limbi, respingerea unui telefon invalid, livrarea către un SMTP sink local și lipsa overflow-ului la 390 px. Niciun mesaj de test nu a fost trimis pe internet.
+57 de teste / 378 de aserțiuni au trecut, inclusiv câmpuri obligatorii, selecția implicită din șase subiecte, emailuri/telefoane invalide, normalizare, feedback localizat, erori SMTP, canonical/hreflang, sitemap, JSON-LD și regresiile admin/passkey. Au fost verificate în browser selectorul RO/EN, contactul în ambele limbi, respingerea unui telefon invalid, livrarea către un SMTP sink local și lipsa overflow-ului la 390 px. Niciun mesaj de test nu a fost trimis pe internet.
 
 Referințe: [Google Search Central — versiuni localizate](https://developers.google.com/search/docs/specialty/international/localized-versions), [libphonenumber pentru PHP](https://giggsey.github.io/libphonenumber-for-php/).
+
+Experiența interactivă bilingvă și verificarea ei sunt descrise în [LANDING-EXPERIENCE.md](LANDING-EXPERIENCE.md).

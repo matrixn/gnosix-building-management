@@ -24,7 +24,7 @@
     <link rel="alternate" hreflang="en" href="{{ \App\Support\PublicSite::canonical('en') }}">
     <link rel="alternate" hreflang="x-default" href="{{ \App\Support\PublicSite::canonical('ro') }}">
     @endif
-    <meta name="theme-color" content="#0b171e">
+    <meta name="theme-color" content="#101225">
     <meta property="og:type" content="website"><meta property="og:site_name" content="GNOSIX Building Management">
     <meta property="og:locale" content="{{ $locale === 'en' ? 'en_GB' : 'ro_RO' }}"><meta property="og:locale:alternate" content="{{ $locale === 'en' ? 'ro_RO' : 'en_GB' }}">
     <meta property="og:title" content="{{ $title }}"><meta property="og:description" content="{{ $description }}"><meta property="og:url" content="{{ $canonical }}">
