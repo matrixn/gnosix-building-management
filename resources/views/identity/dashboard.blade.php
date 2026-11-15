@@ -1,0 +1,7 @@
+@extends('layouts.identity')
+@section('title', __('identity.overview'))
+@section('content')
+<div class="workspace-heading"><span class="identity-kicker">HOSPITALITY / GENESIS</span><h1>{{ __('identity.dashboard_hello', ['name' => auth('web')->user()->name]) }}</h1><p>{{ __('identity.dashboard_copy') }}</p></div>
+<section class="identity-card dashboard-identity"><span class="identity-orbit" aria-hidden="true">◇</span><div><span class="identity-kicker">{{ __('identity.identity_ready') }}</span><h2>{{ __('identity.your_story_starts') }}</h2><p>{{ __('identity.dashboard_status') }}</p></div><a href="{{ route('app.account') }}" class="identity-button"><span>{{ __('identity.manage_account') }}</span><span aria-hidden="true">↗</span></a></section>
+<div class="workspace-grid"><section class="identity-card"><span class="identity-kicker">01 / {{ __('identity.your_profile') }}</span><h2>{{ __('identity.profile_'.auth('web')->user()->profile_type) }}</h2><p>{{ __('identity.profile_'.auth('web')->user()->profile_type.'_copy') }}</p><a href="{{ route('app.account') }}" class="identity-link">{{ __('identity.view_profile') }} ↗</a></section><section class="identity-card"><span class="identity-kicker">02 / {{ __('identity.next_chapter') }}</span><h2>{{ __('identity.buildings_next') }}</h2><p>{{ __('identity.buildings_next_copy') }}</p><a href="{{ \App\Support\PublicSite::home(app()->getLocale()) }}#intelligence" class="identity-link">{{ __('identity.explore_vision') }} ↗</a></section></div>
+@endsection

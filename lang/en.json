@@ -283,5 +283,10 @@
   "Istoricul ar urma clădirea, cu acces controlat între echipe.": "History would follow the building, with controlled access between teams.",
   "Vreau să contribui la pilot": "I want to contribute to the pilot",
   "Explorează experiența": "Explore the experience",
-  "Experiența": "The experience"
+  "Experiența": "The experience",
+  "Contul meu": "My account",
+  "Informare pentru contact și conturile GNOSIX Building Management. Ultima actualizare: 15 noiembrie 2026.": "Notice for contact enquiries and GNOSIX Building Management accounts. Last updated: 15 November 2026.",
+  "Contul și identitatea ta GNOSIX": "Your GNOSIX account and identity",
+  "Pentru cont păstrăm numele, emailul, limba preferată, profilul ales și momentele de confirmare a emailului, autentificare și finalizare a introducerii. Parola este stocată ca hash, nu în clar. Aceste informații sunt folosite pentru acces, personalizarea experienței și securitatea contului.": "For your account, we store your name, email, preferred language, selected profile, and the times of email verification, sign-in and onboarding completion. Your password is stored as a hash, not in plain text. This information supports access, personalisation and account security.",
+  "Trimitem emailuri necesare pentru confirmarea adresei și resetarea parolei. Cookie-ul de sesiune menține autentificarea; în funcție de stocarea configurată, sesiunile pot include adresa IP și identificarea browserului. Datele contului sunt păstrate în baza de date a aplicației; poți solicita corectarea sau ștergerea lor prin contact. Contul nu te înscrie la marketing.": "We send necessary email verification and password reset messages. A session cookie maintains sign-in; depending on the configured storage, sessions may include your IP address and browser identification. Account data is stored in the application database; you can request correction or deletion through contact. Creating an account does not subscribe you to marketing."
 }

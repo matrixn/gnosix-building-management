@@ -28,6 +28,7 @@ class CheckLanding extends Command
             'Bootstrap cache is writable' => is_writable(base_path('bootstrap/cache')),
             'Design studies outside public root' => ! is_dir(public_path('concepts')),
             'Platform database migrated' => $databaseReady,
+            'Customer identity migrated' => $databaseReady && Schema::hasColumn('users', 'auth_version') && Schema::hasColumn('users', 'onboarding_completed_at'),
         ];
 
         if ($this->option('production') || $this->option('launch')) {
@@ -38,6 +39,8 @@ class CheckLanding extends Command
                 'Correct HTTPS application URL' => rtrim(config('app.url'), '/') === 'https://gnosix.zion3d.ro',
                 'Canonical URL uses HTTPS' => \App\Support\SiteSettings::normalizeCanonicalUrl($canonical) !== null && str_starts_with($canonical, 'https://'),
                 'Secure encrypted sessions' => config('session.secure') && config('session.encrypt'),
+                'HTTP-only SameSite sessions' => config('session.http_only') && in_array(config('session.same_site'), ['lax', 'strict'], true),
+                'Server-side session storage' => in_array(config('session.driver'), ['file', 'database', 'redis', 'memcached', 'dynamodb'], true),
                 'Synchronous enquiry delivery' => config('queue.default') === 'sync',
                 'Passkey origin configured' => config('platform.passkey_origin') === 'https://gnosix.zion3d.ro',
                 'Passkey RP ID configured' => config('platform.passkey_rp_id') === 'gnosix.zion3d.ro',

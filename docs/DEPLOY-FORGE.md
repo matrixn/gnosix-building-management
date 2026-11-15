@@ -40,6 +40,10 @@ Folosește TLS implicit sau STARTTLS conform furnizorului. În producție TLS ș
 
 O eroare SMTP nu afișează succes; datele cererii pilot sunt păstrate temporar în sesiune pentru reîncercare. Nu există retry automat. Într-o situație în care acceptarea SMTP are loc înaintea unei erori de conexiune, o reîncercare manuală poate produce un duplicat.
 
+## Identitate client Genesis
+
+Deploy-ul migrează aditiv tabela `users`; nu este necesară o comandă nouă sau reinițializarea administratorilor. După configurarea SMTP, verifică `/app/register`, confirmarea emailului, onboardingul și resetarea parolei pe un cont propriu. Pagina de login este `/app/login`, separată de `/admin/login`. Vezi [GENESIS-001.md](GENESIS-001.md) pentru sesiuni, rute, limitări și verificări.
+
 ## Verificare după deploy
 
 - `/` și `/confidentialitate`: conținut, linkuri, fonturi și formular.

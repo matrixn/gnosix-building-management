@@ -4,6 +4,7 @@ use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/admin.php';
+require __DIR__.'/identity.php';
 
 Route::view('/', 'landing.index')->name('home');
 Route::view('/en', 'landing.index')->name('home.en');
@@ -16,7 +17,7 @@ Route::post('/program-pilot', ContactController::class)
 
 Route::get('/robots.txt', function () {
     $content = \App\Support\SiteSettings::value('indexable')
-        ? "User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: ".\App\Support\SiteSettings::value('canonical_url')."/sitemap.xml\n"
+        ? "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /app\nSitemap: ".\App\Support\SiteSettings::value('canonical_url')."/sitemap.xml\n"
         : "User-agent: *\nDisallow: /\n";
 
     return response($content)->header('Content-Type', 'text/plain; charset=UTF-8');
