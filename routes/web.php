@@ -3,6 +3,8 @@
 use App\Http\Controllers\PilotEnquiryController;
 use Illuminate\Support\Facades\Route;
 
+require __DIR__.'/admin.php';
+
 Route::view('/', 'landing.index')->name('home');
 Route::view('/confidentialitate', 'privacy')->name('privacy');
 Route::post('/program-pilot', PilotEnquiryController::class)

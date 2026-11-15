@@ -2,65 +2,56 @@
 
 Destinație: `https://gnosix.zion3d.ro` · Repository: `matrixn/gnosix-building-management` · Ramură: `main`.
 
-## Configurarea site-ului
+## Prima instalare
 
-1. Creează site-ul Laravel în Forge pe VPS, cu domeniul `gnosix.zion3d.ro`, PHP **8.4** și document root **`/public`**. Selectează repository-ul și ramura `main`.
-2. Activează zero-downtime la crearea site-ului. Adaugă `storage` la shared paths, pentru ca sesiunile și limitarea cererilor să persiste între release-uri. `.env` este partajat implicit de Forge.
-3. Instalează Node **22.12+** sau **24 LTS**, cu npm. Versiunile frontend sunt blocate în `package-lock.json`; folosește `npm ci` la deploy.
-4. Configurează DNS pentru subdomeniu către VPS. Dacă există un record AAAA, acesta trebuie să indice tot un server care deservește site-ul. Emite certificatul TLS în Forge și activează redirecționarea HTTP către HTTPS.
-5. În **Environment**, pornește de la `.env.production.example`. Generează o singură dată cheia aplicației cu PHP-ul site-ului: `php artisan key:generate --force`. Nu schimba cheia la fiecare deploy.
-6. Completează configurația SMTP și expeditorul autentificat. Destinatarul cererilor este `raduta.alex@gmail.com`; acesta **nu** este implicit și contul SMTP. Gmail poate primi mesaje de la orice furnizor SMTP configurat corect.
-7. După configurare, setează `GNOSIX_PILOT_ENABLED=true` și `GNOSIX_INDEXABLE=true` pentru domeniul final. Pe staging păstrează indexarea dezactivată și folosește un transport de test, fără expediere către persoane reale.
-8. Lipește conținutul `deploy/forge-zero-downtime.sh` în editorul Deploy Script din Forge. Macro-urile sunt interpretate de Forge; nu executa fișierul cu `bash` ca script independent.
-
-Landing page-ul folosește sesiuni și cache în fișiere și trimite cererile sincron. Nu are nevoie de bază de date, migrații, scheduler sau queue worker. `storage` și `bootstrap/cache` trebuie să fie inscriptibile de utilizatorul site-ului; păstrează permisiunile Forge și nu utiliza `chmod 777`.
-
-## Email
-
-```dotenv
-GNOSIX_PILOT_RECIPIENT=raduta.alex@gmail.com
-GNOSIX_PILOT_ENABLED=true
-MAIL_MAILER=smtp
-MAIL_SCHEME=smtps
-MAIL_HOST=HOSTUL_FURNIZORULUI
-MAIL_PORT=465
-MAIL_USERNAME=UTILIZATORUL_SMTP
-MAIL_PASSWORD=SECRETUL_SMTP
-MAIL_FROM_ADDRESS=EXPEDITOR_VERIFICAT
-MAIL_FROM_NAME="GNOSIX Building Management"
-```
-
-Folosește combinația de port și criptare indicată de furnizor. Pentru STARTTLS, schema este `smtp`, de obicei cu portul `587`. Verifică SPF, DKIM și DMARC conform furnizorului. Nu salva parola SMTP în repository și nu folosi transportul `log`, `array` ori fallback spre log pentru formularul public: aplicația refuză confirmarea unei astfel de trimiteri.
-
-Mesajele au un subiect fix, expeditorul configurat pe server și `Reply-To` egal cu adresa validată a solicitantului. Nu trimitem confirmări automate către vizitatori și nu salvăm solicitările într-o bază de date. Livrarea SMTP este sincronă; o eroare afișează un mesaj și păstrează câmpurile în sesiune pentru reîncercare. În caz de eroare după acceptarea SMTP, o reîncercare poate produce un duplicat; nu există retry automat.
-
-## Verificare și activare
-
-Scriptul pregătește release-ul, instalează dependențele, compilează Vite și cache-urile, apoi execută:
+1. Creează site Laravel cu PHP 8.4, document root `/public` și zero-downtime. Selectează repository-ul și ramura `main`.
+2. Partajează `storage` între release-uri; `.env` este partajat implicit de Forge. Configurează o bază de date persistentă MySQL/PostgreSQL și valorile `DB_*`. Adminul, passkey-urile și setările SMTP necesită migrații; landing-ul nu mai este o aplicație fără bază de date.
+3. Instalează Node 22.12+ sau 24 LTS și npm. Folosește `npm ci`, cu lockfile-ul din repository.
+4. Configurează DNS către VPS, inclusiv eventualul AAAA, certificatul TLS și redirecționarea HTTP către HTTPS.
+5. Pornește de la `.env.production.example`. Generează `APP_KEY` o singură dată și păstreaz-o între deploy-uri. Completează `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `PASSKEY_RP_ID` și `PASSKEY_ORIGIN` conform [instrucțiunilor admin](ADMIN.md). Păstrează inițial `GNOSIX_PILOT_ENABLED=false` și `GNOSIX_INDEXABLE=false`.
+6. Lipește `deploy/forge-zero-downtime.sh` în editorul Deploy Script din Forge. Macro-urile sunt interpretate de Forge; nu executa fișierul ca script Bash independent.
+7. Efectuează primul deploy. Scriptul instalează dependențele, compilează frontend-ul, rulează `migrate --force`, cache-uiește rutele/view-urile și verifică setările structurale de producție înainte de activare.
+8. După inițializare rulează din Forge Commands:
 
 ```bash
+php artisan gnosix:admin
+```
+
+9. Autentifică-te la `/admin/login`, salvează SMTP din **Setări → Email & SMTP** și testează livrarea către adresa administratorului. Adaugă passkey din **Securitate & passkeys**. Pașii de înregistrare, domeniul și recuperarea sunt în [ADMIN.md](ADMIN.md).
+10. După verificarea livrării și a conținutului, activează `GNOSIX_PILOT_ENABLED=true` și `GNOSIX_INDEXABLE=true`, refă cache-ul configurației și verifică lansarea:
+
+```bash
+php artisan config:cache
 php artisan gnosix:check --launch
 ```
 
-Comanda verifică configurația și resursele; **nu deschide o conexiune SMTP și nu trimite email**. Dacă o verificare eșuează, macro-ul de activare nu este atins. Nu activează o configurație cu debug pornit, sesiuni nesecurizate, formular oprit sau indexare dezactivată.
+Deploy-ul folosește `gnosix:check --production`, care permite primul acces la admin înaintea configurării SMTP. `--launch` verifică suplimentar activarea pilotului și indexării. Niciuna dintre comenzi nu trimite email și nu dovedește livrarea în inbox.
 
-La prima publicare verifică în browser:
+`storage` și `bootstrap/cache` trebuie să fie inscriptibile de utilizatorul site-ului. Nu folosi `chmod 777`. Păstrează baza de date și `APP_KEY` în backup: fără cheia inițială, configurația SMTP criptată nu poate fi citită. Landing-ul trimite sincron; nu este necesar un worker sau scheduler. Dacă adaugi ulterior emailuri în queue, și acestea folosesc managerul SMTP centralizat.
 
-- `/`: pagina Atlas, fără galeria și etichetele de studiu de design.
-- `/confidentialitate`: informarea privind formularul. Confirmă că identitatea responsabilului, furnizorii și practicile de păstrare descrise corespund operării reale.
-- `/robots.txt` și `/sitemap.xml`: domeniul final și indexare permisă.
-- `/up`: HTTP 200; configurează-l ca health check în Forge.
-- Formular: trimite o cerere controlată și verifică primirea efectivă în Gmail, inclusiv Spam și funcționarea Reply-To. Un răspuns SMTP acceptat nu dovedește livrarea în inbox.
-- Mobil: meniul, dialogul, validarea și confirmarea trimiterii.
+## SMTP și cereri pilot
 
-Verificările locale au inclus 11 teste PHP, build Vite, cache pentru rute și Blade, HTTP pentru paginile de mai sus, refuzarea unui POST fără CSRF și trimiterea din browser către un SMTP sink pe loopback. Nu au fost trimise mesaje către Gmail. DNS, TLS, permisiunile și SMTP-ul VPS-ului rămân de verificat pe infrastructura reală.
+Configurația salvată în admin are prioritate față de `MAIL_HOST`, `MAIL_PORT`, `MAIL_SCHEME`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` și `MAIL_FROM_NAME`. Valorile din mediu servesc doar la inițializare dacă nu există încă o configurație salvată. `MAIL_MAILER` nu poate comuta sistemul pe log/array/sendmail: toate mailerele aplicației folosesc SMTP.
+
+Folosește TLS implicit sau STARTTLS conform furnizorului. În producție TLS și verificarea certificatului sunt obligatorii. Configurează SPF, DKIM și DMARC după instrucțiunile furnizorului. Destinatarul cererilor pilot este `GNOSIX_PILOT_RECIPIENT=raduta.alex@gmail.com`; contul SMTP și emailul administratorului pot fi diferite.
+
+O eroare SMTP nu afișează succes; datele cererii pilot sunt păstrate temporar în sesiune pentru reîncercare. Nu există retry automat. Într-o situație în care acceptarea SMTP are loc înaintea unei erori de conexiune, o reîncercare manuală poate produce un duplicat.
+
+## Verificare după deploy
+
+- `/` și `/confidentialitate`: conținut, linkuri, fonturi și formular.
+- `/robots.txt`, `/sitemap.xml`: domeniul final și indexare permisă după lansare.
+- `/up`: HTTP 200, utilizabil ca health check Forge.
+- `/admin/login`: parola funcționează, logoutul închide accesul, paginile au `noindex`.
+- Admin SMTP: mesaj de test primit în căsuța administratorului, inclusiv verificarea Spam.
+- Passkey: înregistrare și login pe domeniul final, cu un dispozitiv real și o cheie de rezervă.
+- Formular pilot: verifică primirea efectivă în Gmail și funcționarea Reply-To.
+- Mobil: meniul public, formularul și setările admin.
+
+Înaintea colectării datelor reale, confirmă că informarea de confidențialitate corespunde furnizorilor și practicilor efective de operare.
 
 ## Revenire
 
-În Forge selectează un release anterior funcțional și folosește mecanismul de revenire disponibil pentru site. Configurația `.env` și `storage` sunt partajate: revenirea codului nu revine automat și asupra lor. Nu există migrații pentru acest landing. Poți opri temporar formularul cu `GNOSIX_PILOT_ENABLED=false`, urmat de refacerea cache-ului de configurare; pagina rămâne disponibilă.
+Folosește mecanismul Forge de revenire la un release anterior. `.env`, `storage` și baza de date sunt partajate; revenirea codului nu le revine automat. Migrația admin adaugă tabele și nu modifică utilizatorii existenți. Nu rula automat `migrate:rollback` la revenire: ar șterge conturile platformei, passkey-urile și setările. Poți opri formularul public cu `GNOSIX_PILOT_ENABLED=false` și `config:cache`.
 
-## Referințe
-
-- [Laravel Forge — deployments și macro-uri](https://laravel.com/forge/docs/sites/deployments)
-- [Laravel — publicarea aplicației și document root](https://laravel.com/framework/docs/13.x/deployment)
-- [Laravel — mail](https://laravel.com/framework/docs/13.x/mail)
+Referințe: [Forge deployments](https://laravel.com/forge/docs/sites/deployments), [Laravel deployment](https://laravel.com/framework/docs/13.x/deployment), [Laravel mail](https://laravel.com/framework/docs/13.x/mail).

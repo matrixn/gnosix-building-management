@@ -1,34 +1,50 @@
-# GNOSIX Building Management — Atlas
+# GNOSIX Building Management
 
-Landing page în **Laravel 13 / Blade / Vite**, pregătit pentru `https://gnosix.zion3d.ro` pe Laravel Forge. GNOSIX este un produs în dezvoltare pentru memoria tehnică a clădirilor; pagina invită hoteluri, dezvoltatori și administratori să participe la validarea pilot.
+Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas și administrare separată a platformei. Produsul pentru clienți și administrarea clădirilor sunt încă în dezvoltare.
 
 ## Implementat
 
-- Atlas ca pagină principală Laravel, cu secțiuni Blade separate și ilustrație axonometrică originală.
-- Straturi interactive, scenarii pe segmente, meniu mobil, dialog accesibil, pauză și preferință pentru reducerea mișcării.
-- CSS, JavaScript și fonturi Manrope locale, compilate și versionate prin Vite.
-- Formular real către `raduta.alex@gmail.com`, prin expeditor și transport configurabile pe server; validare, CSRF, honeypot și limită de 5 cereri/minut și 20/zi per IP.
-- Erorile SMTP nu produc o confirmare de succes. Formularul este indisponibil dacă livrarea nu este activată sau dacă transportul este doar `log`/`array`.
-- Informare de confidențialitate, canonical, Open Graph cu PNG 1200×630, robots configurabil, sitemap și pagini de eroare.
-- Configurație de producție, script Forge zero-downtime și comandă de verificare înaintea lansării.
+- Landing Atlas responsive, straturi interactive, scenarii, formular pilot, confidențialitate, sitemap și SEO.
+- `/admin/login`: parolă și passkey WebAuthn, cu cookie, guard și tabel separate de viitorii clienți.
+- Setări platformă cu taburi General, Email & SMTP, Securitate & passkeys.
+- SMTP salvat criptat în baza de date și aplicat tuturor emailurilor sistemului; test de livrare către administrator.
+- Comanda `gnosix:admin` pentru provisioning din `ADMIN_EMAIL` și `ADMIN_PASSWORD`, fără a suprascrie parola existentă la rerulare.
+- Management și revocare passkeys, reconfirmare pentru modificări sensibile, rate limiting și invalidarea sesiunilor la resetarea credențialelor.
+- Script Forge cu migrații și verificări înaintea activării release-ului.
 
-## Pornire locală
+## Instalare locală
 
-PHP 8.4 pentru setul de dependențe blocat, Composer, Node 22.12+ sau 24 LTS și npm.
+PHP 8.4, Composer, Node 22.12+ sau 24 LTS, npm și o bază de date (SQLite local sau MySQL/PostgreSQL).
 
 ```powershell
 composer install
 # Numai dacă .env nu există deja:
 Copy-Item .env.example .env
 php artisan key:generate
+php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
+php artisan migrate
 npm ci
 npm run build
-php artisan serve --host=127.0.0.1 --port=8035
+php artisan serve --host=localhost --port=8035
 ```
 
-Deschide `http://127.0.0.1:8035`. Dacă păstrezi un `.env` anterior, setează `SESSION_DRIVER=file`, `CACHE_STORE=file` și `QUEUE_CONNECTION=sync` pentru a rula landing-ul fără bază de date. Nu este necesar un worker sau scheduler.
+Configurează în `.env` `APP_URL=http://localhost:8035`, `PASSKEY_ORIGIN=http://localhost:8035`, `PASSKEY_RP_ID=localhost`, apoi completează `ADMIN_EMAIL` și `ADMIN_PASSWORD` (minimum 12 caractere) și rulează:
 
-Pentru email, completează configurația SMTP, `MAIL_FROM_ADDRESS`, `GNOSIX_PILOT_RECIPIENT` și activează `GNOSIX_PILOT_ENABLED=true`. Implicit, formularul este oprit, iar indexarea este dezactivată în mediul local. Configurația nu este o dovadă a livrării în inbox.
+```powershell
+php artisan gnosix:admin
+```
+
+Acces: `http://localhost:8035/admin/login`. În admin salvează SMTP și adaugă passkey din tabul Securitate. Implicit, formularul pilot și indexarea sunt oprite. Activează pilotul cu `GNOSIX_PILOT_ENABLED=true` după configurarea emailului.
+
+Pentru un `.env` mai vechi folosește `SESSION_DRIVER=file`, `CACHE_STORE=file` și `QUEUE_CONNECTION=sync`. Adminul necesită în continuare bază de date și migrații. Nu există creare publică de conturi platform admin.
+
+## Documentație
+
+- [Administrare, SMTP, configurare passkey și recuperare](docs/ADMIN.md)
+- [Publicare pe Laravel Forge](docs/DEPLOY-FORGE.md)
+- [Brief-ul și explorările inițiale](docs/DESIGN-BRIEF.md)
+
+Parolele nu se trimit ca argumente Artisan și nu se pun în Git. După provisioning, `ADMIN_PASSWORD` poate fi eliminată din mediu. Loginul folosește hash-ul din baza de date; schimbarea valorii din mediu nu resetează automat parola. Folosește explicit `gnosix:admin --reset-password` când este necesar.
 
 ## Verificare
 
@@ -39,30 +55,20 @@ composer validate --no-check-publish
 php artisan gnosix:check
 ```
 
-Au trecut 11 teste PHP / 60 de aserțiuni, build-ul Vite, compilarea rutelor și a view-urilor și verificarea HTTP a paginilor publice. În browser au fost verificate Atlas și formularul pe desktop/mobil, inclusiv o trimitere către un SMTP sink pe loopback. Un POST real fără token CSRF a fost refuzat cu HTTP 419. Nu a fost trimis email către Gmail și nu a fost modificată infrastructura de producție.
+24 de teste / 179 de aserțiuni au verificat landing-ul, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
 
-Pe acest host Windows, `php artisan test` poate depăși limita de dimensiune a mediului atunci când creează un subproces. `php vendor/bin/phpunit` rulează aceeași suită direct.
+Au fost verificate în browser loginul cu parolă, setările SMTP, un test de email către un SMTP sink local, logoutul și paginile mobile. Nu a fost înregistrată o cheie pe dispozitivul real al utilizatorului și nu s-a trimis email extern. Infrastructura Forge nu a fost modificată.
 
-## Publicare pe Forge
+Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CONF` către `extras/ssl/openssl.cnf` din instalarea PHP. `php vendor/bin/phpunit` evită limita de dimensiune a mediului la subprocesele create de `artisan test` pe acest host.
 
-Urmează [ghidul de publicare](docs/DEPLOY-FORGE.md). Folosește `.env.production.example` și `deploy/forge-zero-downtime.sh`. Comanda `php artisan gnosix:check --launch` blochează activarea unui release configurat incomplet, fără să trimită email.
+## Publicare și pachet
 
-Pachet local de surse și frontend compilat:
+`.env.production.example` și `deploy/forge-zero-downtime.sh` pregătesc instanța Forge. După primul deploy rulează `php artisan gnosix:admin`, configurează SMTP din admin, înregistrează passkey și verifică pe domeniul final. `gnosix:check --production` permite inițializarea înainte de SMTP; `gnosix:check --launch` verifică suplimentar pilotul și indexarea.
 
 ```powershell
 python scripts/package-release.py
 ```
 
-Rezultat: `build/gnosix-atlas-forge-0.1.0.zip` și checksum SHA256. Pachetul nu include `.env`, `vendor`, loguri, sesiuni, baze de date sau conceptele alternative. Necesită `composer install --no-dev` pe server. Publicarea standard pe Forge folosește repository-ul Git, nu arhiva.
+Arhiva `build/gnosix-atlas-forge-0.2.0.zip` include sursele, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
-## Structură
-
-- `resources/views/landing`: secțiunile Atlas, dialogul și formularul.
-- `resources/css` și `resources/js/app.js`: sursele frontend; `public/build` este generat la deploy.
-- `app/Http/Controllers/PilotEnquiryController.php`: trimiterea cererii pilot.
-- `app/Http/Requests/PilotEnquiryRequest.php`: validare.
-- `config/gnosix.php`: domeniu, indexare și program pilot.
-- `design/concepts`: cele cinci modele HTML originale, păstrate în afara document root-ului. Deschide `design/concepts/index.html` local; regenerarea lor cu `python scripts/build-concepts.py` nu modifică Blade.
-- `docs/DESIGN-BRIEF.md`: contextul inițial; `docs/DEPLOY-FORGE.md`: configurația de operare.
-
-Produsul rămâne în dezvoltare. Proprietățile și datele din ilustrație sunt exemple. Nu sunt afișate clienți, testimoniale sau rezultate inventate. Licența fontului local este inclusă în `resources/fonts/OFL-Manrope.txt`.
+Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

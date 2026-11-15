@@ -11,6 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(\App\Http\Middleware\PlatformAdminSession::class);
+        $middleware->trimStrings(except: ['smtp_password']);
+        $middleware->alias([
+            'platform.admin' => \App\Http\Middleware\RequirePlatformAdmin::class,
+            'platform.recent' => \App\Http\Middleware\RequireRecentAdminAuthentication::class,
+        ]);
         $middleware->append(\App\Http\Middleware\ResponseHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

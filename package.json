@@ -11,5 +11,8 @@
     "laravel-vite-plugin": "^2.0.0",
     "vite": "^7.0.7"
   },
-  "name": "gnosix-building-management"
+  "name": "gnosix-building-management",
+  "dependencies": {
+    "@simplewebauthn/browser": "^14.0.0"
+  }
 }

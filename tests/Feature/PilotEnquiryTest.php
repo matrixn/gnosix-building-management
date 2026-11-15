@@ -59,10 +59,10 @@ class PilotEnquiryTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function test_log_mailer_cannot_report_a_successful_delivery(): void
+    public function test_missing_smtp_configuration_cannot_report_a_successful_delivery(): void
     {
         Mail::fake();
-        config(['mail.default' => 'log']);
+        config(['mail.mailers.smtp.host' => '']);
         $this->post('/program-pilot', $this->enquiry())->assertSessionHasErrors('delivery')->assertSessionMissing('pilot_sent');
         Mail::assertNothingSent();
     }
