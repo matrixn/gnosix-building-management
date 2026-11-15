@@ -49,7 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
 
     public function organizations()
     {
-        return $this->belongsToMany(Organization::class, 'organization_memberships')->wherePivotIn('role', OrganizationMembership::ROLES)->withPivot('role')->withTimestamps();
+        return $this->belongsToMany(Organization::class, 'organization_memberships')->wherePivotIn('role', OrganizationMembership::ROLES)->wherePivotIn('access_scope', ['all', 'properties'])->withPivot(['role', 'access_scope'])->withTimestamps();
     }
 
     public function sendEmailVerificationNotification(): void

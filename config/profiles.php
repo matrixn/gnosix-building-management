@@ -8,7 +8,7 @@ return [
             'enabled' => true, 'icon' => 'hotel', 'schema_version' => 1,
             'kinds' => ['independent', 'company', 'portfolio'],
             'recommended_property_types' => ['hotel', 'guesthouse', 'apartment', 'mixed'],
-            'capabilities' => ['hospitality.buildings', 'hospitality.rooms', 'hospitality.maintenance', 'evidence.upload', 'evidence.review', 'evidence.conflicts'],
+            'capabilities' => ['hospitality.workspace', 'hospitality.buildings', 'hospitality.rooms', 'hospitality.maintenance', 'evidence.upload', 'evidence.review', 'evidence.conflicts'],
         ],
         'construction' => [
             'enabled' => false, 'icon' => 'construction', 'schema_version' => 1,
@@ -24,8 +24,9 @@ return [
         ],
     ],
     'capabilities' => [
-        'hospitality.buildings' => ['enabled' => true, 'operational' => false, 'icon' => '◇'],
-        'hospitality.rooms' => ['enabled' => true, 'operational' => false, 'icon' => '▤'],
+        'hospitality.workspace' => ['enabled' => true, 'operational' => true, 'icon' => '⌘', 'route' => 'app.studio', 'manage_only' => true],
+        'hospitality.buildings' => ['enabled' => true, 'operational' => true, 'icon' => '◇', 'route' => 'app.properties.index'],
+        'hospitality.rooms' => ['enabled' => true, 'operational' => true, 'icon' => '▤', 'route' => 'app.spaces.index'],
         'hospitality.maintenance' => ['enabled' => true, 'operational' => false, 'icon' => '⌘'],
         'evidence.upload' => ['enabled' => true, 'operational' => false, 'icon' => '↥'],
         'evidence.review' => ['enabled' => true, 'operational' => false, 'icon' => '◎'],

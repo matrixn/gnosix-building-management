@@ -93,4 +93,6 @@ return [
     'cap_facility_portfolio' => 'Property portfolio',
     'cap_facility_contracts' => 'Contracts and service providers',
     'no_js_save' => 'Without JavaScript, use the save button to keep your draft before leaving the page.',
+    'cap_hospitality_workspace' => 'Workspace Studio',
+    'role_admin' => 'Administrator',
 ];

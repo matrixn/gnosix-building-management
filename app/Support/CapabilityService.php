@@ -24,6 +24,7 @@ class CapabilityService
         foreach ($this->registry->profile($profile?->profile_key)['capabilities'] ?? [] as $key) {
             $definition = $this->registry->capability($key) ?? ['enabled' => false, 'operational' => false, 'icon' => '◇'];
             $allowed = $this->registry->enabled($profile?->profile_key) && $definition['enabled'] && (bool) ($overrides[$key] ?? true);
+            if (($definition['manage_only'] ?? false) && ! Gate::forUser($user)->allows('update', $organization)) $allowed = false;
             $result[$key] = array_merge($definition, ['allowed' => $allowed]);
         }
         return $result;

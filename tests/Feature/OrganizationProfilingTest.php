@@ -145,7 +145,7 @@ class OrganizationProfilingTest extends TestCase
     {
         $user = $this->member(); $organization = $this->organization($user);
         $path = '/app/organizations/'.$organization->id;
-        $this->login($user)->getJson($path.'/modules/hospitality.rooms')->assertOk()->assertJson(['allowed' => true, 'operational' => false]);
+        $this->login($user)->getJson($path.'/modules/hospitality.rooms')->assertOk()->assertJson(['allowed' => true, 'operational' => true]);
         $this->put($path.'/capabilities', ['capability' => 'hospitality.rooms', 'enabled' => '0'])->assertRedirect();
         $this->getJson($path.'/modules/hospitality.rooms')->assertForbidden();
         $this->get('/app')->assertOk()->assertDontSee($path.'/modules/hospitality.rooms', false);
@@ -234,10 +234,11 @@ class OrganizationProfilingTest extends TestCase
     public function test_future_profile_upgrade_preserves_building_types_evidence_memberships_and_opt_outs(): void
     {
         // Fixtures model future domain data; Task 002 intentionally adds no CRUD modules.
-        Schema::create('buildings', function (Blueprint $table) {$table->id(); $table->foreignId('organization_id')->constrained(); $table->string('property_type');});
+
         Schema::create('evidence', function (Blueprint $table) {$table->id(); $table->foreignId('organization_id')->constrained(); $table->string('document');});
         $user = $this->member(); $organization = $this->organization($user); $path = '/app/organizations/'.$organization->id;
-        DB::table('buildings')->insert(['organization_id' => $organization->id, 'property_type' => 'hotel']);
+        $property = $organization->properties()->create(['name' => 'Hotel', 'property_type' => 'hotel', 'country' => 'RO', 'timezone' => 'Europe/Bucharest']);
+        $building = $property->buildings()->create(['name' => 'Original']);
         DB::table('evidence')->insert(['organization_id' => $organization->id, 'document' => 'original-proof.pdf']);
         $organization->capabilityOverrides()->create(['capability' => 'hospitality.rooms', 'enabled' => false]);
         $definitions = config('profiles.capabilities');
@@ -245,7 +246,8 @@ class OrganizationProfilingTest extends TestCase
         config(['profiles.profiles.construction.enabled' => true, 'profiles.capabilities' => $definitions]);
         $this->login($user)->patch($path, ['name' => $organization->name, 'profile_key' => 'construction', 'organization_kind' => 'company'])->assertRedirect();
         $this->getJson($path.'/modules/construction.projects')->assertOk();
-        $this->assertDatabaseHas('buildings', ['organization_id' => $organization->id, 'property_type' => 'hotel']);
+        $this->assertDatabaseHas('properties', ['id' => $property->id, 'organization_id' => $organization->id, 'property_type' => 'hotel']);
+        $this->assertDatabaseHas('buildings', ['id' => $building->id, 'property_id' => $property->id]);
         $this->assertDatabaseHas('evidence', ['document' => 'original-proof.pdf']);
         $this->assertDatabaseHas('organization_memberships', ['organization_id' => $organization->id, 'user_id' => $user->id, 'role' => 'owner']);
         $this->patch($path, ['name' => $organization->name, 'profile_key' => 'hospitality', 'organization_kind' => 'portfolio'])->assertRedirect();

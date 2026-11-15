@@ -4,4 +4,5 @@
     <h2>{{ $activeOrganization?->name ?? __('workspace.no_organizations') }}</h2>
     <p>{{ $activeOrganization ? __('workspace.profile_'.$activeOrganization->profile?->profile_key).' · '.__('workspace.kind_'.$activeOrganization->profile?->organization_kind) : __('workspace.create_first_hint') }}</p>
     <a class="identity-link" href="{{ $activeOrganization ? route('app.organizations.show', $activeOrganization) : route('app.organizations.create') }}">{{ $activeOrganization ? __('workspace.organization_settings') : __('workspace.new_organization') }} ↗</a>
+    @if($activeOrganization && app(\App\Support\CapabilityService::class)->allows(auth('web')->user(), $activeOrganization, 'hospitality.workspace'))<a class="identity-button auth-back" href="{{ route('app.studio', $activeOrganization) }}">Workspace Studio ↗</a>@endif
 </section>

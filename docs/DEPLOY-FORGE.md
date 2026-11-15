@@ -46,7 +46,15 @@ Deploy-ul migrează aditiv tabela `users`; nu este necesară o comandă nouă sa
 
 ## Organizații Genesis 002
 
-Migrarea creează organizațiile, apartenențele, profilele, opțiunile de capabilități, preferințele și ciornele. Nu recreează utilizatorii și nu cere provisioning suplimentar. Testează `/app/organizations`: creare Hospitality, refresh al ciornei, switching și acces cu un al doilea cont. Construction și Facility rămân indisponibile; modulele de clădiri/dovezi nu sunt încă CRUD operațional. Vezi [GENESIS-002.md](GENESIS-002.md).
+Migrarea creează organizațiile, apartenențele, profilele, opțiunile de capabilități, preferințele și ciornele. Nu recreează utilizatorii și nu cere provisioning suplimentar. Testează `/app/organizations`: creare Hospitality, refresh al ciornei, switching și acces cu un al doilea cont. Construction și Facility rămân indisponibile; dovezile și mentenanța rămân în dezvoltare; proprietățile și spațiile sunt operaționale din Genesis 003. Vezi [GENESIS-002.md](GENESIS-002.md).
+
+## Workspace Studio Genesis 003
+
+Migrarea `2026_11_16_120000_create_adaptive_workspace` adaugă structura de proprietăți, clădiri, etaje și spații, grupuri, entități juridice, granturi per proprietate și ciorne Studio. Completează organizațiile și apartenențele existente fără a le recrea; membrii existenți păstrează accesul `all`, iar rolul `manager` continuă să funcționeze. Nu este necesară o comandă de provisioning suplimentară.
+
+Păstrează întregul `storage` partajat între release-uri. Logo-urile sunt în discul privat `local` (`storage/app/private/organization-logos`), se servesc autentificat și nu necesită `storage:link`. PHP trebuie să aibă extensiile uzuale Laravel, fileinfo și GD sau Imagick pentru imagini. Nu configura o rută publică către discul privat.
+
+După deploy verifică `/app/organizations/{id}/studio`: ciornă, refresh, confirmare, listarea proprietăților și editarea unui spațiu. Verifică setările, un logo și accesul unui al doilea membru limitat la o singură proprietate. `gnosix:check --production` verifică și prezența structurii Studio. Nu rula rollback al acestei migrări pe date reale: ar șterge structura creată. Vezi [GENESIS-003.md](GENESIS-003.md).
 
 ## Verificare după deploy
 

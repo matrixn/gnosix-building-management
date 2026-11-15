@@ -1,0 +1,9 @@
+<x-identity.field id="property-name" name="name" :label="__('studio.name')" :value="$property?->name" required maxlength="150"/>
+<div class="identity-field"><label for="property-type">{{ __('studio.field_property_type') }}</label><select name="property_type" id="property-type">@foreach(config('workspace.property_types') as $type)<option value="{{ $type }}" @selected(old('property_type', $property?->property_type) === $type)>{{ __('studio.type_'.$type) }}</option>@endforeach</select></div>
+<x-identity.field name="country" :label="__('studio.country')" :value="$property?->country ?? $organization->country" required maxlength="2"/>
+<x-identity.field name="timezone" :label="__('studio.timezone')" :value="$property?->timezone ?? $organization->timezone" required maxlength="64"/>
+<x-identity.field name="address" :label="__('studio.address')" :value="$property?->address" maxlength="500"/>
+@can('update', $organization)
+<div class="identity-field"><label for="property-entity">{{ __('studio.entity') }}</label><select name="legal_entity_id" id="property-entity"><option value="">{{ __('studio.optional') }}</option>@foreach($organization->legalEntities()->get() as $entity)<option value="{{ $entity->id }}" @selected((int) old('legal_entity_id', $property?->legal_entity_id) === $entity->id)>{{ $entity->name }}</option>@endforeach</select></div>
+<div class="identity-field"><label for="property-groups">{{ __('studio.groups') }}</label><input type="hidden" name="group_ids" value=""><select name="group_ids[]" id="property-groups" multiple>@foreach($organization->groups()->get() as $group)<option value="{{ $group->id }}" @selected(in_array($group->id, (array) old('group_ids', $property?->groups->pluck('id')->all() ?? [])))>{{ $group->name }}</option>@endforeach</select><span class="field-help">{{ __('studio.multi_hint') }}</span></div>
+@endcan

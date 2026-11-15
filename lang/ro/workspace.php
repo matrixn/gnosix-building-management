@@ -93,4 +93,6 @@ return [
     'cap_facility_portfolio' => 'Portofoliu de proprietăți',
     'cap_facility_contracts' => 'Contracte și furnizori',
     'no_js_save' => 'Fără JavaScript, folosește butonul de salvare pentru a păstra ciorna înainte de a închide pagina.',
+    'cap_hospitality_workspace' => 'Workspace Studio',
+    'role_admin' => 'Administrator',
 ];

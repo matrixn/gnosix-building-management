@@ -78,6 +78,7 @@ class OrganizationController extends Controller
         abort_unless($capabilities->allows($request->user('web'), $organization, $capability), 403);
         $definition = app(ProfileRegistry::class)->capability($capability);
         if ($request->expectsJson()) return response()->json(['organization_id' => $organization->id, 'capability' => $capability, 'allowed' => true, 'operational' => $definition['operational']]);
+        if (($definition['operational'] ?? false) && isset($definition['route'])) return redirect()->route($definition['route'], $organization);
         return view('organizations.module', compact('organization', 'capability', 'definition'));
     }
 
@@ -100,7 +101,7 @@ class OrganizationController extends Controller
     public function addMember(Request $request, Organization $organization)
     {
         Gate::forUser($request->user('web'))->authorize('manageMembers', $organization);
-        $data = $request->validate(['email' => ['required', 'string', 'email:rfc', 'max:255'], 'role' => ['required', 'in:manager,member']]);
+        $data = $request->validate(['email' => ['required', 'string', 'email:rfc', 'max:255'], 'role' => ['required', 'in:admin,manager,member']]);
         DB::transaction(function () use ($request, $organization, $data) {
             $organization = Organization::whereKey($organization->id)->lockForUpdate()->firstOrFail();
             Gate::forUser($request->user('web'))->authorize('manageMembers', $organization);
@@ -113,7 +114,7 @@ class OrganizationController extends Controller
 
     public function updateMember(Request $request, Organization $organization, OrganizationMembership $membership)
     {
-        $data = $request->validate(['role' => ['required', 'in:manager,member']]);
+        $data = $request->validate(['role' => ['required', 'in:admin,manager,member']]);
         $this->mutateMember($request, $organization, $membership, $data['role']);
         return back()->with('status', __('workspace.member_saved'));
     }
