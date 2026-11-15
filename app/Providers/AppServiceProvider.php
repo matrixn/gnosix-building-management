@@ -14,6 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->scoped(\App\Support\SiteSettings::class);
         $this->app->extend('mail.manager', fn ($manager, $app) => new \App\Mail\PlatformMailManager($app));
     }
 

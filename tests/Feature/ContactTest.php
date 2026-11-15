@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Mail\ContactMessage;
+use App\Support\SiteSettings;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
@@ -10,10 +12,12 @@ use Tests\TestCase;
 
 class ContactTest extends TestCase
 {
+    use RefreshDatabase;
     protected function setUp(): void
     {
         parent::setUp();
-        config(['gnosix.contact_enabled' => true, 'gnosix.contact_recipient' => 'raduta.alex@gmail.com', 'mail.mailers.smtp.host' => 'smtp.example.test', 'mail.mailers.smtp.scheme' => 'smtps', 'mail.from.address' => 'contact@example.test']);
+        app(SiteSettings::class)->save(['contact_enabled' => true, 'contact_recipient' => 'raduta.alex@gmail.com']);
+        config(['mail.mailers.smtp.host' => 'smtp.example.test', 'mail.mailers.smtp.scheme' => 'smtps', 'mail.from.address' => 'contact@example.test']);
     }
 
     private function enquiry(array $overrides = []): array

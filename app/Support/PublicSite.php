@@ -31,6 +31,6 @@ class PublicSite
 
     public static function canonical(?string $locale = null): string
     {
-        return config('gnosix.canonical_url').self::path($locale ?? self::locale(), request()->routeIs('privacy', 'privacy.en'));
+        return \App\Support\SiteSettings::value('canonical_url').self::path($locale ?? self::locale(), request()->routeIs('privacy', 'privacy.en'));
     }
 }

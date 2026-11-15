@@ -31,11 +31,12 @@ class CheckLanding extends Command
         ];
 
         if ($this->option('production') || $this->option('launch')) {
+            $canonical = $databaseReady ? \App\Support\SiteSettings::value('canonical_url') : '';
             $checks += [
                 'Production environment' => app()->environment('production'),
                 'Debug disabled' => ! config('app.debug'),
                 'Correct HTTPS application URL' => rtrim(config('app.url'), '/') === 'https://gnosix.zion3d.ro',
-                'Correct canonical URL' => config('gnosix.canonical_url') === 'https://gnosix.zion3d.ro',
+                'Canonical URL uses HTTPS' => \App\Support\SiteSettings::normalizeCanonicalUrl($canonical) !== null && str_starts_with($canonical, 'https://'),
                 'Secure encrypted sessions' => config('session.secure') && config('session.encrypt'),
                 'Synchronous enquiry delivery' => config('queue.default') === 'sync',
                 'Passkey origin configured' => config('platform.passkey_origin') === 'https://gnosix.zion3d.ro',
@@ -43,7 +44,7 @@ class CheckLanding extends Command
             ];
         }
         if ($this->option('launch')) {
-            $checks['Search indexing enabled'] = config('gnosix.indexable');
+            $checks['Search indexing enabled'] = \App\Support\SiteSettings::value('indexable');
             $checks['Contact delivery configured'] = $databaseReady && ContactAvailability::ready();
         }
 

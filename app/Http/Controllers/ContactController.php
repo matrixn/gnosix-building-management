@@ -23,7 +23,7 @@ class ContactController extends Controller
         $data['phone'] = ContactPhone::normalize($data['phone']);
         $data['locale'] = PublicSite::locale();
         try {
-            Mail::to(config('gnosix.contact_recipient'))->send(new ContactMessage($data));
+            Mail::to(\App\Support\SiteSettings::value('contact_recipient'))->send(new ContactMessage($data));
         } catch (Throwable $exception) {
             Log::error('Contact message delivery failed.', ['type' => $exception::class]);
             return redirect($redirect)->withErrors(['delivery' => __('Mesajul nu a putut fi trimis. Datele sunt păstrate în formular pentru o nouă încercare.')])

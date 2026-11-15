@@ -15,8 +15,8 @@ Route::post('/program-pilot', ContactController::class)
     ->middleware('throttle:pilot')->name('pilot.store');
 
 Route::get('/robots.txt', function () {
-    $content = config('gnosix.indexable')
-        ? "User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: ".config('gnosix.canonical_url')."/sitemap.xml\n"
+    $content = \App\Support\SiteSettings::value('indexable')
+        ? "User-agent: *\nAllow: /\nDisallow: /admin\nSitemap: ".\App\Support\SiteSettings::value('canonical_url')."/sitemap.xml\n"
         : "User-agent: *\nDisallow: /\n";
 
     return response($content)->header('Content-Type', 'text/plain; charset=UTF-8');

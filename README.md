@@ -9,7 +9,8 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 - Contact direct în pagină: nume complet, email, telefon, șase subiecte cu pilotul selectat implicit și mesaj. Toate câmpurile sunt obligatorii, cu validare email și telefon internațional pe server.
 - SEO multilingv: canonical, hreflang reciproc și x-default, sitemap cu alternative, Open Graph/Twitter localizat, imagini RO/EN și JSON-LD.
 - `/admin/login`: parolă și passkey WebAuthn, cu cookie, guard și tabel separate de viitorii clienți.
-- Setări platformă cu taburi General, Email & SMTP, Securitate & passkeys.
+- Setări platformă cu taburi General, GNOSIX · Site & contact, Email & SMTP, Securitate & passkeys.
+- Setările de produs sunt în baza de date și se modifică din admin, fără `.env`, deploy sau `config:cache`. Valorile vechi sunt importate o singură dată de migrare.
 - SMTP salvat criptat în baza de date și aplicat tuturor emailurilor sistemului; test de livrare către administrator.
 - Comanda `gnosix:admin` pentru provisioning din `ADMIN_EMAIL` și `ADMIN_PASSWORD`, fără a suprascrie parola existentă la rerulare.
 - Management și revocare passkeys, reconfirmare pentru modificări sensibile, rate limiting și invalidarea sesiunilor la resetarea credențialelor.
@@ -37,7 +38,7 @@ Configurează în `.env` `APP_URL=http://localhost:8035`, `PASSKEY_ORIGIN=http:/
 php artisan gnosix:admin
 ```
 
-Acces: `http://localhost:8035/admin/login`. În admin salvează SMTP și adaugă passkey din tabul Securitate. Exemplele de mediu au contactul și indexarea oprite. Activează formularul cu `GNOSIX_CONTACT_ENABLED=true` și setează `GNOSIX_CONTACT_RECIPIENT=raduta.alex@gmail.com` după configurarea SMTP.
+Acces: `http://localhost:8035/admin/login`. În admin salvează SMTP și adaugă passkey din tabul Securitate. Din **GNOSIX · Site & contact** configurează destinatarul, adresa canonică și activarea contactului/indexării. La instalare nouă, formularul și indexarea sunt oprite până le activezi din administrare.
 
 Pentru un `.env` mai vechi folosește `SESSION_DRIVER=file`, `CACHE_STORE=file` și `QUEUE_CONNECTION=sync`. Adminul necesită în continuare bază de date și migrații. Nu există creare publică de conturi platform admin.
 
@@ -46,6 +47,7 @@ Pentru un `.env` mai vechi folosește `SESSION_DRIVER=file`, `CACHE_STORE=file` 
 - [Administrare, SMTP, configurare passkey și recuperare](docs/ADMIN.md)
 - [Publicare pe Laravel Forge](docs/DEPLOY-FORGE.md)
 - [Formular de contact, traduceri și SEO](docs/CONTACT-AND-SEO.md)
+- [Setări de sistem și migrarea vechilor valori din mediu](docs/SYSTEM-SETTINGS.md)
 - [Brief-ul și explorările inițiale](docs/DESIGN-BRIEF.md)
 
 Parolele nu se trimit ca argumente Artisan și nu se pun în Git. După provisioning, `ADMIN_PASSWORD` poate fi eliminată din mediu. Loginul folosește hash-ul din baza de date; schimbarea valorii din mediu nu resetează automat parola. Folosește explicit `gnosix:admin --reset-password` când este necesar.
@@ -59,7 +61,7 @@ composer validate --no-check-publish
 php artisan gnosix:check
 ```
 
-42 de teste / 287 de aserțiuni au verificat contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
+56 de teste / 354 de aserțiuni au verificat setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
 
 Au fost verificate în browser loginul cu parolă, setările SMTP, un test de email către un SMTP sink local, logoutul și paginile mobile. Nu a fost înregistrată o cheie pe dispozitivul real al utilizatorului și nu s-a trimis email extern. Infrastructura Forge nu a fost modificată.
 
@@ -73,6 +75,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.3.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.4.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

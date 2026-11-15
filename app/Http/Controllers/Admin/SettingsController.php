@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
 use App\Support\SmtpSettings;
+use App\Support\SiteSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -16,15 +17,47 @@ class SettingsController extends Controller
 {
     public function show(Request $request, SmtpSettings $settings)
     {
-        $tab = in_array($request->query('tab'), ['general', 'smtp', 'security']) ? $request->query('tab') : 'general';
+        $tab = in_array($request->query('tab'), ['general', 'gnosix', 'smtp', 'security']) ? $request->query('tab') : 'general';
         $smtp = $settings->resolved();
         $hasPassword = filled($smtp['password']);
         unset($smtp['password']);
         return view('admin.settings', [
             'tab' => $tab, 'smtp' => $smtp, 'hasPassword' => $hasPassword,
+            'site' => app(SiteSettings::class)->all(),
             'smtpSaved' => $settings->saved() !== null,
             'passkeys' => Auth::guard('platform_admin')->user()->passkeys()->latest()->get(),
         ]);
+    }
+
+    public function updateGnosix(Request $request, SiteSettings $settings)
+    {
+        $validator = Validator::make($request->all(), [
+            'canonical_url' => ['bail', 'required', 'string', 'max:255', function ($attribute, $value, $fail) {
+                $url = SiteSettings::normalizeCanonicalUrl($value);
+                if ($url === null || (app()->environment('production') && ! str_starts_with($url, 'https://'))) {
+                    $fail('Introdu adresa de bază a site-ului, fără cale, parametri sau credențiale. În producție este obligatoriu HTTPS.');
+                }
+            }],
+            'contact_recipient' => ['required', 'string', 'email:rfc,strict', 'max:160'],
+            'contact_enabled' => ['required', 'boolean'],
+            'indexable' => ['required', 'boolean'],
+        ], [
+            'required' => 'Completează câmpul :attribute.',
+            'email' => 'Introdu o adresă de email validă pentru primirea mesajelor.',
+            'boolean' => 'Alege o valoare validă pentru :attribute.',
+            'max.string' => 'Câmpul :attribute poate avea cel mult :max caractere.',
+        ], ['canonical_url' => 'adresă canonică', 'contact_recipient' => 'destinatar contact', 'contact_enabled' => 'formular activ', 'indexable' => 'indexare SEO']);
+        if ($validator->fails()) {
+            return redirect()->route('admin.settings', ['tab' => 'gnosix'])->withErrors($validator)->withInput($request->only(['canonical_url', 'contact_recipient', 'contact_enabled', 'indexable']));
+        }
+        $data = $validator->validated();
+        $settings->save([
+            'canonical_url' => SiteSettings::normalizeCanonicalUrl($data['canonical_url']),
+            'contact_recipient' => $data['contact_recipient'],
+            'contact_enabled' => $request->boolean('contact_enabled'),
+            'indexable' => $request->boolean('indexable'),
+        ], Auth::guard('platform_admin')->id());
+        return redirect()->route('admin.settings', ['tab' => 'gnosix'])->with('status', 'Setările GNOSIX au fost salvate și sunt active imediat. Nu este necesar un deploy sau config:cache.');
     }
 
     public function updateSmtp(Request $request, SmtpSettings $settings)

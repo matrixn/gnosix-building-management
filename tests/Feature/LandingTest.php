@@ -3,9 +3,18 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use App\Support\SiteSettings;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LandingTest extends TestCase
 {
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        app(SiteSettings::class)->save(SiteSettings::defaults());
+    }
     public function test_atlas_is_the_laravel_homepage(): void
     {
         $this->get('/')->assertOk()
@@ -19,7 +28,7 @@ class LandingTest extends TestCase
 
     public function test_development_cannot_be_indexed_and_disabled_form_does_not_collect_data(): void
     {
-        config(['gnosix.indexable' => false, 'gnosix.contact_enabled' => false]);
+        app(SiteSettings::class)->save(['indexable' => false, 'contact_enabled' => false]);
         $this->get('/')->assertHeader('X-Robots-Tag', 'noindex, nofollow')
             ->assertSee('class="contact-fields" disabled', false);
         $this->get('/robots.txt')->assertSee('Disallow: /');
@@ -27,7 +36,7 @@ class LandingTest extends TestCase
 
     public function test_production_seo_and_private_design_paths(): void
     {
-        config(['gnosix.indexable' => true]);
+        app(SiteSettings::class)->save(['indexable' => true]);
         $this->get('/robots.txt')->assertSee('Allow: /')->assertSee('https://gnosix.zion3d.ro/sitemap.xml');
         $this->get('/sitemap.xml')->assertOk()->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
             ->assertSee('https://gnosix.zion3d.ro/confidentialitate');

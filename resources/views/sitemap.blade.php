@@ -2,8 +2,8 @@
     @foreach ([false, true] as $privacy)
         @foreach (['ro', 'en'] as $locale)
         <url>
-            <loc>{{ config('gnosix.canonical_url').\App\Support\PublicSite::path($locale, $privacy) }}</loc>
-            @foreach (['ro', 'en', 'x-default'] as $alternate)<xhtml:link rel="alternate" hreflang="{{ $alternate }}" href="{{ config('gnosix.canonical_url').\App\Support\PublicSite::path($alternate === 'x-default' ? 'ro' : $alternate, $privacy) }}"/>@endforeach
+            <loc>{{ \App\Support\SiteSettings::value('canonical_url').\App\Support\PublicSite::path($locale, $privacy) }}</loc>
+            @foreach (['ro', 'en', 'x-default'] as $alternate)<xhtml:link rel="alternate" hreflang="{{ $alternate }}" href="{{ \App\Support\SiteSettings::value('canonical_url').\App\Support\PublicSite::path($alternate === 'x-default' ? 'ro' : $alternate, $privacy) }}"/>@endforeach
         </url>
         @endforeach
     @endforeach

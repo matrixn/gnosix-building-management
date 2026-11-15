@@ -39,7 +39,7 @@ class PlatformAdministrationTest extends TestCase
         $customer = User::factory()->create();
         $this->actingAs($customer, 'web')->get('/admin/settings')->assertRedirect(route('admin.login'));
         $this->put('/admin/settings/smtp', $this->smtp())->assertRedirect(route('admin.login'));
-        $this->assertDatabaseCount('platform_settings', 0);
+        $this->assertDatabaseMissing('platform_settings', ['key' => 'smtp']);
         $this->get('/admin/login')->assertHeader('Cache-Control', 'no-store, private')->assertHeader('X-Robots-Tag', 'noindex, nofollow');
     }
 
@@ -73,7 +73,7 @@ class PlatformAdministrationTest extends TestCase
         $this->postJson('/admin/login', ['email' => 'none@example.test', 'password' => 'wrong'])->assertTooManyRequests();
         $this->loginAdmin();
         $this->withSession(['platform_admin_confirmed_at' => time() - 601])->put('/admin/settings/smtp', $this->smtp())->assertRedirect(route('admin.settings', ['tab' => 'security']));
-        $this->assertDatabaseCount('platform_settings', 0);
+        $this->assertDatabaseMissing('platform_settings', ['key' => 'smtp']);
     }
 
     public function test_smtp_is_encrypted_password_is_not_rendered_and_blank_preserves_it(): void
@@ -95,7 +95,7 @@ class PlatformAdministrationTest extends TestCase
         $admin = $this->loginAdmin();
         $this->put('/admin/settings/smtp', $this->smtp(['host' => 'https://invalid/path']))->assertSessionHasErrors('host');
         $this->assertArrayNotHasKey('smtp_password', session()->getOldInput());
-        $this->assertDatabaseCount('platform_settings', 0);
+        $this->assertDatabaseMissing('platform_settings', ['key' => 'smtp']);
         Mail::shouldReceive('raw')->once()->withArgs(function ($body, $callback) use ($admin) {
             $message = new \Illuminate\Mail\Message(new \Symfony\Component\Mime\Email);
             $callback($message);

@@ -15,7 +15,7 @@ class ResponseHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-        if (! config('gnosix.indexable')) {
+        if (! \App\Support\SiteSettings::value('indexable')) {
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
         }
 

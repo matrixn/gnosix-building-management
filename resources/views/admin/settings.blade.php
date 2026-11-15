@@ -2,7 +2,7 @@
 @section('content')
 <div class="page-heading"><span class="eyebrow">CONFIGURAȚIA GLOBALĂ GNOSIX</span><h1>Setările platformei.</h1><p>Infrastructura din spatele fiecărei experiențe.</p></div>
 <nav class="settings-tabs" aria-label="Secțiuni setări">
-    @foreach (['general' => 'General', 'smtp' => 'Email & SMTP', 'security' => 'Securitate & passkeys'] as $key => $label)
+    @foreach (['general' => 'General', 'gnosix' => 'GNOSIX · Site & contact', 'smtp' => 'Email & SMTP', 'security' => 'Securitate & passkeys'] as $key => $label)
     <a href="{{ route('admin.settings', ['tab' => $key]) }}" @if ($tab === $key) aria-current="page" @endif>{{ $label }}</a>
     @endforeach
 </nav>
@@ -10,6 +10,19 @@
 <section class="panel"><div class="panel-heading"><span class="panel-icon">◇</span><div><h2>Un spațiu pentru platformă.</h2><p>Identitatea și configurația instanței GNOSIX.</p></div><span class="badge">PLATFORM ADMIN</span></div>
 <dl class="definition-list"><div><dt>Aplicație</dt><dd>{{ config('app.name') }}</dd></div><div><dt>Adresă</dt><dd>{{ config('app.url') }}</dd></div><div><dt>Mediu</dt><dd>{{ app()->environment() }}</dd></div><div><dt>Cont</dt><dd>Administrator al platformei GNOSIX</dd></div><div><dt>Email sistem</dt><dd>SMTP centralizat · {{ $smtpSaved ? 'Configurat în admin' : 'Configurare inițială din mediu' }}</dd></div></dl></section>
 <section class="context-panel"><h3>Administrarea clienților este un spațiu diferit.</h3><p>Setările de aici sunt globale. Conturile viitorilor administratori de clădiri vor aparține aplicației pentru clienți, cu propriile permisiuni și date.</p></section>
+@elseif ($tab === 'gnosix')
+<section class="panel"><div class="panel-heading"><span class="panel-icon">◇</span><div><h2>GNOSIX · Site & contact</h2><p>Setările publice ale site-ului, controlate din administrare.</p></div><span class="badge">CONFIGURAȚIE GLOBALĂ</span></div>
+<p class="helper">Modificările sunt salvate în baza de date și se aplică imediat, inclusiv cu configurația Laravel cache-uită. Nu trebuie editat fișierul de mediu sau efectuat un deploy.</p>
+<form method="POST" action="{{ route('admin.gnosix.update') }}" class="form-grid">
+    @csrf @method('PUT')
+    <label class="span-two">Adresa publică canonică<input type="url" name="canonical_url" required maxlength="255" value="{{ old('canonical_url', $site['canonical_url']) }}" placeholder="https://gnosix.zion3d.ro" aria-describedby="canonical-hint"><span id="canonical-hint" class="fine">Adresa de bază folosită pentru SEO, sitemap și distribuire, fără /en sau alte căi. Nu schimbă domeniul configurat pe server.</span></label>
+    <label class="span-two">Email pentru primirea mesajelor de contact<input type="email" name="contact_recipient" required maxlength="160" value="{{ old('contact_recipient', $site['contact_recipient']) }}" autocomplete="off"><span class="fine">Destinatarul formularului în ambele limbi. Expeditorul și conexiunea se configurează în Email & SMTP.</span></label>
+    <input type="hidden" name="contact_enabled" value="0">
+    <label class="settings-option span-two"><input type="checkbox" name="contact_enabled" value="1" @checked(old('contact_enabled', $site['contact_enabled']))><span><strong>Activează formularul de contact</strong><small>Permite trimiterea mesajelor când SMTP este configurat. Dezactivarea oprește trimiterea în română și engleză.</small></span></label>
+    <input type="hidden" name="indexable" value="0">
+    <label class="settings-option span-two"><input type="checkbox" name="indexable" value="1" @checked(old('indexable', $site['indexable']))><span><strong>Permite indexarea în motoarele de căutare</strong><small>Controlează robots.txt și metadatele SEO pentru paginile publice. Păstrează dezactivat pe mediile de test. Adminul rămâne exclus de la indexare.</small></span></label>
+    <div class="form-actions span-two"><p class="fine">Salvarea necesită o autentificare din ultimele 10 minute.</p><button class="button">Salvează setările GNOSIX <span>↗</span></button></div>
+</form></section>
 @elseif ($tab === 'smtp')
 <section class="panel"><div class="panel-heading"><span class="panel-icon">↗</span><div><h2>Email & SMTP</h2><p>O singură configurație pentru toate emailurile sistemului.</p></div><span class="badge">{{ $smtpSaved ? 'DIN ADMIN' : 'DIN MEDIU' }}</span></div>
 <p class="helper">Setările salvate aici au prioritate față de valorile SMTP din mediu. Parola rămâne criptată și nu este afișată. Modificarea necesită o autentificare din ultimele 10 minute.</p>

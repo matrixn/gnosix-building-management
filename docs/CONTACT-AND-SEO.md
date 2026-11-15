@@ -34,16 +34,11 @@ Pe lângă validarea server-side există validare nativă în browser, protecți
 
 ## Configurare email după deploy
 
-SMTP se configurează în admin, ca până acum. Toate mesajele folosesc managerul SMTP global. Formularul nou folosește:
+SMTP se configurează în **Email & SMTP**. Toate mesajele folosesc managerul SMTP global. Activarea formularului și destinatarul se configurează în **GNOSIX · Site & contact**, fără variabile de produs în `.env` și fără `config:cache`. Destinatarul inițial este `raduta.alex@gmail.com` și poate fi schimbat numai de administrator.
 
-```dotenv
-GNOSIX_CONTACT_ENABLED=true
-GNOSIX_CONTACT_RECIPIENT=raduta.alex@gmail.com
-```
+Emailul primit include numele, emailul, telefonul normalizat, subiectul, mesajul și limba paginii; `Reply-To` este emailul validat al solicitantului. Mesajul intern către administrator are etichete în română. Nu se trimite răspuns automat vizitatorului și nu se salvează o bază de date cu cereri.
 
-După modificarea mediului rulează `php artisan config:cache`. Destinatarul nu poate fi schimbat prin formular. Emailul primit include numele, emailul, telefonul normalizat, subiectul, mesajul și limba paginii; `Reply-To` este emailul validat al solicitantului. Mesajul intern către administrator are etichete în română. Nu se trimite răspuns automat vizitatorului și nu se salvează o bază de date cu cereri.
-
-Pentru instalări existente: `GNOSIX_PILOT_RECIPIENT` este păstrat ca fallback pentru destinatar dacă `GNOSIX_CONTACT_RECIPIENT` lipsește. `GNOSIX_PILOT_ENABLED` nu mai controlează acest formular general. Dacă noul flag lipsește, contactul este activ implicit, dar trimiterea rămâne condiționată de o configurație SMTP validă. Exemplele de mediu pornesc cu `GNOSIX_CONTACT_ENABLED=false` pentru inițializare controlată. Dacă SMTP sau formularul sunt oprite, câmpurile rămân vizibile, dezactivate, cu un mesaj explicativ; backendul refuză trimiterea.
+La instalare nouă contactul este oprit. Dacă SMTP sau formularul sunt oprite, câmpurile rămân vizibile, dezactivate, cu un mesaj explicativ; backendul refuză trimiterea. Valorile vechi din mediu sunt importate o singură dată la migrare; ulterior nu mai controlează aplicația. Vezi [SYSTEM-SETTINGS.md](SYSTEM-SETTINGS.md).
 
 POST-urile merg la `/contact`, respectiv `/en/contact`. `/program-pilot` rămâne alias compatibil pentru rutare, dar folosește noua schemă obligatorie de câmpuri; formularele vechi trebuie reîncărcate după deploy.
 
@@ -58,17 +53,12 @@ POST-urile merg la `/contact`, respectiv `/en/contact`. `/program-pilot` rămân
 - Conținut server-rendered, un H1 per pagină, linkuri navigabile și resurse locale compilate prin Vite.
 - Adminul rămâne `noindex` și este exclus din robots când indexarea publică este activă.
 
-Pe staging păstrează `GNOSIX_INDEXABLE=false`. Pe domeniul final, după configurarea HTTPS/SMTP și verificarea conținutului:
+Pe staging păstrează indexarea oprită din **GNOSIX · Site & contact**. Pe domeniul final, după configurarea HTTPS/SMTP și verificarea conținutului, activează contactul și indexarea din același tab și verifică adresa canonică. Nu este necesară refacerea cache-ului Laravel pentru aceste schimbări.
 
-```dotenv
-GNOSIX_INDEXABLE=true
-GNOSIX_CONTACT_ENABLED=true
-```
-
-Rulează `php artisan config:cache` și `php artisan gnosix:check --launch`. Verifică `/robots.txt`, `/sitemap.xml`, `/`, `/en` și primirea reală a unui mesaj în Gmail. Poți trimite sitemap-ul în Google Search Console după verificarea proprietății. Codul SEO-ready nu garantează indexarea sau o anumită poziție în căutări.
+Rulează `php artisan gnosix:check --launch`. Verifică `/robots.txt`, `/sitemap.xml`, `/`, `/en` și primirea reală a unui mesaj în Gmail. Poți trimite sitemap-ul în Google Search Console după verificarea proprietății. Codul SEO-ready nu garantează indexarea sau o anumită poziție în căutări.
 
 ## Validare efectuată
 
-42 de teste / 287 de aserțiuni au trecut, inclusiv câmpuri obligatorii, selecția implicită din șase subiecte, emailuri/telefoane invalide, normalizare, feedback localizat, erori SMTP, canonical/hreflang, sitemap, JSON-LD și regresiile admin/passkey. Au fost verificate în browser selectorul RO/EN, contactul în ambele limbi, respingerea unui telefon invalid, livrarea către un SMTP sink local și lipsa overflow-ului la 390 px. Niciun mesaj de test nu a fost trimis pe internet.
+56 de teste / 354 de aserțiuni au trecut, inclusiv câmpuri obligatorii, selecția implicită din șase subiecte, emailuri/telefoane invalide, normalizare, feedback localizat, erori SMTP, canonical/hreflang, sitemap, JSON-LD și regresiile admin/passkey. Au fost verificate în browser selectorul RO/EN, contactul în ambele limbi, respingerea unui telefon invalid, livrarea către un SMTP sink local și lipsa overflow-ului la 390 px. Niciun mesaj de test nu a fost trimis pe internet.
 
 Referințe: [Google Search Central — versiuni localizate](https://developers.google.com/search/docs/specialty/international/localized-versions), [libphonenumber pentru PHP](https://giggsey.github.io/libphonenumber-for-php/).
