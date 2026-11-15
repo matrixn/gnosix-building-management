@@ -75,6 +75,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.4.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.4.1.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

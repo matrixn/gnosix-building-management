@@ -109,6 +109,10 @@ php artisan gnosix:admin --reset-password --revoke-passkeys
 
 Această opțiune revocă toate passkey-urile administratorului indicat; înregistrează chei noi după login. Nu schimbă datele clienților. O adresă `ADMIN_EMAIL` diferită creează un cont nou; nu redenumește sau șterge administratorul precedent.
 
+## Aspect și lizibilitate
+
+Administrarea și loginul folosesc o paletă bleumarin, violet electric și lime pentru acțiunile principale. Textul de bază și câmpurile au 16 px, etichetele 14 px, iar textele secundare cel puțin 12 px. Taburile și butoanele se adaptează pe mobil; formularele GNOSIX, SMTP și passkeys au fost verificate la 390 px fără derulare orizontală. Stilurile sunt dedicate administrării.
+
 ## Operare și verificări
 
 Fă backup pentru baza de date și pentru cheia aplicației. Pierderea sau înlocuirea `APP_KEY` împiedică decriptarea setărilor SMTP și invalidează sesiunile criptate. Păstrează `storage` partajat între release-uri și limita de cereri activă. Secretele nu trebuie incluse în Git sau în arhiva de release.
