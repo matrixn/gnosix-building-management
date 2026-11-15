@@ -1,5 +1,7 @@
 # Genesis 001 — identitate, autentificare și experiență
 
+Acest raport descrie etapa 001. Organizațiile și profilarea au fost adăugate ulterior în [Genesis 002](GENESIS-002.md).
+
 Auditul inițial și justificarea arhitecturii sunt în [GENESIS-001-AUDIT.md](GENESIS-001-AUDIT.md). Experiența folosește Laravel/Blade/Vite existente; nu sunt adăugate dependențe Composer sau NPM.
 
 ## Acces și funcționare

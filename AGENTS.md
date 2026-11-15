@@ -6,3 +6,5 @@
 - Platform administrators use their own model, guard and cookie. Customer identities must never grant access to global settings.
 - Keep SMTP centralized, protect settings mutations with recent administrator authentication, and never render or flash SMTP passwords.
 - Validate changes with the relevant PHPUnit suite, a frontend build when assets change, and targeted browser checks for UI changes. Update the user documentation and release archive when deployment behavior changes.
+- Keep README.md as the delivery checklist for all work: completed functionality uses `[x]`; planned or incomplete functionality uses `[ ]`. Update it with every subsequent task and never mark a demonstration or architecture-only module as completed operational functionality.
+- Organization industry profiles and property/building types are independent. Resolve tenant membership and capability authorization server-side; use the central profile registry rather than industry checks in controllers or views. Profile changes must not delete domain data.

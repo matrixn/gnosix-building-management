@@ -42,6 +42,16 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
         return in_array($this->locale, ['ro', 'en'], true) ? $this->locale : 'ro';
     }
 
+    public function memberships()
+    {
+        return $this->hasMany(OrganizationMembership::class);
+    }
+
+    public function organizations()
+    {
+        return $this->belongsToMany(Organization::class, 'organization_memberships')->wherePivotIn('role', OrganizationMembership::ROLES)->withPivot('role')->withTimestamps();
+    }
+
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new \App\Notifications\CustomerVerifyEmail);

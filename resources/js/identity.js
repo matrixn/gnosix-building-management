@@ -1,3 +1,4 @@
+import './organization.js';
 document.documentElement.classList.add('identity-js');
 
 document.querySelectorAll('[data-password-toggle]').forEach(button => {

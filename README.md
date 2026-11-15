@@ -1,23 +1,70 @@
 # GNOSIX Building Management
 
-Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Modulele organizațiilor și clădirilor sunt în dezvoltare.
+Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile și profilarea multi-tenant sunt disponibile; modulele operaționale ale clădirilor sunt în dezvoltare.
 
-## Implementat
+## Checklist de livrare
 
-- Genesis 001: `/app/login`, înregistrare, confirmare email, recuperare/resetare parolă, profil, controlul sesiunilor și onboarding Hospitality în RO/EN. Se reutilizează User/guard web și brokerul Laravel; accesul admin rămâne separat.
+`[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
 
-- Landing Atlas responsive în paleta bleumarin/violet/lime, straturi interactive, scenarii, contact direct în pagină, confidențialitate, sitemap și SEO.
-- Experiență interactivă RO/EN: Time Machine, Evidence Engine, Building DNA și checklist de predare. Date fictive, funcționalități planificate, conținut accesibil și fără JavaScript.
-- Landing bilingv: română implicit la `/`, engleză la `/en`, selector RO/EN și confidențialitate în ambele limbi.
-- Contact direct în pagină: nume complet, email, telefon, șase subiecte cu pilotul selectat implicit și mesaj. Toate câmpurile sunt obligatorii, cu validare email și telefon internațional pe server.
-- SEO multilingv: canonical, hreflang reciproc și x-default, sitemap cu alternative, Open Graph/Twitter localizat, imagini RO/EN și JSON-LD.
-- `/admin/login`: parolă și passkey WebAuthn, cu cookie, guard și tabel separate de viitorii clienți.
-- Setări platformă cu taburi General, GNOSIX · Site & contact, Email & SMTP, Securitate & passkeys.
-- Setările de produs sunt în baza de date și se modifică din admin, fără `.env`, deploy sau `config:cache`. Valorile vechi sunt importate o singură dată de migrare.
-- SMTP salvat criptat în baza de date și aplicat tuturor emailurilor sistemului; test de livrare către administrator.
-- Comanda `gnosix:admin` pentru provisioning din `ADMIN_EMAIL` și `ADMIN_PASSWORD`, fără a suprascrie parola existentă la rerulare.
-- Management și revocare passkeys, reconfirmare pentru modificări sensibile, rate limiting și invalidarea sesiunilor la resetarea credențialelor.
-- Script Forge cu migrații și verificări înaintea activării release-ului.
+### Fundație, landing și administrarea platformei
+
+- [x] Repository Git inițializat, `.gitignore` Laravel, origin GitHub și livrare prin commit/push.
+- [x] Cinci concepte HTML locale, selecție Atlas și integrare Laravel/Blade/Vite.
+- [x] Identitate premium bleumarin/violet/lime, fonturi locale, responsive și suport pentru motion redus.
+- [x] Landing RO implicit `/`, EN `/en`, confidențialitate în ambele limbi.
+- [x] Contact direct în pagină: nume, email, telefon, maximum șase subiecte și mesaj; primul subiect selectat, validare server email/telefon, feedback și protecție anti-abuz.
+- [x] SEO: canonical, hreflang, x-default, sitemap, JSON-LD, Open Graph/Twitter și imagini sociale localizate.
+- [x] Demonstrații interactive de prezentare: Time Machine, Evidence Engine, Building DNA și checklist Handover, marcate cu date fictive.
+- [x] Admin distinct de clienți: model/guard/cookie proprii, login și passkeys WebAuthn.
+- [x] Comanda `gnosix:admin` pentru inițializare, resetare explicită și revocare passkeys; documentație Forge.
+- [x] Setări General, GNOSIX · Site & contact, SMTP și Securitate; setări de produs în DB, cu import unic din fostele variabile GNOSIX.
+- [x] SMTP criptat în DB, transport central pentru toate emailurile, test de livrare către administrator.
+- [x] Protecții admin: reconfirmare, rate limiting, criptare și invalidarea sesiunilor.
+- [x] Deploy Forge cu build, migrații și verificări înainte de activare; arhivă fără secrete/runtime.
+
+### Genesis 001 — Identity, Authentication & Premium Experience
+
+- [x] Audit înainte de implementare și reutilizarea User, guard `web` și brokerului Laravel.
+- [x] Login, înregistrare, logout și verificare email obligatorie prin link semnat și expirabil.
+- [x] Recuperare/resetare parolă cu token hash-uit, expirabil, de unică folosință și feedback neutru.
+- [x] Profil personal, preferință RO/EN, schimbare email cu reconfirmare și schimbare parolă.
+- [x] Sesiuni regenerate/versionate, revocarea celorlalte dispozitive, rate limiting și CSRF.
+- [x] Detectarea primei autentificări, introducere Genesis, shell protejat și reluarea fluxului corect.
+- [x] Componente/layout reutilizabile, stări de eroare/loading, accesibilitate, formulare fără JS și motion redus.
+- [x] Separare completă admin/client și regresii automate pentru autentificare, SMTP și passkeys.
+
+### Genesis 002 — Smart Client Profiling & Capability Engine
+
+- [x] Audit Task 001 înainte de modificări; păstrarea conturilor și a profilului personal existent.
+- [x] Șase tabele aditive: organizations, organization_memberships, organization_profiles, organization_capabilities, user_preferences, onboarding_sessions.
+- [x] Mai multe organizații per utilizator și mai mulți utilizatori per organizație; selecție activă persistentă și switching autorizat.
+- [x] Roluri owner/manager/member, administrarea membrilor cu cont confirmat, revocare și protecția proprietarului.
+- [x] Profiluri Hospitality, Construction & Development și Property & Facility Management în registru și UI; numai Hospitality selectabil.
+- [x] Hospitality: operator independent, companie/organizație sau portofoliu/lanț, cu formular progresiv și informații minime.
+- [x] Carduri cu ilustrații arhitecturale, exemple, explicații accesibile, preview de capabilități, selecție animată și RO/EN.
+- [x] Profilul organizației independent de tipul clădirilor; recomandări fără restricții de proprietate.
+- [x] Registru central pentru profile, scheme, capabilități, recomandări, navigare și vizibilitate.
+- [x] Policy de organizație, context verificat la fiecare cerere și refuz server-side pentru capabilități inactive/necunoscute.
+- [x] Opțiuni de capabilități per organizație în DB; dezactivarea elimină accesul și linkul, fără ștergerea datelor.
+- [x] Salvare automată și manuală a ciornei, reluare după refresh, control al versiunii și finalizare idempotentă.
+- [x] Schimbarea profilului/formei fără ștergerea organizației, membrilor, datelor sau opțiunilor anterioare; test de upgrade viitor cu clădiri/dovezi-fixture.
+- [x] UI pentru organizații/setări/membri și pagini de context al modulelor; acestea nu sunt încă module CRUD operaționale.
+- [x] Teste de autorizare, IDOR, izolare între utilizatori/organizații, CSRF, profile indisponibile, concurență și regresii Task 001.
+
+### Etape următoare — neimplementate operațional
+
+- [ ] Activarea profilului Construction & Development și a fluxurilor sale.
+- [ ] Activarea profilului Property & Facility Management și a fluxurilor sale.
+- [ ] CRUD de clădiri/proprietăți și spații/camere, cu tipuri independente de industrie.
+- [ ] Mentenanță, echipamente, intervenții, calendar și QR în aplicația operațională.
+- [ ] Încărcarea/stocarea/versionarea și revizuirea documentelor/dovezilor reale.
+- [ ] Evidence Engine operațional: proveniență și detectarea contradicțiilor.
+- [ ] Time Machine operațional și Building DNA cu relații reale între active.
+- [ ] Trust Passport, Zero-Entry asistat AI, Handover între organizații și LifeCycle Simulator.
+- [ ] Invitații prin email, transfer de proprietar și politici granulare pe resurse.
+- [ ] Passkeys pentru clienți, social login și 2FA.
+- [ ] API public, import IFC, integrări IoT și ecosistem furnizori.
+- [ ] Verificarea acestui release pe VPS și a livrării în inbox după deploy.
 
 ## Instalare locală
 
@@ -47,6 +94,8 @@ Pentru un `.env` mai vechi folosește `SESSION_DRIVER=file`, `CACHE_STORE=file` 
 
 ## Documentație
 
+- [Genesis 002 — organizații, capabilități și reluare onboarding](docs/GENESIS-002.md)
+- [Audit Genesis 002](docs/GENESIS-002-AUDIT.md)
 - [Genesis 001 — identitate, securitate, deploy și fișiere modificate](docs/GENESIS-001.md)
 - [Audit arhitectural Genesis 001](docs/GENESIS-001-AUDIT.md)
 - [Administrare, SMTP, configurare passkey și recuperare](docs/ADMIN.md)
@@ -67,7 +116,7 @@ composer validate --no-check-publish
 php artisan gnosix:check
 ```
 
-79 de teste / 575 de aserțiuni au verificat setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
+98 de teste / 737 de aserțiuni au verificat organizațiile și apartenențele, profilarea, capabilitățile, izolarea tenantului, ciornele, setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
 
 Au fost verificate în browser loginul cu parolă, setările SMTP, un test de email către un SMTP sink local, logoutul și paginile mobile. Nu a fost înregistrată o cheie pe dispozitivul real al utilizatorului și nu s-a trimis email extern. Infrastructura Forge nu a fost modificată.
 
@@ -81,6 +130,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.6.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.7.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

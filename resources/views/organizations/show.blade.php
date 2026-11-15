@@ -1,0 +1,27 @@
+@extends('layouts.identity')
+@section('title', __('workspace.organization_settings'))
+@section('content')
+<div class="workspace-heading"><span class="identity-kicker">{{ __('workspace.organization_settings') }}</span><h1>{{ $organization->name }}</h1><p>{{ __('workspace.profile_independent') }}</p></div>
+<section class="identity-card organization-section"><h2>{{ __('workspace.profile_and_shape') }}</h2>
+    @can('update', $organization)
+    <form method="POST" action="{{ route('app.organizations.update', $organization) }}" class="identity-form" data-profile-settings>@csrf @method('PATCH')
+        <x-identity.field name="name" :label="__('workspace.organization_name')" :value="$organization->name" required maxlength="150"/>
+        <div class="identity-field"><label for="organization-profile">{{ __('workspace.select_profile') }}</label><select id="organization-profile" name="profile_key" required>@foreach($registry->profiles() as $key => $profile)<option value="{{ $key }}" @disabled(!$profile['enabled']) @selected(old('profile_key', $organization->profile->profile_key) === $key)>{{ __('workspace.profile_'.$key) }}{{ $profile['enabled'] ? '' : ' · '.__('workspace.coming_soon') }}</option>@endforeach</select></div>
+        <div class="identity-field"><label for="organization-kind">{{ __('workspace.organization_shape') }}</label><select id="organization-kind" name="organization_kind" required>@foreach($registry->onboardingKinds() as $kind => $profiles)<option value="{{ $kind }}" data-kind-profiles="{{ implode(' ', $profiles) }}" @selected(old('organization_kind', $organization->profile->organization_kind) === $kind)>{{ __('workspace.kind_'.$kind) }}</option>@endforeach</select></div>
+        <p class="identity-caption">{{ __('workspace.profile_preserves_data') }}</p><x-identity.button>{{ __('workspace.save_profile') }}</x-identity.button>
+    </form>
+    @else<p>{{ __('workspace.profile_'.$organization->profile->profile_key) }} · {{ __('workspace.kind_'.$organization->profile->organization_kind) }}</p><p class="identity-caption">{{ __('workspace.read_only') }}</p>@endcan
+</section>
+<section class="organization-section"><h2>{{ __('workspace.capabilities') }}</h2><p class="identity-lead">{{ __('workspace.capability_explanation') }}</p><div class="capability-grid">
+    @foreach($capabilities as $key => $capability)<article class="identity-card"><span class="identity-kicker">{{ __($capability['allowed'] ? 'workspace.access_enabled' : 'workspace.access_disabled') }}</span><h3>{{ __('workspace.cap_'.str_replace('.', '_', $key)) }}</h3><p class="identity-caption">{{ __($capability['enabled'] ? 'workspace.module_preview_hint' : 'workspace.coming_soon') }}</p>
+        @if($capability['allowed'])<a class="identity-link" href="{{ route('app.organizations.module', [$organization, $key]) }}">{{ __('workspace.view_module') }} ↗</a>@endif
+        @can('update', $organization)@if($capability['enabled'])<form method="POST" action="{{ route('app.organizations.capabilities', $organization) }}">@csrf @method('PUT')<input type="hidden" name="capability" value="{{ $key }}"><input type="hidden" name="enabled" value="{{ $capability['allowed'] ? '0' : '1' }}"><button class="identity-text-button">{{ __($capability['allowed'] ? 'workspace.disable' : 'workspace.enable') }}</button></form>@endif
+@endcan
+    </article>@endforeach
+</div></section>
+<section class="identity-card organization-section"><h2>{{ __('workspace.members') }}</h2><p class="identity-caption">{{ __('workspace.members_hint') }}</p>
+    <ul class="membership-list">@foreach($memberships as $membership)<li><div><strong>{{ $membership->user->name }}</strong><span>{{ $membership->user->email }}</span><small>{{ __('workspace.role_'.$membership->role) }}</small></div>@can('manageMembers', $organization)@if($membership->role !== 'owner')<div class="member-controls"><form method="POST" action="{{ route('app.organizations.members.update', [$organization, $membership]) }}">@csrf @method('PATCH')<label class="identity-caption" for="member-role-{{ $membership->id }}">{{ __('workspace.role') }} · {{ $membership->user->name }}</label><select id="member-role-{{ $membership->id }}" name="role">@foreach(['member', 'manager'] as $role)<option value="{{ $role }}" @selected($membership->role === $role)>{{ __('workspace.role_'.$role) }}</option>@endforeach</select><button class="identity-text-button">{{ __('workspace.save_role') }}</button></form><form method="POST" action="{{ route('app.organizations.members.destroy', [$organization, $membership]) }}">@csrf @method('DELETE')<button class="identity-text-button" aria-label="{{ __('workspace.remove_member') }} · {{ $membership->user->name }}">{{ __('workspace.remove_member') }}</button></form></div>@endif
+@endcan</li>@endforeach</ul>
+    @can('manageMembers', $organization)<form method="POST" action="{{ route('app.organizations.members.store', $organization) }}" class="identity-form">@csrf<x-identity.field name="email" :label="__('workspace.member_email')" type="email" required maxlength="255"/><div class="identity-field"><label for="new-member-role">{{ __('workspace.role') }}</label><select id="new-member-role" name="role"><option value="member">{{ __('workspace.role_member') }}</option><option value="manager">{{ __('workspace.role_manager') }}</option></select></div><x-identity.button>{{ __('workspace.add_member') }}</x-identity.button></form>@endcan
+</section>
+@endsection

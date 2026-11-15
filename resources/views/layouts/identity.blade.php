@@ -1,5 +1,7 @@
 @php
-    $shell = request()->routeIs('app.dashboard', 'app.account');
+    $shell = request()->routeIs('app.dashboard', 'app.account', 'app.organizations.index', 'app.organizations.show', 'app.organizations.module');
+    $activeOrganization = app(\App\Support\TenantContext::class)->current();
+    $profileRegistry = app(\App\Support\ProfileRegistry::class);
     $member = auth('web')->user();
     $pageTitle = trim($__env->yieldContent('title')) ?: __('identity.sign_in');
     $currentRoute = request()->route()?->getName();
@@ -17,7 +19,12 @@
 <body class="identity {{ $shell ? 'workspace-layout' : '' }}">
 <a class="identity-skip" href="#identity-main">{{ __('identity.skip_content') }}</a>
 @if($shell)
-<aside class="workspace-sidebar"><x-identity.logo/><div class="workspace-scope"><span class="identity-kicker">HOSPITALITY</span><p>{{ __('identity.your_workspace') }}</p></div><nav aria-label="{{ __('identity.app_navigation') }}"><a href="{{ route('app.dashboard') }}" @if(request()->routeIs('app.dashboard')) aria-current="page" @endif><span aria-hidden="true">◇</span> {{ __('identity.overview') }}</a><a href="{{ route('app.account') }}" @if(request()->routeIs('app.account')) aria-current="page" @endif><span aria-hidden="true">◎</span> {{ __('identity.account') }}</a><a href="{{ route('app.account') }}#security"><span aria-hidden="true">⌘</span> {{ __('identity.security') }}</a></nav><p class="workspace-note">{{ __('identity.identity_scope') }}</p></aside>
+<aside class="workspace-sidebar"><x-identity.logo/>
+    <div class="workspace-scope"><span class="identity-kicker">{{ $activeOrganization ? __('workspace.profile_'.$activeOrganization->profile?->profile_key) : 'GNOSIX' }}</span><p class="active-organization-name">{{ $activeOrganization?->name ?? __('workspace.no_active_organization') }}</p><a class="identity-link" href="{{ route('app.organizations.index') }}">{{ __('workspace.switch') }} ↗</a></div>
+    <nav aria-label="{{ __('identity.app_navigation') }}">@foreach($profileRegistry->navigation() as $item)<a href="{{ route($item['route']) }}" @if(request()->routeIs($item['route'])) aria-current="page" @endif><span aria-hidden="true">{{ $item['icon'] }}</span>{{ __($item['label']) }}</a>@endforeach</nav>
+    @if($activeOrganization)<nav class="capability-navigation" aria-label="{{ __('workspace.capabilities') }}">@foreach(app(\App\Support\CapabilityService::class)->forOrganization($member, $activeOrganization) as $key => $definition)@if($definition['allowed'])<a href="{{ route('app.organizations.module', [$activeOrganization, $key]) }}"><span aria-hidden="true">{{ $definition['icon'] }}</span>{{ __('workspace.cap_'.str_replace('.', '_', $key)) }}</a>@endif
+@endforeach</nav>@endif
+    <p class="workspace-note">{{ __('workspace.tenant_boundary') }}</p></aside>
 @endif
 <div class="identity-frame">
     <header class="identity-topbar">

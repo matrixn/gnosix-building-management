@@ -9,7 +9,8 @@ return [
     'current_password' => 'Parola actuală nu este corectă.',
     'accepted' => 'Confirmă că ai citit informarea de confidențialitate.',
     'in' => 'Selectează o opțiune validă.',
-    'min' => ['string' => 'Câmpul :attribute trebuie să aibă cel puțin :min caractere.'],
+    'integer' => 'Introdu un număr întreg valid.',
+    'min' => ['numeric' => 'Valoarea trebuie să fie cel puțin :min.', 'string' => 'Câmpul :attribute trebuie să aibă cel puțin :min caractere.'],
     'max' => ['string' => 'Câmpul :attribute poate avea cel mult :max caractere.'],
     'attributes' => ['name' => 'nume', 'email' => 'email', 'password' => 'parolă', 'password_confirmation' => 'confirmare parolă', 'current_password' => 'parolă actuală', 'profile_type' => 'profil', 'locale' => 'limbă'],
 ];

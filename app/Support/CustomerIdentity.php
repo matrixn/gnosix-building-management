@@ -12,7 +12,7 @@ class CustomerIdentity
 {
     public static function destination(User $user): string
     {
-        return ! $user->hasVerifiedEmail() ? 'verification.notice' : ($user->onboarding_completed_at ? 'app.dashboard' : 'app.onboarding');
+        return ! $user->hasVerifiedEmail() ? 'verification.notice' : (($user->onboarding_completed_at || $user->memberships()->exists()) ? 'app.dashboard' : 'app.onboarding');
     }
 
     public static function establish(Request $request, User $user): void

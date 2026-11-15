@@ -103,7 +103,7 @@ return [
     'dashboard_copy' => 'This is your GNOSIX starting point. Your identity and access are configured.',
     'identity_ready' => 'VERIFIED IDENTITY',
     'your_story_starts' => 'The first chapter is yours.',
-    'dashboard_status' => 'Your account is ready. Organisation and building modules are in development.',
+    'dashboard_status' => 'Your account is ready. Organization setup is available; building modules are in development.',
     'manage_account' => 'Manage account',
     'your_profile' => 'YOUR PROFILE',
     'view_profile' => 'View profile',

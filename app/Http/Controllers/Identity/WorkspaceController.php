@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 
 class WorkspaceController extends Controller
 {
-    public function onboarding(Request $request)
+    public function onboarding(Request $request, \App\Support\OrganizationOnboarding $onboarding, \App\Support\ProfileRegistry $registry)
     {
-        return $request->user('web')->onboarding_completed_at ? redirect()->route('app.dashboard') : view('identity.onboarding');
+        return ($request->user('web')->onboarding_completed_at || $request->user('web')->memberships()->exists()) ? redirect()->route('app.dashboard') : view('identity.onboarding', ['draft' => $onboarding->resume($request->user('web')), 'registry' => $registry]);
     }
 
     public function complete(Request $request)

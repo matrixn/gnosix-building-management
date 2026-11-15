@@ -44,6 +44,10 @@ O eroare SMTP nu afișează succes; datele cererii pilot sunt păstrate temporar
 
 Deploy-ul migrează aditiv tabela `users`; nu este necesară o comandă nouă sau reinițializarea administratorilor. După configurarea SMTP, verifică `/app/register`, confirmarea emailului, onboardingul și resetarea parolei pe un cont propriu. Pagina de login este `/app/login`, separată de `/admin/login`. Vezi [GENESIS-001.md](GENESIS-001.md) pentru sesiuni, rute, limitări și verificări.
 
+## Organizații Genesis 002
+
+Migrarea creează organizațiile, apartenențele, profilele, opțiunile de capabilități, preferințele și ciornele. Nu recreează utilizatorii și nu cere provisioning suplimentar. Testează `/app/organizations`: creare Hospitality, refresh al ciornei, switching și acces cu un al doilea cont. Construction și Facility rămân indisponibile; modulele de clădiri/dovezi nu sunt încă CRUD operațional. Vezi [GENESIS-002.md](GENESIS-002.md).
+
 ## Verificare după deploy
 
 - `/` și `/confidentialitate`: conținut, linkuri, fonturi și formular.

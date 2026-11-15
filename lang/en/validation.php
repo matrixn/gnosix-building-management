@@ -9,7 +9,8 @@ return [
     'current_password' => 'The current password is incorrect.',
     'accepted' => 'Confirm that you have read the privacy notice.',
     'in' => 'Select a valid option.',
-    'min' => ['string' => 'The :attribute field must have at least :min characters.'],
+    'integer' => 'Enter a valid integer.',
+    'min' => ['numeric' => 'The value must be at least :min.', 'string' => 'The :attribute field must have at least :min characters.'],
     'max' => ['string' => 'The :attribute field must not exceed :max characters.'],
     'attributes' => ['name' => 'name', 'email' => 'email', 'password' => 'password', 'password_confirmation' => 'password confirmation', 'current_password' => 'current password', 'profile_type' => 'profile', 'locale' => 'language'],
 ];

@@ -103,7 +103,7 @@ return [
     'dashboard_copy' => 'Acesta este punctul tău de plecare în GNOSIX. Identitatea și accesul sunt configurate.',
     'identity_ready' => 'IDENTITATE CONFIRMATĂ',
     'your_story_starts' => 'Primul capitol este al tău.',
-    'dashboard_status' => 'Contul este pregătit. Modulele pentru organizații și clădiri sunt în dezvoltare.',
+    'dashboard_status' => 'Contul este pregătit. Poți configura organizații; modulele clădirilor sunt în dezvoltare.',
     'manage_account' => 'Gestionează contul',
     'your_profile' => 'PROFILUL TĂU',
     'view_profile' => 'Vezi profilul',

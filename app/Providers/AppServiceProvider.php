@@ -15,6 +15,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(\App\Support\SiteSettings::class);
+        $this->app->scoped(\App\Support\TenantContext::class);
         $this->app->extend('mail.manager', fn ($manager, $app) => new \App\Mail\PlatformMailManager($app));
     }
 
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Illuminate\Support\Facades\Gate::policy(\App\Models\User::class, \App\Policies\UserPolicy::class);
+        \Illuminate\Support\Facades\Gate::policy(\App\Models\Organization::class, \App\Policies\OrganizationPolicy::class);
         RateLimiter::for('customer-login', fn (Request $request) => [
             Limit::perMinute(15)->by('customer-login-ip:'.$request->ip()),
             Limit::perMinute(5)->by('customer-login-account:'.hash('sha256', is_string($request->input('email')) ? strtolower($request->input('email')) : '')),
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('customer-reset', fn (Request $request) => [Limit::perMinute(5)->by('customer-reset:'.$request->ip()), Limit::perMinute(3)->by('customer-reset-account:'.hash('sha256', is_string($request->input('email')) ? strtolower($request->input('email')) : ''))]);
         RateLimiter::for('customer-verification', fn (Request $request) => Limit::perMinute(1)->by('customer-verification:'.$request->user('web')->id));
         RateLimiter::for('customer-sensitive', fn (Request $request) => Limit::perMinute(10)->by('customer-sensitive:'.$request->user('web')->id));
+        RateLimiter::for('organization-draft', fn (Request $request) => Limit::perMinute(60)->by('organization-draft:'.$request->user('web')->id));
         RateLimiter::for('platform-login', fn (Request $request) => [
             Limit::perMinute(10)->by('admin-ip:'.$request->ip()),
             Limit::perMinute(5)->by('admin-account:'.hash('sha256', strtolower((string) $request->input('email')))),

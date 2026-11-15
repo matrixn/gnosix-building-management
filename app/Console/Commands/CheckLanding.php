@@ -29,6 +29,7 @@ class CheckLanding extends Command
             'Design studies outside public root' => ! is_dir(public_path('concepts')),
             'Platform database migrated' => $databaseReady,
             'Customer identity migrated' => $databaseReady && Schema::hasColumn('users', 'auth_version') && Schema::hasColumn('users', 'onboarding_completed_at'),
+            'Organization profiling migrated' => $databaseReady && collect(['organizations', 'organization_memberships', 'organization_profiles', 'organization_capabilities', 'user_preferences', 'onboarding_sessions'])->every(fn ($table) => Schema::hasTable($table)),
         ];
 
         if ($this->option('production') || $this->option('launch')) {

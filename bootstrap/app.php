@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'customer.locale' => \App\Http\Middleware\CustomerLocale::class,
             'customer.session' => \App\Http\Middleware\CustomerSession::class,
             'customer.onboarded' => \App\Http\Middleware\CustomerOnboarded::class,
+            'customer.organization' => \App\Http\Middleware\OrganizationContext::class,
         ]);
         $middleware->append(\App\Http\Middleware\ResponseHeaders::class);
     })

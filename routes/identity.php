@@ -23,7 +23,8 @@ Route::prefix('app')->middleware('customer.locale')->group(function () {
         Route::get('verify-email', [VerificationController::class, 'show'])->name('verification.notice');
         Route::get('verify-email/{id}/{hash}', [VerificationController::class, 'verify'])->middleware(['signed:relative', 'throttle:customer-sensitive'])->name('verification.verify');
         Route::post('verification-notification', [VerificationController::class, 'send'])->middleware('throttle:customer-verification')->name('verification.send');
-        Route::middleware('verified')->group(function () {
+        Route::middleware(['verified', 'customer.organization'])->group(function () {
+            require __DIR__.'/organizations.php';
             Route::get('onboarding', [WorkspaceController::class, 'onboarding'])->name('app.onboarding');
             Route::post('onboarding', [WorkspaceController::class, 'complete'])->middleware('throttle:customer-sensitive')->name('app.onboarding.complete');
             Route::get('account', [AccountController::class, 'show'])->name('app.account');
