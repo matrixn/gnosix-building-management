@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Evidence\Engine;
 use App\Evidence\Extractor;
+use App\Evidence\Providers;
 use App\Evidence\Settings;
 use App\Models\Building;
 use App\Models\Evidence\Extraction;
@@ -80,6 +81,9 @@ class ExtractEvidence implements ShouldQueue
             if (! hash_equals($version->sha256, hash('sha256', Storage::disk('evidence')->get($version->path)))) {
                 throw new \RuntimeException('integrity_failed');
             }
+            if (! Providers::supports($s['provider'], $version->mime)) {
+                throw new \RuntimeException('unsupported_format');
+            }
             $engine->audit($b, $u, 'extraction_started', $row->id, ['attempt' => $row->attempts]);
             $result = $extractor->extract($version);
             $result = Validator::make($result, ['document_type' => ['required', Rule::in(config('evidence.document_types'))], 'facts' => 'present|array|max:100'])->validate();
@@ -104,8 +108,8 @@ class ExtractEvidence implements ShouldQueue
                 $engine->audit($b, $u, 'extraction_succeeded', $row->id, ['candidates' => count($result['facts'])]);
             });
         } catch (\Throwable $e) {
-            $code = in_array($e->getMessage(), ['provider_unavailable', 'provider_changed', 'document_archived', 'integrity_failed', 'access_revoked'], true) ? $e->getMessage() : ($e instanceof ValidationException ? 'invalid_output' : 'provider_failed');
-            $permanent = in_array($code, ['provider_unavailable', 'provider_changed', 'document_archived', 'integrity_failed', 'access_revoked'], true) || $e instanceof AuthorizationException || $e instanceof HttpException;
+            $code = in_array($e->getMessage(), ['provider_unavailable', 'provider_changed', 'unsupported_format', 'document_archived', 'integrity_failed', 'access_revoked'], true) ? $e->getMessage() : ($e instanceof ValidationException ? 'invalid_output' : 'provider_failed');
+            $permanent = in_array($code, ['provider_unavailable', 'provider_changed', 'unsupported_format', 'document_archived', 'integrity_failed', 'access_revoked'], true) || $e instanceof AuthorizationException || $e instanceof HttpException;
             Extraction::whereKey($row->id)->update(['status' => $permanent || $row->attempts >= 3 ? 'failed' : 'retrying', 'error_code' => $code, 'finished_at' => now()]);
             if ($live = Building::find($row->building_id)) {
                 $engine->audit($live, $u ?? null, 'extraction_failed', $row->id, ['code' => $code, 'attempt' => $row->attempts]);

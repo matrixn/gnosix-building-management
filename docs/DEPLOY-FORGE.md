@@ -147,3 +147,8 @@ Purjarea din coș elimină metadatele într-o tranzacție și programează șter
 6. Smoke test pe o clădire de test: upload, v2, descărcare privată, introducere manuală, confirmare/conflict/istoric. Solicită AI numai bifând informarea pentru versiunea selectată; verifică workerul și rezultatul propus, apoi fă review uman. Nicio cerere AI reală sau modificare pe VPS nu a fost făcută în verificările locale.
 
 `store:false` evită stocarea răspunsului pentru recuperare ulterioară; nu garantează Zero Data Retention la furnizor. Vezi [date OpenAI](https://developers.openai.com/api/docs/guides/your-data) și documentația [Genesis 005](GENESIS-005.md).
+
+
+## Furnizori alternativi — 0.14.0
+
+Fără migrații sau dependențe noi. Configurația OpenAI existentă se păstrează. După deploy, din Setări → Evidence Engine & AI poți alege Gemini/OpenRouter/Ollama și introduce modelul/cheia sursei respective. Workerul evidence și schedulerul existent rămân necesare, iar workerii trebuie reporniți pentru noul binding. Pentru Ollama este necesară instalarea serviciului local separat și dezactivarea cloud; aplicația nu face instalări pe VPS. PDF-urile merg prin Gemini/OpenAI, iar OpenRouter/Ollama acceptă în această integrare PNG/JPEG. Configurarea gratuită și limitele sunt în [AI-PROVIDERS.md](AI-PROVIDERS.md). Nu au fost făcute apeluri AI live sau modificări pe VPS în verificarea locală.

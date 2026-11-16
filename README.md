@@ -6,6 +6,19 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
 
+### Furnizori AI alternativi și modele gratuite — 0.14.0
+
+- [x] OpenAI păstrat; adaptoare reale Gemini, OpenRouter și Ollama local, prin registru central și contract de extracție comun.
+- [x] Furnizor/model/cheie configurabile din administrare; chei criptate separat, configurația OpenAI existentă adoptată fără migrare, fără chei noi în .env.
+- [x] OpenRouter cu mod „Doar modele gratuite” activ implicit: openrouter/free sau :free, validare server și fără fallback automat la modele plătite/alți furnizori.
+- [x] Gemini pentru PDF/PNG/JPEG; OpenRouter și Ollama pentru PNG/JPEG, cu refuz explicit al PDF-urilor și păstrarea fluxului manual.
+- [x] Ollama fără API key, endpoint loopback fix, verificare model vision local înaintea transmiterii documentului, refuzul aliasurilor cloud și fără descărcare automată de modele.
+- [x] Consimțământ per versiune, coadă/retry/review existente păstrate; schimbarea furnizorului/modelului invalidează cererea veche înainte de transmitere.
+- [x] Teste automate pentru payloaduri, chei, gratuitate, erori de cotă, formate, alias cloud și setări; browser desktop/mobil fără overflow sau erori de consolă.
+- [ ] Validare live cu cheile operatorului și modelele disponibile în cont; gratuitatea/cotele/politica datelor depind de furnizor. Ollama necesită instalare și resurse pe server.
+
+Instrucțiuni: [AI-PROVIDERS.md](docs/AI-PROVIDERS.md).
+
 ### Genesis Task 005 · Evidence Engine — 0.13.0
 
 - [x] Audit al arhitecturii existente înainte de modificare; reutilizarea identității web, granturilor pe proprietate, capabilităților și layoutului Blade.
@@ -235,6 +248,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.13.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.14.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

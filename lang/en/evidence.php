@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'unsupported_format' => 'This provider integration accepts PNG/JPEG only. For PDFs choose Gemini/OpenAI or upload pages as images.',
+    'error_unsupported_format' => 'This provider integration accepts PNG/JPEG only. For PDFs choose Gemini/OpenAI or upload pages as images.',
     'review_history' => 'Latest 10 review decisions',
     'replacement' => 'View replacement assertion',
     'audit_extraction_started' => 'Processing started',
@@ -119,7 +121,7 @@ return [
     'justify' => 'Provide a justification for this decision.',
     'resolve_first' => 'A conflict exists. Compare sources, then use justified supersession, rejection or investigation.',
     'bulk_unsafe' => 'Selection contains reviewed or conflicting assertions. No changes applied.',
-    'consent_required' => 'Explicit permission for this version is required before external processing.',
+    'consent_required' => 'Explicit permission for this version is required before processing.',
     'preview_failed' => 'Preview unavailable or link expired. Reload for a fresh link; the original can be downloaded.',
     'page_unavailable' => 'The referenced page is not available. Check the original before confirming.',
     'yes' => 'Yes',

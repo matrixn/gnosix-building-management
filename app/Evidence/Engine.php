@@ -260,6 +260,9 @@ class Engine
             if ($existing && in_array($existing->status, ['queued', 'processing', 'retrying', 'succeeded'], true)) {
                 return $existing;
             }
+            if (! Providers::supports(app(Settings::class)->all()['provider'], $version->mime)) {
+                throw ValidationException::withMessages(['provider' => __('evidence.unsupported_format')]);
+            }
             $s = app(Settings::class)->all();
             $job = Extraction::updateOrCreate(['version_id' => $version->id], ['id' => $existing?->id ?? (string) Str::uuid(), 'building_id' => $b->id, 'status' => 'queued', 'provider' => $s['provider'], 'model' => $s['model'], 'requested_by' => $u->id, 'consented_at' => now(), 'error_code' => null, 'started_at' => null, 'finished_at' => null]);
             $this->audit($b, $u, 'extraction_queued', $job->id, ['provider' => $job->provider, 'model' => $job->model]);

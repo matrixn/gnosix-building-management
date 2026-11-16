@@ -57,3 +57,6 @@ Browser local cu bază izolată: PDF real cu două pagini, highlight al citatulu
 Nu s-au folosit chei sau cereri AI live și nu s-a făcut deploy pe VPS. Extracția reală trebuie validată pe modelul configurat și documente reprezentative înainte de activare. Nu există OCR local, scanare antivirus dedicată sau verificare profesională independentă. Asocierea echipamentului este un identificator explicit în afirmație; nu este încă un registru complet de active. AI nu asociază automat spații din planuri; afirmațiile despre spații se introduc manual. Un document dificil sau peste limita de output poate eșua și cere review/manual sau o versiune mai mică, fără succes simulat.
 
 Următorul milestone recomandat: registru de echipamente și sisteme cu identități stabile, benchmark de extracție/OCR pe un corpus controlat, scanare antivirus și workflow de verificare profesională independentă, înainte de automatizarea mentenanței.
+
+
+Extensie 0.14.0: adapterele Gemini/OpenRouter/Ollama și setările per furnizor sunt documentate în [AI-PROVIDERS.md](AI-PROVIDERS.md). Paragrafele de mai sus descriu livrarea inițială 0.13.0.

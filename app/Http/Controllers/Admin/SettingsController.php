@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Evidence\Providers;
 use App\Evidence\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class SettingsController extends Controller
@@ -23,11 +25,19 @@ class SettingsController extends Controller
         $hasPassword = filled($smtp['password']);
         unset($smtp['password']);
 
+        $aiSettings = app(Settings::class);
+        $aiProvider = $request->query('ai_provider', $aiSettings->all()['provider']);
+        if (! is_string($aiProvider) || ! array_key_exists($aiProvider, Providers::all())) {
+            $aiProvider = $aiSettings->all()['provider'];
+        }
+        $aiSelected = $aiSettings->forProvider($aiProvider);
+
         return view('admin.settings', [
             'tab' => $tab, 'smtp' => $smtp, 'hasPassword' => $hasPassword,
             'site' => app(SiteSettings::class)->all(),
-            'evidence' => array_diff_key(app(Settings::class)->all(), ['api_key' => true]),
-            'hasEvidenceKey' => filled(app(Settings::class)->all()['api_key']),
+            'evidence' => array_diff_key($aiSelected, ['api_key' => true]),
+            'aiProviders' => Providers::all(), 'activeAiProvider' => $aiSettings->all()['provider'],
+            'hasEvidenceKey' => filled($aiSelected['api_key']),
             'smtpSaved' => $settings->saved() !== null,
             'passkeys' => Auth::guard('platform_admin')->user()->passkeys()->latest()->get(),
         ]);
@@ -123,9 +133,13 @@ class SettingsController extends Controller
 
     public function updateEvidence(Request $request, Settings $settings)
     {
-        $v = Validator::make($request->all(), ['enabled' => 'required|boolean', 'provider' => 'required|in:openai', 'model' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9._:\-]+$/'], 'api_key' => 'nullable|string|max:512', 'clear_key' => 'sometimes|boolean', 'max_file_mb' => 'required|integer|min:1|max:20', 'building_quota_mb' => 'required|integer|min:20|max:2048']);
+        $v = Validator::make($request->all(), ['enabled' => 'required|boolean', 'provider' => ['required', Rule::in(array_keys(Providers::all()))], 'model' => ['bail', 'nullable', 'required_if:enabled,1', 'string', 'max:100', function ($attribute, $value, $fail) use ($request) {
+            if (! is_string($request->input('provider')) || ! Providers::validModel($request->input('provider'), $value, $request->boolean('free_only', true))) {
+                $fail('Model invalid. OpenRouter în modul gratuit acceptă numai openrouter/free sau identificatori terminați în :free. Ollama acceptă numai modele locale, fără cloud.');
+            }
+        }], 'api_key' => 'nullable|string|max:512', 'clear_key' => 'sometimes|boolean', 'free_only' => 'sometimes|boolean', 'max_file_mb' => 'required|integer|min:1|max:20', 'building_quota_mb' => 'required|integer|min:20|max:2048']);
         if ($v->fails()) {
-            return redirect()->route('admin.settings', ['tab' => 'evidence'])->withErrors($v)->withInput($request->except('api_key'));
+            return redirect()->route('admin.settings', ['tab' => 'evidence', 'ai_provider' => $request->input('provider')])->withErrors($v)->withInput($request->except('api_key'));
         }
         $settings->save($v->validated(), Auth::guard('platform_admin')->id());
 

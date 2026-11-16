@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Identity;
 
 use App\Evidence\Engine;
+use App\Evidence\Providers;
 use App\Evidence\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Building;
@@ -55,6 +56,7 @@ class EvidenceController extends Controller
         $settings = app(Settings::class)->all();
         unset($settings['api_key']);
         $available = app(Settings::class)->available();
+        $formatSupported = ! $selected || Providers::supports($settings['provider'], $selected->mime);
         $canEdit = Gate::forUser($r->user('web'))->allows('update', $property) && $building->state !== 'archived';
         $canWrite = $canEdit && app(CapabilityService::class)->allows($r->user('web'), $organization, 'evidence.upload');
         $canReview = $canEdit && app(CapabilityService::class)->allows($r->user('web'), $organization, 'evidence.review');
@@ -62,7 +64,7 @@ class EvidenceController extends Controller
         $preview = $selected ? URL::temporarySignedRoute('app.evidence.file', now()->addMinutes(10), [$organization, $property, $building->uuid, $selected->id, 'viewer' => $r->user('web')->id], false) : null;
         $conflictIds = Conflict::where('building_id', $building->id)->where('status', 'open')->get(['assertion_id', 'existing_assertion_id'])->flatMap(fn ($c) => [$c->assertion_id, $c->existing_assertion_id])->filter()->unique()->all();
 
-        return view('evidence.show', compact('organization', 'property', 'building', 'inventory', 'selected', 'assertions', 'conflicts', 'confirmed', 'documentCount', 'coverage', 'timeline', 'settings', 'available', 'canWrite', 'canReview', 'canResolve', 'preview', 'conflictIds'));
+        return view('evidence.show', compact('organization', 'property', 'building', 'inventory', 'selected', 'assertions', 'conflicts', 'confirmed', 'documentCount', 'coverage', 'timeline', 'settings', 'available', 'formatSupported', 'canWrite', 'canReview', 'canResolve', 'preview', 'conflictIds'));
     }
 
     public function upload(Request $r, Organization $organization, Property $property, Building $building, Engine $engine)
@@ -147,6 +149,6 @@ class EvidenceController extends Controller
         $v = Version::where('building_id', $building->id)->findOrFail($version);
         $j = $v->extraction;
 
-        return response()->json(['status' => $j?->status ?? 'not_requested', 'attempts' => $j?->attempts ?? 0, 'message' => __('evidence.job_'.($j?->status ?? 'not_requested'))])->header('Cache-Control','no-store');
+        return response()->json(['status' => $j?->status ?? 'not_requested', 'attempts' => $j?->attempts ?? 0, 'message' => __('evidence.job_'.($j?->status ?? 'not_requested'))])->header('Cache-Control', 'no-store');
     }
 }

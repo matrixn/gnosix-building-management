@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'unsupported_format' => 'Furnizorul selectat acceptă în această integrare numai PNG/JPEG. Pentru PDF selectează Gemini/OpenAI sau încarcă paginile ca imagini.',
+    'error_unsupported_format' => 'Furnizorul selectat acceptă în această integrare numai PNG/JPEG. Pentru PDF selectează Gemini/OpenAI sau încarcă paginile ca imagini.',
     'review_history' => 'Ultimele 10 decizii de review',
     'replacement' => 'Vezi afirmația înlocuitoare',
     'audit_extraction_started' => 'Procesare începută',

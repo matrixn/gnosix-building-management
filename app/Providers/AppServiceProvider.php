@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Evidence\Extractor;
-use App\Evidence\OpenAiExtractor;
+use App\Evidence\ProviderExtractor;
 use App\Mail\PlatformMailManager;
 use App\Models\Building;
 use App\Models\Floor;
@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(Extractor::class, OpenAiExtractor::class);
+        $this->app->bind(Extractor::class, ProviderExtractor::class);
         $this->app->scoped(SiteSettings::class);
         $this->app->scoped(TenantContext::class);
         $this->app->extend('mail.manager', fn ($manager, $app) => new PlatformMailManager($app));
