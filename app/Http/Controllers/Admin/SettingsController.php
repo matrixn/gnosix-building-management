@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Evidence\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
-use App\Support\SmtpSettings;
 use App\Support\SiteSettings;
+use App\Support\SmtpSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -17,13 +18,16 @@ class SettingsController extends Controller
 {
     public function show(Request $request, SmtpSettings $settings)
     {
-        $tab = in_array($request->query('tab'), ['general', 'gnosix', 'smtp', 'security']) ? $request->query('tab') : 'general';
+        $tab = in_array($request->query('tab'), ['general', 'gnosix', 'smtp', 'security', 'evidence']) ? $request->query('tab') : 'general';
         $smtp = $settings->resolved();
         $hasPassword = filled($smtp['password']);
         unset($smtp['password']);
+
         return view('admin.settings', [
             'tab' => $tab, 'smtp' => $smtp, 'hasPassword' => $hasPassword,
             'site' => app(SiteSettings::class)->all(),
+            'evidence' => array_diff_key(app(Settings::class)->all(), ['api_key' => true]),
+            'hasEvidenceKey' => filled(app(Settings::class)->all()['api_key']),
             'smtpSaved' => $settings->saved() !== null,
             'passkeys' => Auth::guard('platform_admin')->user()->passkeys()->latest()->get(),
         ]);
@@ -57,6 +61,7 @@ class SettingsController extends Controller
             'contact_enabled' => $request->boolean('contact_enabled'),
             'indexable' => $request->boolean('indexable'),
         ], Auth::guard('platform_admin')->id());
+
         return redirect()->route('admin.settings', ['tab' => 'gnosix'])->with('status', 'Setările GNOSIX au fost salvate și sunt active imediat. Nu este necesar un deploy sau config:cache.');
     }
 
@@ -97,6 +102,7 @@ class SettingsController extends Controller
             'username' => $data['username'] ?? null, 'password' => $password,
             'from_address' => $data['from_address'], 'from_name' => $data['from_name'],
         ], 'updated_by' => Auth::guard('platform_admin')->id()]);
+
         return redirect()->route('admin.settings', ['tab' => 'smtp'])->with('status', 'Setările SMTP au fost salvate. Toate emailurile sistemului folosesc această configurație.');
     }
 
@@ -108,8 +114,21 @@ class SettingsController extends Controller
             });
         } catch (Throwable $exception) {
             Log::warning('Admin SMTP test failed.', ['type' => $exception::class]);
+
             return redirect()->route('admin.settings', ['tab' => 'smtp'])->withErrors(['smtp' => 'Trimiterea a eșuat. Verifică serverul, portul, criptarea și credențialele.']);
         }
+
         return redirect()->route('admin.settings', ['tab' => 'smtp'])->with('status', 'Serverul SMTP a acceptat mesajul de test. Verifică inboxul și Spam la adresa administratorului.');
+    }
+
+    public function updateEvidence(Request $request, Settings $settings)
+    {
+        $v = Validator::make($request->all(), ['enabled' => 'required|boolean', 'provider' => 'required|in:openai', 'model' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9._:\-]+$/'], 'api_key' => 'nullable|string|max:512', 'clear_key' => 'sometimes|boolean', 'max_file_mb' => 'required|integer|min:1|max:20', 'building_quota_mb' => 'required|integer|min:20|max:2048']);
+        if ($v->fails()) {
+            return redirect()->route('admin.settings', ['tab' => 'evidence'])->withErrors($v)->withInput($request->except('api_key'));
+        }
+        $settings->save($v->validated(), Auth::guard('platform_admin')->id());
+
+        return redirect()->route('admin.settings', ['tab' => 'evidence'])->with('status', 'Setările Evidence Engine au fost salvate. Salvarea nu trimite documente către furnizor.');
     }
 }

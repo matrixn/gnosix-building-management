@@ -10,6 +10,7 @@
             <p>{{ $building->classification ? __('building.preset_'.$building->classification) : __('building.unknown') }} · {{ __('building.state_'.$building->state) }}</p>
         </div>
         <div class="bld-dashboard-actions">
+@if(app(\App\Support\CapabilityService::class)->allows(auth('web')->user(),$organization,'evidence.upload') || app(\App\Support\CapabilityService::class)->allows(auth('web')->user(),$organization,'evidence.review'))<a class="identity-button" href="{{ route('app.evidence.show',[$organization,$property,$building->uuid]) }}">{{ __('evidence.memory') }} ↗</a>@endif
             @can('update', $property)
                 @if($rooms)
                     <a class="identity-button" href="{{ route('app.declarations.edit', [$organization, $property, $building->uuid]) }}">{{ __('building.edit') }} ↗</a>

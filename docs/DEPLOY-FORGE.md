@@ -6,7 +6,7 @@ Destinație: `https://gnosix.zion3d.ro` · Repository: `matrixn/gnosix-building-
 
 1. Creează site Laravel cu PHP 8.4, document root `/public` și zero-downtime. Selectează repository-ul și ramura `main`.
 2. Partajează `storage` între release-uri; `.env` este partajat implicit de Forge. Configurează o bază de date persistentă MySQL/PostgreSQL și valorile `DB_*`. Adminul, passkey-urile și setările SMTP necesită migrații; landing-ul nu mai este o aplicație fără bază de date.
-3. Instalează Node 22.12+ sau 24 LTS și npm. Folosește `npm ci`, cu lockfile-ul din repository.
+3. Instalează Node 22.13+ sau 24 LTS și npm. Folosește `npm ci`, cu lockfile-ul din repository.
 4. Configurează DNS către VPS, inclusiv eventualul AAAA, certificatul TLS și redirecționarea HTTP către HTTPS.
 5. Pornește de la `.env.production.example`. Generează `APP_KEY` o singură dată și păstreaz-o între deploy-uri. Completează `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `PASSKEY_RP_ID` și `PASSKEY_ORIGIN` conform [instrucțiunilor admin](ADMIN.md). Contactul și indexarea sunt dezactivate implicit la instalare nouă; se configurează ulterior din administrare.
 6. Lipește `deploy/forge-zero-downtime.sh` în editorul Deploy Script din Forge. Macro-urile sunt interpretate de Forge; nu executa fișierul ca script Bash independent.
@@ -118,3 +118,32 @@ Verifică pagina Proprietăți: imagine distinctă după tip, click pe card, tot
 Folosește mecanismul Forge de revenire la un release anterior. `.env`, `storage` și baza de date sunt partajate; revenirea codului nu le revine automat. Migrația admin adaugă tabele și nu modifică utilizatorii existenți. Nu rula automat `migrate:rollback` la revenire: ar șterge conturile platformei, passkey-urile și setările. Poți opri formularul public direct din tabul GNOSIX, fără modificarea mediului sau a cache-ului de configurare.
 
 Referințe: [Forge deployments](https://laravel.com/forge/docs/sites/deployments), [Laravel deployment](https://laravel.com/framework/docs/13.x/deployment), [Laravel mail](https://laravel.com/framework/docs/13.x/mail).
+
+
+## Evidence Engine — 0.13.0
+
+Deploy-ul aplică migrarea aditivă `2026_11_16_200000_create_evidence_engine`. Nu rula rollback sau migrate:fresh pe date reale. Păstrează backup pentru baza de date și storage privat, împreună. Nu sunt chei noi de produs în `.env`.
+
+1. Folosește Node 22.13+ sau 24 LTS. `npm ci && npm run build` copiază assets oficiale PDF.js în `public/vendor/pdfjs`, apoi compilează preview-ul lazy. `storage` trebuie partajat între release-uri; originalele sunt în `storage/app/private/evidence`, niciodată în public/storage. Păstrează APP_KEY pentru setările criptate.
+2. În Forge creează un worker/daemon separat, directorul aplicației curente, cu comanda:
+
+```bash
+php artisan queue:work evidence --queue=evidence --sleep=3 --tries=3 --timeout=120
+```
+
+Conexiunea `evidence` folosește tabela jobs și retry_after 180 secunde. Timeout HTTP este 90 secunde, timeout job 120. Nu folosi conexiunea sync sau un worker cu timeout implicit 60. Permite oprirea grațioasă minimum 130 secunde. Scriptul de deploy existent folosește `$RESTART_QUEUES()` după activare; verifică repornirea acestui worker la fiecare release.
+
+3. Configurează schedulerul Laravel în Forge la fiecare minut (`php artisan schedule:run`). Acesta rulează cleanup-ul fișierelor originale după purjare. Poți verifica manual:
+
+```bash
+php artisan gnosix:evidence-cleanup
+php artisan queue:failed
+```
+
+Purjarea din coș elimină metadatele într-o tranzacție și programează ștergerea fizică. Fără scheduler, fișierele rămân private pe disc până la cleanup; backup-urile au politica proprie de retenție. Nu goli direct tabelele sau storage-ul.
+
+4. Configurează PHP `upload_max_filesize` minimum cât limita per fișier din admin, `post_max_size` și Nginx `client_max_body_size` peste totalul lotului (max. 5 fișiere; implicit 8 MB fiecare). Exemplu pentru limitele implicite: upload_max_filesize=8M, post_max_size=48M, client_max_body_size=48m. Pentru limita admin de 20 MB, folosește un plafon total peste 100 MB sau micșorează setarea. Setează o memorie PHP potrivită procesării PDF/imaginilor și monitorizează coada/cota discului.
+5. Admin → Setări → Evidence & AI: furnizor OpenAI, model care acceptă Responses + imagini/PDF + structured outputs, cheie, limite și activare. Câmpul model nu are o valoare presupusă. Cheia nu este afișată în pagină sau inclusă în payload-ul jobului. Nu activa înainte de verificarea condițiilor furnizorului, informării utilizatorilor și permisiunii de a transmite documentele.
+6. Smoke test pe o clădire de test: upload, v2, descărcare privată, introducere manuală, confirmare/conflict/istoric. Solicită AI numai bifând informarea pentru versiunea selectată; verifică workerul și rezultatul propus, apoi fă review uman. Nicio cerere AI reală sau modificare pe VPS nu a fost făcută în verificările locale.
+
+`store:false` evită stocarea răspunsului pentru recuperare ulterioară; nu garantează Zero Data Retention la furnizor. Vezi [date OpenAI](https://developers.openai.com/api/docs/guides/your-data) și documentația [Genesis 005](GENESIS-005.md).

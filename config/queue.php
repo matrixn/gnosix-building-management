@@ -30,6 +30,7 @@ return [
     */
 
     'connections' => [
+        'evidence' => ['driver' => 'database', 'connection' => env('DB_QUEUE_CONNECTION'), 'table' => 'jobs', 'queue' => 'evidence', 'retry_after' => 180, 'after_commit' => true],
 
         'sync' => [
             'driver' => 'sync',

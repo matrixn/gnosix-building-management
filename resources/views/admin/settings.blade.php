@@ -2,7 +2,7 @@
 @section('content')
 <div class="page-heading"><span class="eyebrow">CONFIGURAȚIA GLOBALĂ GNOSIX</span><h1>Setările platformei.</h1><p>Infrastructura din spatele fiecărei experiențe.</p></div>
 <nav class="settings-tabs" aria-label="Secțiuni setări">
-    @foreach (['general' => 'General', 'gnosix' => 'GNOSIX · Site & contact', 'smtp' => 'Email & SMTP', 'security' => 'Securitate & passkeys'] as $key => $label)
+    @foreach (['general' => 'General', 'gnosix' => 'GNOSIX · Site & contact', 'smtp' => 'Email & SMTP', 'security' => 'Securitate & passkeys', 'evidence'=>'Evidence Engine & AI'] as $key => $label)
     <a href="{{ route('admin.settings', ['tab' => $key]) }}" @if ($tab === $key) aria-current="page" @endif>{{ $label }}</a>
     @endforeach
 </nav>
@@ -10,6 +10,15 @@
 <section class="panel"><div class="panel-heading"><span class="panel-icon">◇</span><div><h2>Un spațiu pentru platformă.</h2><p>Identitatea și configurația instanței GNOSIX.</p></div><span class="badge">PLATFORM ADMIN</span></div>
 <dl class="definition-list"><div><dt>Aplicație</dt><dd>{{ config('app.name') }}</dd></div><div><dt>Adresă</dt><dd>{{ config('app.url') }}</dd></div><div><dt>Mediu</dt><dd>{{ app()->environment() }}</dd></div><div><dt>Cont</dt><dd>Administrator al platformei GNOSIX</dd></div><div><dt>Email sistem</dt><dd>SMTP centralizat · {{ $smtpSaved ? 'Configurat în admin' : 'Configurare inițială din mediu' }}</dd></div></dl></section>
 <section class="context-panel"><h3>Administrarea clienților este un spațiu diferit.</h3><p>Setările de aici sunt globale. Conturile viitorilor administratori de clădiri vor aparține aplicației pentru clienți, cu propriile permisiuni și date.</p></section>
+@elseif ($tab === 'evidence')
+<section class="panel"><h2>Evidence Engine & AI</h2><p>Fișierele sunt private. Extracția externă se execută numai după activare, configurare și acord explicit pentru versiunea documentului. Fără cheie, fluxul manual rămâne disponibil.</p>
+<form method="POST" action="{{ route('admin.evidence.update') }}" class="settings-form">@csrf @method('PUT')
+<input type="hidden" name="enabled" value="0"><label class="check-label span-two"><input type="checkbox" name="enabled" value="1" @checked($evidence['enabled'])><span>Permite extracția AI externă cu acordul utilizatorului</span></label>
+<label>Furnizor<select name="provider"><option value="openai">OpenAI · Responses API</option></select></label><label>Model compatibil PDF/imagini și Structured Outputs<input name="model" maxlength="100" value="{{ $evidence['model'] }}" placeholder="Identificatorul modelului din contul furnizorului"></label>
+<label>Cheie API<input type="password" name="api_key" autocomplete="new-password" maxlength="512" placeholder="{{ $hasEvidenceKey ? 'Salvată criptat — lasă gol pentru păstrare' : 'Nicio cheie configurată' }}"></label>
+<label class="check-label"><input type="checkbox" name="clear_key" value="1"><span>Șterge cheia salvată</span></label>
+<label>Limită per fișier (MB)<input type="number" name="max_file_mb" min="1" max="20" required value="{{ $evidence['max_file_mb'] }}"></label><label>Cotă per clădire (MB)<input type="number" name="building_quota_mb" min="20" max="2048" required value="{{ $evidence['building_quota_mb'] }}"></label>
+<p class="span-two helper">Worker Forge: php artisan queue:work evidence --queue=evidence --tries=3 --timeout=120. Cheia nu se afișează și nu se trimite în browser. OpenAI primește conținutul documentului; store:false nu înlocuiește politicile de retenție ale furnizorului. Verifică acordurile aplicabile înainte de activare.</p><button class="button">Salvează setările</button></form></section>
 @elseif ($tab === 'gnosix')
 <section class="panel"><div class="panel-heading"><span class="panel-icon">◇</span><div><h2>GNOSIX · Site & contact</h2><p>Setările publice ale site-ului, controlate din administrare.</p></div><span class="badge">CONFIGURAȚIE GLOBALĂ</span></div>
 <p class="helper">Modificările sunt salvate în baza de date și se aplică imediat, inclusiv cu configurația Laravel cache-uită. Nu trebuie editat fișierul de mediu sau efectuat un deploy.</p>

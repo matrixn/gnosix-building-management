@@ -109,7 +109,7 @@ return [
     'view_profile' => 'View profile',
     'next_chapter' => 'THE NEXT CHAPTER',
     'buildings_next' => 'Shape your workspace.',
-    'buildings_next_copy' => 'Set up properties, buildings, floors and spaces at your pace. Maintenance and evidence workflows are coming next.',
+    'buildings_next_copy' => 'Set up properties, buildings, floors and spaces. Evidence Engine preserves documents and reviewable assertions; maintenance is in development.',
     'explore_vision' => 'Explore the GNOSIX vision',
     'your_identity' => 'YOUR IDENTITY',
     'account_copy' => 'Your details, preferences and access controls in one place.',

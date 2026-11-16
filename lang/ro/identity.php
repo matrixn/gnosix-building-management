@@ -109,7 +109,7 @@ return [
     'view_profile' => 'Vezi profilul',
     'next_chapter' => 'URMĂTORUL CAPITOL',
     'buildings_next' => 'Dă formă spațiului tău.',
-    'buildings_next_copy' => 'Configurează proprietăți, clădiri, etaje și spații în ritmul tău. Fluxurile de mentenanță și dovezi urmează.',
+    'buildings_next_copy' => 'Configurează proprietăți, clădiri, etaje și spații. Evidence Engine păstrează documentele și afirmațiile revizuibile; mentenanța este în dezvoltare.',
     'explore_vision' => 'Explorează direcția GNOSIX',
     'your_identity' => 'IDENTITATEA TA',
     'account_copy' => 'Datele tale, preferințele și controlul accesului, într-un singur loc.',

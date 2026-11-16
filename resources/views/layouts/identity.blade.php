@@ -1,12 +1,12 @@
 @php
-    $shell = request()->routeIs('app.dashboard', 'app.account', 'app.organizations.index', 'app.organizations.show', 'app.organizations.module', 'app.properties.*', 'app.spaces.*', 'app.workspace.settings', 'app.studio', 'app.declarations.*');
+    $shell = request()->routeIs('app.dashboard', 'app.account', 'app.organizations.index', 'app.organizations.show', 'app.organizations.module', 'app.properties.*', 'app.spaces.*', 'app.workspace.settings', 'app.studio', 'app.declarations.*', 'app.evidence.*');
     $routeOrganization = request()->route('organization');
     $activeOrganization = $routeOrganization instanceof \App\Models\Organization && \Illuminate\Support\Facades\Gate::forUser(auth('web')->user())->allows('view', $routeOrganization) ? $routeOrganization : app(\App\Support\TenantContext::class)->current();
     $profileRegistry = app(\App\Support\ProfileRegistry::class);
     $member = auth('web')->user();
     $pageTitle = trim($__env->yieldContent('title')) ?: __('identity.sign_in');
     $currentRoute = request()->route()?->getName();
-    $localeQuery = request()->routeIs('app.declarations.editor') ? request()->only('space') : (request()->routeIs('app.spaces.index') ? request()->only(['q', 'property', 'state', 'buildings_page', 'unassigned_page']) : []);
+    $localeQuery = request()->routeIs('app.evidence.show') ? request()->only(['version','fact','status','facts_page','documents_page','audit_page']) : (request()->routeIs('app.declarations.editor') ? request()->only('space') : (request()->routeIs('app.spaces.index') ? request()->only(['q', 'property', 'state', 'buildings_page', 'unassigned_page']) : []));
     $localeRoute = request()->isMethod('GET') && $currentRoute && ! request()->routeIs('verification.verify') ? $currentRoute : 'login';
 @endphp
 <!doctype html>
@@ -24,8 +24,11 @@
 <aside class="workspace-sidebar"><x-identity.logo/><button type="button" class="workspace-mobile-toggle identity-text-button" data-mobile-navigation aria-expanded="false" aria-controls="workspace-navigation">{{ __('identity.app_navigation') }} ☰</button><div class="workspace-mobile-menu" id="workspace-navigation">
     <div class="workspace-scope"><span class="identity-kicker">{{ $activeOrganization ? __('workspace.profile_'.$activeOrganization->profile?->profile_key) : 'GNOSIX' }}</span><p class="active-organization-name">{{ $activeOrganization?->name ?? __('workspace.no_active_organization') }}</p><a class="identity-link" href="{{ route('app.organizations.index') }}">{{ __('workspace.switch') }} ↗</a></div>
     <nav aria-label="{{ __('identity.app_navigation') }}">@foreach($profileRegistry->navigation() as $item)<a href="{{ route($item['route']) }}" @if(request()->routeIs($item['route'])) aria-current="page" @endif><span aria-hidden="true">{{ $item['icon'] }}</span>{{ __($item['label']) }}</a>@endforeach</nav>
-    @if($activeOrganization)<nav class="capability-navigation" aria-label="{{ __('workspace.capabilities') }}">@foreach(app(\App\Support\CapabilityService::class)->forOrganization($member, $activeOrganization) as $key => $definition)@if($definition['allowed'])<a href="{{ isset($definition['route']) ? route($definition['route'], $activeOrganization) : route('app.organizations.module', [$activeOrganization, $key]) }}"><span aria-hidden="true">{{ $definition['icon'] }}</span>{{ __('workspace.cap_'.str_replace('.', '_', $key)) }}</a>@endif
-@endforeach</nav>@endif
+    @if($activeOrganization)<nav class="capability-navigation" aria-label="{{ __('workspace.capabilities') }}">@php($seenCapabilityRoutes=[])
+    @foreach(app(\App\Support\CapabilityService::class)->forOrganization($member, $activeOrganization) as $key => $definition)
+    @php($capabilityRoute=$definition['route']??$key)
+    @if($definition['allowed'] && !isset($seenCapabilityRoutes[$capabilityRoute]))@php($seenCapabilityRoutes[$capabilityRoute]=true)<a href="{{ isset($definition['route']) ? route($definition['route'], $activeOrganization) : route('app.organizations.module', [$activeOrganization, $key]) }}"><span aria-hidden="true">{{ $definition['icon'] }}</span>{{ __($definition['nav_label'] ?? 'workspace.cap_'.str_replace('.', '_', $key)) }}</a>@endif
+    @endforeach</nav>@endif
     <p class="workspace-note">{{ __('workspace.tenant_boundary') }}</p></div></aside>
 @endif
 <div class="identity-frame">

@@ -1,10 +1,25 @@
 # GNOSIX Building Management
 
-Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Mentenanța și dovezile sunt în dezvoltare.
+Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Evidence Engine oferă documente private/versionate, afirmații cu proveniență, review și conflicte. Mentenanța rămâne în dezvoltare.
 
 ## Checklist de livrare
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
+
+### Genesis Task 005 · Evidence Engine — 0.13.0
+
+- [x] Audit al arhitecturii existente înainte de modificare; reutilizarea identității web, granturilor pe proprietate, capabilităților și layoutului Blade.
+- [x] Documente PDF/PNG/JPEG private, tip declarat, versiuni originale imuabile, SHA-256, deduplicare per clădire, limite de fișiere/cotă și acces semnat cu expirare plus autorizare la fiecare cerere.
+- [x] Afirmații tipizate separate de identitatea manuală: clădire/spațiu/echipament identificat, sursă, versiune, pagină/zonă/citat, metodă, timestampuri și dimensiuni distincte de încredere/verificare.
+- [x] Propunere, confirmare, respingere, investigare, corectare prin propunere nouă și înlocuire justificată; conflicte deterministe fără suprascriere silențioasă, istoric și audit.
+- [x] Review Studio RO/EN: previzualizare PDF.js cu pagini/highlight când există coordonate, imagini, carduri, proveniență, comparație, review în lot doar fără conflicte, inventar și cronologie.
+- [x] Interfață de extracție independentă de furnizor și adapter real OpenAI Responses, coadă database dedicată, retry/idempotence, validare strictă și nicio confirmare automată.
+- [x] Setări AI criptate în administrarea platformei, notificare și consimțământ explicit per versiune; fără chei noi de produs în .env. Fără configurare, fluxul manual funcționează și AI este afișat indisponibil.
+- [x] Arhivarea documentelor păstrează sursele. Ștergerea/restaurarea clădirii păstrează memoria; purjarea autorizată folosește o coadă tranzacțională de ștergere a fișierelor, cu cleanup reluabil.
+- [x] Teste de upload, tenant/granturi/capabilități, extracție indisponibilă/eșuată/reluată, worker database real cu provider de test, conflicte, review, integritate și retenție; build și browser desktop/mobil RO/EN.
+- [ ] Validare cu furnizorul AI live și corpus de documente reale după configurarea modelului/cheii; scanare antivirus dedicată și flux profesional de verificare independentă.
+
+Implementare, fișiere, limite și verificări: [GENESIS-005.md](docs/GENESIS-005.md). Configurare VPS: [DEPLOY-FORGE.md](docs/DEPLOY-FORGE.md).
 
 ### Ștergere definitivă și portofoliu vizual — 0.12.0
 
@@ -93,7 +108,7 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 - [x] Opțiuni de capabilități per organizație în DB; dezactivarea elimină accesul și linkul, fără ștergerea datelor.
 - [x] Salvare automată și manuală a ciornei, reluare după refresh, control al versiunii și finalizare idempotentă.
 - [x] Schimbarea profilului/formei fără ștergerea organizației, membrilor, datelor sau opțiunilor anterioare; test de upgrade viitor cu clădiri reale și dovezi-fixture.
-- [x] UI pentru organizații/setări/membri și pagini de context al modulelor; mentenanța și dovezile rămân pagini de context; proprietățile/spațiile devin operaționale în Task 003.
+- [x] UI pentru organizații/setări/membri și pagini de context al modulelor; mentenanța rămâne pagină de context; dovezile sunt operaționale din Task 005; proprietățile/spațiile devin operaționale în Task 003.
 - [x] Teste de autorizare, IDOR, izolare între utilizatori/organizații, CSRF, profile indisponibile, concurență și regresii Task 001.
 
 ### Genesis 003 — Adaptive Workspace & Hospitality Onboarding
@@ -137,7 +152,7 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 - [ ] Activarea profilului Property & Facility Management și a fluxurilor sale.
 - [ ] Arhivarea proprietăților/grupurilor, politici automate de retenție și mutarea spațiilor între proprietăți.
 - [ ] Mentenanță, echipamente, intervenții, calendar și QR în aplicația operațională.
-- [ ] Încărcarea/stocarea/versionarea și revizuirea documentelor/dovezilor reale.
+- [x] Încărcarea/stocarea/versionarea și revizuirea documentelor/dovezilor reale — livrate în Task 005; extracția live necesită configurarea furnizorului.
 - [ ] Evidence Engine operațional: proveniență și detectarea contradicțiilor.
 - [ ] Time Machine operațional și Building DNA cu relații reale între active.
 - [ ] Trust Passport, Zero-Entry asistat AI, Handover între organizații și LifeCycle Simulator.
@@ -220,6 +235,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.12.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.13.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

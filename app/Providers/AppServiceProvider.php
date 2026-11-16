@@ -2,8 +2,24 @@
 
 namespace App\Providers;
 
+use App\Evidence\Extractor;
+use App\Evidence\OpenAiExtractor;
+use App\Mail\PlatformMailManager;
+use App\Models\Building;
+use App\Models\Floor;
+use App\Models\Organization;
+use App\Models\Property;
+use App\Models\Space;
+use App\Models\User;
+use App\Observers\BuildingStructureObserver;
+use App\Policies\OrganizationPolicy;
+use App\Policies\PropertyPolicy;
+use App\Policies\UserPolicy;
+use App\Support\SiteSettings;
+use App\Support\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,9 +30,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->scoped(\App\Support\SiteSettings::class);
-        $this->app->scoped(\App\Support\TenantContext::class);
-        $this->app->extend('mail.manager', fn ($manager, $app) => new \App\Mail\PlatformMailManager($app));
+        $this->app->bind(Extractor::class, OpenAiExtractor::class);
+        $this->app->scoped(SiteSettings::class);
+        $this->app->scoped(TenantContext::class);
+        $this->app->extend('mail.manager', fn ($manager, $app) => new PlatformMailManager($app));
     }
 
     /**
@@ -24,10 +41,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Gate::policy(\App\Models\User::class, \App\Policies\UserPolicy::class);
-        \Illuminate\Support\Facades\Gate::policy(\App\Models\Organization::class, \App\Policies\OrganizationPolicy::class);
-        \Illuminate\Support\Facades\Gate::policy(\App\Models\Property::class, \App\Policies\PropertyPolicy::class);
-        foreach ([\App\Models\Building::class, \App\Models\Floor::class, \App\Models\Space::class] as $model) $model::observe(\App\Observers\BuildingStructureObserver::class);
+        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Organization::class, OrganizationPolicy::class);
+        Gate::policy(Property::class, PropertyPolicy::class);
+        foreach ([Building::class, Floor::class, Space::class] as $model) {
+            $model::observe(BuildingStructureObserver::class);
+        }
         RateLimiter::for('customer-login', fn (Request $request) => [
             Limit::perMinute(15)->by('customer-login-ip:'.$request->ip()),
             Limit::perMinute(5)->by('customer-login-account:'.hash('sha256', is_string($request->input('email')) ? strtolower($request->input('email')) : '')),

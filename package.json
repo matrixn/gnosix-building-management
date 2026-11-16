@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "node scripts/sync-pdf-assets.mjs && vite build",
     "dev": "vite"
   },
   "devDependencies": {
@@ -13,6 +13,7 @@
   },
   "name": "gnosix-building-management",
   "dependencies": {
-    "@simplewebauthn/browser": "^14.0.0"
+    "@simplewebauthn/browser": "^14.0.0",
+    "pdfjs-dist": "^6.5.438"
   }
 }

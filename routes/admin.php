@@ -17,6 +17,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('logout', [AuthenticationController::class, 'destroy'])->name('logout');
         Route::post('confirm-password', [AuthenticationController::class, 'confirm'])->middleware('throttle:platform-login')->name('confirm');
         Route::middleware(['platform.recent', 'throttle:platform-sensitive'])->group(function () {
+            Route::put('settings/evidence', [SettingsController::class, 'updateEvidence'])->name('evidence.update');
             Route::put('settings/gnosix', [SettingsController::class, 'updateGnosix'])->name('gnosix.update');
             Route::put('settings/smtp', [SettingsController::class, 'updateSmtp'])->name('smtp.update');
             Route::post('settings/smtp/test', [SettingsController::class, 'testSmtp'])->middleware('throttle:platform-test-mail')->name('smtp.test');

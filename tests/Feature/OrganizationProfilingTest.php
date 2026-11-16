@@ -4,15 +4,14 @@ namespace Tests\Feature;
 
 use App\Models\OnboardingSession;
 use App\Models\Organization;
-use App\Models\OrganizationMembership;
 use App\Models\PlatformAdmin;
 use App\Models\User;
 use App\Models\UserPreference;
-use App\Support\CapabilityService;
+use App\Support\TenantContext;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -35,12 +34,14 @@ class OrganizationProfilingTest extends TestCase
         $organization = Organization::create(['name' => 'Workspace '.$user->id.' '.Organization::count()]);
         $organization->profile()->create(['profile_key' => $profile, 'organization_kind' => 'company', 'schema_version' => 1]);
         $organization->memberships()->create(['user_id' => $user->id, 'role' => $role]);
+
         return $organization;
     }
 
     private function draft(User $user): array
     {
         $this->login($user)->get('/app/organizations/create')->assertOk();
+
         return ['version' => OnboardingSession::where('user_id', $user->id)->value('version'), 'profile_key' => 'hospitality', 'organization_kind' => 'independent', 'name' => 'Meridian Hotel'];
     }
 
@@ -71,7 +72,8 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_draft_survives_refresh_and_has_optimistic_concurrency_protection(): void
     {
-        $user = $this->member(); $data = $this->draft($user);
+        $user = $this->member();
+        $data = $this->draft($user);
         $this->postJson('/app/organization-onboarding/draft', $data)->assertOk()->assertJson(['version' => $data['version'] + 1, 'step' => 'name']);
         $this->get('/app/organizations/create')->assertOk()->assertSee('Meridian Hotel')->assertSee('Your saved draft is restored.');
         $this->postJson('/app/organization-onboarding/draft', array_replace($data, ['name' => 'Stale overwrite']))->assertUnprocessable()->assertJsonValidationErrors('draft');
@@ -81,7 +83,8 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_draft_state_is_whitelisted_and_another_users_draft_is_never_updated(): void
     {
-        $first = $this->member(); $second = $this->member();
+        $first = $this->member();
+        $second = $this->member();
         $firstData = $this->draft($first);
         $this->postJson('/app/organization-onboarding/draft', $firstData)->assertOk();
         $secondData = $this->draft($second);
@@ -92,7 +95,8 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_duplicate_completion_is_idempotent_and_new_flow_can_create_a_second_organization(): void
     {
-        $user = $this->member(); $data = $this->draft($user);
+        $user = $this->member();
+        $data = $this->draft($user);
         $this->post('/app/organization-onboarding', $data)->assertRedirect();
         $this->post('/app/organization-onboarding', $data)->assertRedirect();
         $this->assertDatabaseCount('organizations', 1);
@@ -104,7 +108,8 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_future_profiles_and_malformed_drafts_are_rejected_on_the_server(): void
     {
-        $user = $this->member(); $data = $this->draft($user);
+        $user = $this->member();
+        $data = $this->draft($user);
         foreach (['construction', 'facility', 'unknown'] as $profile) {
             $this->postJson('/app/organization-onboarding/draft', array_replace($data, ['profile_key' => $profile]))->assertUnprocessable()->assertJsonValidationErrors('profile_key');
             $this->post('/app/organization-onboarding', array_replace($data, ['profile_key' => $profile]))->assertSessionHasErrors('profile_key');
@@ -121,8 +126,11 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_organization_switching_and_lists_are_membership_scoped(): void
     {
-        $user = $this->member(); $other = $this->member();
-        $a = $this->organization($user); $b = $this->organization($user); $foreign = $this->organization($other);
+        $user = $this->member();
+        $other = $this->member();
+        $a = $this->organization($user);
+        $b = $this->organization($user);
+        $foreign = $this->organization($other);
         $this->login($user)->get('/app/organizations')->assertOk()->assertSee($a->name)->assertSee($b->name)->assertDontSee($foreign->name);
         $this->post('/app/organizations/'.$b->id.'/switch')->assertRedirect(route('app.dashboard'));
         $this->assertSame($b->id, UserPreference::where('user_id', $user->id)->value('active_organization_id'));
@@ -133,8 +141,10 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_organization_policy_denies_foreign_resources_even_with_active_tenant_headers(): void
     {
-        $user = $this->member(); $other = $this->member();
-        $own = $this->organization($user); $foreign = $this->organization($other);
+        $user = $this->member();
+        $other = $this->member();
+        $own = $this->organization($user);
+        $foreign = $this->organization($other);
         $this->login($user)->withHeader('X-Organization-ID', $own->id)->get('/app/organizations/'.$foreign->id)->assertForbidden()->assertDontSee($foreign->name);
         $this->patch('/app/organizations/'.$foreign->id, ['name' => 'Hijacked', 'profile_key' => 'hospitality', 'organization_kind' => 'company'])->assertForbidden();
         $this->getJson('/app/organizations/'.$foreign->id.'/modules/hospitality.buildings')->assertForbidden();
@@ -143,7 +153,8 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_capability_overrides_drive_navigation_and_direct_endpoint_authorization(): void
     {
-        $user = $this->member(); $organization = $this->organization($user);
+        $user = $this->member();
+        $organization = $this->organization($user);
         $path = '/app/organizations/'.$organization->id;
         $this->login($user)->getJson($path.'/modules/hospitality.rooms')->assertOk()->assertJson(['allowed' => true, 'operational' => true]);
         $this->put($path.'/capabilities', ['capability' => 'hospitality.rooms', 'enabled' => '0'])->assertRedirect();
@@ -155,9 +166,11 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_unreleased_unknown_and_wrong_profile_capabilities_cannot_be_forced_on(): void
     {
-        $user = $this->member(); $organization = $this->organization($user); $path = '/app/organizations/'.$organization->id;
+        $user = $this->member();
+        $organization = $this->organization($user);
+        $path = '/app/organizations/'.$organization->id;
         $this->login($user);
-        foreach (['evidence.conflicts', 'construction.projects', 'unknown.capability'] as $key) {
+        foreach (['construction.projects', 'unknown.capability'] as $key) {
             $this->put($path.'/capabilities', ['capability' => $key, 'enabled' => '1'])->assertSessionHasErrors('capability');
             $organization->capabilityOverrides()->create(['capability' => $key, 'enabled' => true]);
             $this->getJson($path.'/modules/'.$key)->assertForbidden();
@@ -168,7 +181,9 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_member_read_access_cannot_escalate_to_profile_capability_or_membership_changes(): void
     {
-        $user = $this->member(); $organization = $this->organization($user, 'member'); $path = '/app/organizations/'.$organization->id;
+        $user = $this->member();
+        $organization = $this->organization($user, 'member');
+        $path = '/app/organizations/'.$organization->id;
         $this->login($user)->get($path)->assertOk()->assertSee('Only owners and managers');
         $this->patch($path, ['name' => 'New', 'profile_key' => 'hospitality', 'organization_kind' => 'portfolio'])->assertForbidden();
         $this->put($path.'/capabilities', ['capability' => 'hospitality.rooms', 'enabled' => '0'])->assertForbidden();
@@ -178,7 +193,10 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_owner_can_add_existing_verified_users_and_manage_non_owner_roles(): void
     {
-        $owner = $this->member(); $second = $this->member(); $organization = $this->organization($owner); $path = '/app/organizations/'.$organization->id;
+        $owner = $this->member();
+        $second = $this->member();
+        $organization = $this->organization($owner);
+        $path = '/app/organizations/'.$organization->id;
         $this->login($owner)->post($path.'/members', ['email' => $second->email, 'role' => 'member'])->assertRedirect();
         $membership = $organization->memberships()->where('user_id', $second->id)->firstOrFail();
         $this->patch($path.'/members/'.$membership->id, ['role' => 'manager'])->assertRedirect();
@@ -190,7 +208,10 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_owner_membership_cannot_be_removed_downgraded_or_assigned_from_input(): void
     {
-        $owner = $this->member(); $second = $this->member(); $organization = $this->organization($owner); $path = '/app/organizations/'.$organization->id;
+        $owner = $this->member();
+        $second = $this->member();
+        $organization = $this->organization($owner);
+        $path = '/app/organizations/'.$organization->id;
         $membership = $organization->memberships()->sole();
         $this->login($owner)->delete($path.'/members/'.$membership->id)->assertForbidden();
         $this->patch($path.'/members/'.$membership->id, ['role' => 'member'])->assertForbidden();
@@ -200,8 +221,12 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_nested_membership_ids_are_scoped_and_revocation_invalidates_context(): void
     {
-        $owner = $this->member(); $second = $this->member(); $other = $this->member();
-        $organization = $this->organization($owner); $foreign = $this->organization($other); $path = '/app/organizations/'.$organization->id;
+        $owner = $this->member();
+        $second = $this->member();
+        $other = $this->member();
+        $organization = $this->organization($owner);
+        $foreign = $this->organization($other);
+        $path = '/app/organizations/'.$organization->id;
         $membership = $organization->memberships()->create(['user_id' => $second->id, 'role' => 'member']);
         $foreignMembership = $foreign->memberships()->sole();
         $this->login($owner)->delete($path.'/members/'.$foreignMembership->id)->assertNotFound();
@@ -225,7 +250,10 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_forged_active_preference_falls_back_to_a_real_membership(): void
     {
-        $user = $this->member(); $other = $this->member(); $own = $this->organization($user); $foreign = $this->organization($other);
+        $user = $this->member();
+        $other = $this->member();
+        $own = $this->organization($user);
+        $foreign = $this->organization($other);
         UserPreference::create(['user_id' => $user->id, 'active_organization_id' => $foreign->id]);
         $this->login($user)->get('/app')->assertOk()->assertSee($own->name)->assertDontSee($foreign->name);
         $this->assertSame($own->id, UserPreference::where('user_id', $user->id)->value('active_organization_id'));
@@ -235,8 +263,14 @@ class OrganizationProfilingTest extends TestCase
     {
         // Fixtures model future domain data; Task 002 intentionally adds no CRUD modules.
 
-        Schema::create('evidence', function (Blueprint $table) {$table->id(); $table->foreignId('organization_id')->constrained(); $table->string('document');});
-        $user = $this->member(); $organization = $this->organization($user); $path = '/app/organizations/'.$organization->id;
+        Schema::create('evidence', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('organization_id')->constrained();
+            $table->string('document');
+        });
+        $user = $this->member();
+        $organization = $this->organization($user);
+        $path = '/app/organizations/'.$organization->id;
         $property = $organization->properties()->create(['name' => 'Hotel', 'property_type' => 'hotel', 'country' => 'RO', 'timezone' => 'Europe/Bucharest']);
         $building = $property->buildings()->create(['name' => 'Original']);
         DB::table('evidence')->insert(['organization_id' => $organization->id, 'document' => 'original-proof.pdf']);
@@ -252,12 +286,14 @@ class OrganizationProfilingTest extends TestCase
         $this->assertDatabaseHas('organization_memberships', ['organization_id' => $organization->id, 'user_id' => $user->id, 'role' => 'owner']);
         $this->patch($path, ['name' => $organization->name, 'profile_key' => 'hospitality', 'organization_kind' => 'portfolio'])->assertRedirect();
         $this->getJson($path.'/modules/hospitality.rooms')->assertForbidden();
-        $this->assertDatabaseCount('buildings', 1); $this->assertDatabaseCount('evidence', 1);
+        $this->assertDatabaseCount('buildings', 1);
+        $this->assertDatabaseCount('evidence', 1);
     }
 
     public function test_organization_changes_remain_csrf_protected(): void
     {
-        $user = $this->member(); $this->draft($user);
+        $user = $this->member();
+        $this->draft($user);
         $this->app->detectEnvironment(fn () => 'local');
         $this->post('/app/organization-onboarding/draft', ['version' => 1, 'profile_key' => 'hospitality'])->assertStatus(419);
         $this->app->detectEnvironment(fn () => 'testing');
@@ -266,10 +302,12 @@ class OrganizationProfilingTest extends TestCase
 
     public function test_tenant_context_does_not_leak_between_requests_or_trust_unknown_roles(): void
     {
-        $first = $this->member(); $second = $this->member();
-        $a = $this->organization($first); $b = $this->organization($second);
+        $first = $this->member();
+        $second = $this->member();
+        $a = $this->organization($first);
+        $b = $this->organization($second);
         $this->login($first)->get('/app')->assertOk()->assertSee($a->name)->assertDontSee($b->name);
-        $this->assertNull(app(\App\Support\TenantContext::class)->current());
+        $this->assertNull(app(TenantContext::class)->current());
         $this->login($second)->get('/app')->assertOk()->assertSee($b->name)->assertDontSee($a->name);
         $b->memberships()->update(['role' => 'unknown-role']);
         $this->get('/app/organizations/'.$b->id)->assertForbidden();
