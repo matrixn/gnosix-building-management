@@ -44,7 +44,11 @@ class WorkspaceStudio
                 $locale = app()->getLocale();
                 try {
                     app()->setLocale($organization->locale);
-                    $draft->result = $this->build($organization, $answers);
+                    $draft->result = BuildingAudit::without(fn () => $this->build($organization, $answers));
+                    // Record the accepted initial structure once per building, not once per room.
+                    foreach (\App\Models\Building::whereIn('property_id', $draft->result['property_ids'])->get() as $building) {
+                        BuildingAudit::record($building, 'declared', 'declaration', $building->uuid, null, app(BuildingDeclarationStudio::class)->snapshot($building), 'manual', false);
+                    }
                 } finally {
                     app()->setLocale($locale);
                 }

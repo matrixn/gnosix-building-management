@@ -29,6 +29,7 @@ class CheckLanding extends Command
             'Design studies outside public root' => ! is_dir(public_path('concepts')),
             'Platform database migrated' => $databaseReady,
             'Customer identity migrated' => $databaseReady && Schema::hasColumn('users', 'auth_version') && Schema::hasColumn('users', 'onboarding_completed_at'),
+            'Building declarations migrated' => $databaseReady && collect(['building_declaration_drafts', 'building_revisions', 'building_assertions', 'space_beds', 'accommodation_units', 'accommodation_unit_space'])->every(fn ($table) => Schema::hasTable($table)) && Schema::hasColumn('buildings', 'uuid') && Schema::hasColumn('building_declaration_drafts', 'stage'),
             'Adaptive workspace migrated' => $databaseReady && collect(['workspace_groups', 'legal_entities', 'properties', 'buildings', 'floors', 'spaces', 'property_accesses', 'workspace_drafts'])->every(fn ($table) => Schema::hasTable($table)) && Schema::hasColumn('organizations', 'unit_system') && Schema::hasColumn('organization_memberships', 'access_scope'),
             'Organization profiling migrated' => $databaseReady && collect(['organizations', 'organization_memberships', 'organization_profiles', 'organization_capabilities', 'user_preferences', 'onboarding_sessions'])->every(fn ($table) => Schema::hasTable($table)),
         ];

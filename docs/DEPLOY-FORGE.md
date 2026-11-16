@@ -56,6 +56,16 @@ Păstrează întregul `storage` partajat între release-uri. Logo-urile sunt în
 
 După deploy verifică `/app/organizations/{id}/studio`: ciornă, refresh, confirmare, listarea proprietăților și editarea unui spațiu. Verifică setările, un logo și accesul unui al doilea membru limitat la o singură proprietate. `gnosix:check --production` verifică și prezența structurii Studio. Nu rula rollback al acestei migrări pe date reale: ar șterge structura creată. Vezi [GENESIS-003.md](GENESIS-003.md).
 
+## Building Studio Genesis 004
+
+Migrarea `2026_11_16_160000_add_building_declarations` completează tabelele existente buildings/floors/spaces cu identități stabile și metadate/arhivare, apoi creează ciornele, reviziile/afirmațiile, paturile și unitățile de cazare. Datele necunoscute rămân NULL. Nu se recreează conturile, organizațiile sau structura Task 003.
+
+Sunt folosite PHP/DB și frontend-ul existent, fără servicii sau pachete noi. Importul JSON acceptă maximum 2 MB de structură; permite minimum 3 MB pentru corpul cererii în Nginx/PHP. Pentru clădiri mari măsoară timpul pe motorul DB și VPS-ul real. Testele locale folosesc SQLite, iar înregistrările sunt scrise în loturi.
+
+După deploy deschide o proprietate și **Building Studio**, declară o clădire, verifică reluarea ciornei și dashboardul, apoi o revizie cu export/reimport. Verifică și un membru viewer/editor limitat la acea proprietate. `gnosix:check --production` verifică tabelele și coloanele declarațiilor. Fă backup înaintea migrării; nu executa rollback pe date reale, deoarece down elimină noile identități, istoricul, paturile și unitățile.
+
+Nu există încă upload/extragere de documente, geometrii BIM sau rezervări PMS. Vezi [GENESIS-004.md](GENESIS-004.md).
+
 ## Verificare după deploy
 
 - `/` și `/confidentialitate`: conținut, linkuri, fonturi și formular.

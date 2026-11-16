@@ -46,7 +46,7 @@ class WorkspaceStudioTest extends TestCase
         $payload=['version'=>1,'step'=>'review','guided'=>true,'answers'=>['scenario'=>$scenario,'property_name'=>'Meridian']+$extra];
         $this->postJson($url.'/studio/commit',$payload)->assertOk();
         $this->assertDatabaseCount('properties',$properties); $this->assertDatabaseCount('buildings',$buildings);
-        $this->assertDatabaseCount('floors',$floors); $this->assertDatabaseCount('spaces',$spaces);
+        $this->assertDatabaseCount('building_revisions',$buildings); $this->assertDatabaseCount('floors',$floors); $this->assertDatabaseCount('spaces',$spaces);
         $this->assertEquals($beds,Space::sum('bed_count'));
         $this->postJson($url.'/studio/commit',$payload)->assertOk();
         $this->assertDatabaseCount('properties',$properties);

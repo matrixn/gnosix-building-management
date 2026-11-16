@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Gate::policy(\App\Models\User::class, \App\Policies\UserPolicy::class);
         \Illuminate\Support\Facades\Gate::policy(\App\Models\Organization::class, \App\Policies\OrganizationPolicy::class);
         \Illuminate\Support\Facades\Gate::policy(\App\Models\Property::class, \App\Policies\PropertyPolicy::class);
+        foreach ([\App\Models\Building::class, \App\Models\Floor::class, \App\Models\Space::class] as $model) $model::observe(\App\Observers\BuildingStructureObserver::class);
         RateLimiter::for('customer-login', fn (Request $request) => [
             Limit::perMinute(15)->by('customer-login-ip:'.$request->ip()),
             Limit::perMinute(5)->by('customer-login-account:'.hash('sha256', is_string($request->input('email')) ? strtolower($request->input('email')) : '')),

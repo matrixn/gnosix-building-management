@@ -89,9 +89,9 @@ class PropertyController extends Controller
     public function building(Request $request, Organization $organization, Property $property, ?Building $building = null)
     {
         $this->authorizeProperty($request, $organization, $property, true);
-        if ($building) abort_unless($building->property_id === $property->id, 404);
+        if ($building) { abort_unless($building->property_id === $property->id, 404); abort_if($building->state === 'archived', 403); }
         $data = $request->validate(['name' => ['required', 'string', 'max:150']]);
-        $building ? $building->update($data) : $property->buildings()->create($data);
+        DB::transaction(fn () => $building ? $building->update($data) : $property->buildings()->create($data));
         return back()->with('status', __('studio.saved'));
     }
 
@@ -99,9 +99,10 @@ class PropertyController extends Controller
     {
         $this->authorizeProperty($request, $organization, $property, true);
         abort_unless($building->property_id === $property->id, 404);
+        abort_if($building->state === 'archived', 403);
         if ($floor) abort_unless($floor->building_id === $building->id, 404);
         $data = $request->validate(['name' => ['required', 'string', 'max:150'], 'position' => ['required', 'integer', 'min:-20', 'max:300']]);
-        $floor ? $floor->update($data) : $building->floors()->create($data);
+        DB::transaction(fn () => $floor ? $floor->update($data) : $building->floors()->create($data));
         return back()->with('status', __('studio.saved'));
     }
 
@@ -117,6 +118,7 @@ class PropertyController extends Controller
     {
         $this->authorizeProperty($request, $organization, $property, true, true);
         abort_unless($space->property_id === $property->id, 404);
+        abort_if($space->building?->state === 'archived', 403);
         return view('properties.edit-space', compact('organization', 'property', 'space'));
     }
 
@@ -127,11 +129,14 @@ class PropertyController extends Controller
         if ($space) {
             foreach (['building_id', 'floor_id'] as $key) if (! $request->exists($key)) $request->merge([$key => $space->{$key}]);
         }
-        $data = $request->validate(['name' => ['required', 'string', 'max:150'], 'space_type' => ['required', Rule::in(config('workspace.space_types'))], 'number' => ['nullable', 'string', 'max:40'], 'building_id' => ['nullable', 'integer', Rule::exists('buildings', 'id')->where('property_id', $property->id)], 'floor_id' => ['nullable', 'integer', Rule::exists('floors', 'id')->whereIn('building_id', $property->buildings()->select('id'))], 'bed_count' => ['nullable', 'integer', 'min:0', 'max:1000'], 'capacity' => ['nullable', 'integer', 'min:0', 'max:1000'], 'area' => ['nullable', 'numeric', 'min:0', 'max:100000000']]);
+        $data = $request->validate(['name' => ['required', 'string', 'max:150'], 'space_type' => ['required', Rule::in(config('workspace.space_types'))], 'number' => ['nullable', 'string', 'max:40'], 'building_id' => ['nullable', 'integer', Rule::exists('buildings', 'id')->where('property_id', $property->id)->where('state', '!=', 'archived')], 'floor_id' => ['nullable', 'integer', Rule::exists('floors', 'id')->whereNull('archived_at')->whereIn('building_id', $property->buildings()->select('id'))], 'bed_count' => ['nullable', 'integer', 'min:0', 'max:1000'], 'capacity' => ['nullable', 'integer', 'min:0', 'max:1000'], 'area' => ['nullable', 'numeric', 'min:0', 'max:100000000']]);
+        if ($space && $space->building_id && $space->building?->state === 'archived') abort(403);
+        if ($space && (int)($data['building_id'] ?? 0) !== (int)$space->building_id && (\Illuminate\Support\Facades\DB::table('accommodation_unit_space')->where('space_id', $space->id)->exists() || $space->beds()->exists())) throw ValidationException::withMessages(['building_id' => __('building.linked_space')]);
+        if ($space && $space->beds()->exists() && array_key_exists('bed_count', $data) && (int)$data['bed_count'] !== $space->beds()->count()) throw ValidationException::withMessages(['bed_count' => __('building.bed_mismatch')]);
         if (! empty($data['floor_id']) && (int) Floor::findOrFail($data['floor_id'])->building_id !== (int) ($data['building_id'] ?? 0)) throw ValidationException::withMessages(['floor_id' => __('studio.floor_mismatch')]);
         if (! $space || $request->exists('area')) $data['area_m2'] = isset($data['area']) ? round((float) $data['area'] * ($organization->unit_system === 'imperial' ? 0.09290304 : 1), 3) : null;
         unset($data['area']);
-        $space ? $space->update($data) : $property->spaces()->create($data);
+        DB::transaction(fn () => $space ? $space->update($data) : $property->spaces()->create($data));
         return redirect()->route('app.properties.show', [$organization, $property])->with('status', __('studio.saved'));
     }
 }

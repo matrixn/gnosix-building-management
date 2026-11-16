@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'uuid' => 'Invalid identifier. Use a GNOSIX export or import as a template.',
+    'present' => 'The :attribute field must be present.',
+    'regex' => 'The :attribute format is invalid.',
+    'between' => ['numeric' => 'The value must be between :min and :max.'],
     'array' => 'Select a valid list.',
     'numeric' => 'Enter a valid number.',
     'boolean' => 'Select a valid option.',

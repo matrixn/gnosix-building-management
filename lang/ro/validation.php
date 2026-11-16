@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'uuid' => 'Identificator invalid. Folosește un export GNOSIX sau importă ca șablon.',
+    'present' => 'Câmpul :attribute trebuie să fie prezent.',
+    'regex' => 'Formatul câmpului :attribute nu este valid.',
+    'between' => ['numeric' => 'Valoarea trebuie să fie între :min și :max.'],
     'array' => 'Selectează o listă validă.',
     'numeric' => 'Introdu un număr valid.',
     'boolean' => 'Selectează o opțiune validă.',

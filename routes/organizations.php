@@ -3,6 +3,7 @@
 use App\Http\Controllers\Identity\OrganizationController;
 use Illuminate\Support\Facades\Route;
 require __DIR__.'/workspace.php';
+require __DIR__.'/building-studio.php';
 
 Route::get('organizations', [OrganizationController::class, 'index'])->name('app.organizations.index');
 Route::get('organizations/create', [OrganizationController::class, 'create'])->name('app.organizations.create');

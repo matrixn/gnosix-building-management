@@ -1,3 +1,4 @@
+if (document.querySelector('[data-building-studio], [data-building-dashboard]')) import('./building-studio.js');
 import './organization.js';
 import './studio.js';
 document.documentElement.classList.add('identity-js');
@@ -53,3 +54,20 @@ if (onboarding) {
 }
 
 document.querySelector('[data-validation-summary]')?.focus({preventScroll:true});
+
+const mobileNavigation = document.querySelector('[data-mobile-navigation]');
+if (mobileNavigation) {
+    const menu = document.getElementById(mobileNavigation.getAttribute('aria-controls'));
+    mobileNavigation.addEventListener('click', () => {
+        const expanded = mobileNavigation.getAttribute('aria-expanded') !== 'true';
+        mobileNavigation.setAttribute('aria-expanded', String(expanded));
+        menu.classList.toggle('is-open', expanded);
+    });
+    menu.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            mobileNavigation.setAttribute('aria-expanded', 'false');
+            menu.classList.remove('is-open');
+            mobileNavigation.focus();
+        }
+    });
+}
