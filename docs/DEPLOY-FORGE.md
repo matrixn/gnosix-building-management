@@ -60,11 +60,23 @@ După deploy verifică `/app/organizations/{id}/studio`: ciornă, refresh, confi
 
 Migrarea `2026_11_16_160000_add_building_declarations` completează tabelele existente buildings/floors/spaces cu identități stabile și metadate/arhivare, apoi creează ciornele, reviziile/afirmațiile, paturile și unitățile de cazare. Datele necunoscute rămân NULL. Nu se recreează conturile, organizațiile sau structura Task 003.
 
-Sunt folosite PHP/DB și frontend-ul existent, fără servicii sau pachete noi. Importul JSON acceptă maximum 2 MB de structură; permite minimum 3 MB pentru corpul cererii în Nginx/PHP. Pentru clădiri mari măsoară timpul pe motorul DB și VPS-ul real. Testele locale folosesc SQLite, iar înregistrările sunt scrise în loturi.
+Sunt folosite PHP/DB și frontend-ul existent, fără servicii sau pachete noi. Importul JSON acceptă maximum 2 MB de structură; permite minimum 3 MB pentru corpul cererii în Nginx/PHP. Pentru clădiri mari măsoară timpul pe motorul DB și VPS-ul real. Suita automată folosește SQLite, iar recuperarea migrației și salvarea declarației au fost verificate separat pe MySQL 8.4.13 local. Înregistrările sunt scrise în loturi.
 
 După deploy deschide o proprietate și **Building Studio**, declară o clădire, verifică reluarea ciornei și dashboardul, apoi o revizie cu export/reimport. Verifică și un membru viewer/editor limitat la acea proprietate. `gnosix:check --production` verifică tabelele și coloanele declarațiilor. Fă backup înaintea migrării; nu executa rollback pe date reale, deoarece down elimină noile identități, istoricul, paturile și unitățile.
 
 Nu există încă upload/extragere de documente, geometrii BIM sau rezervări PMS. Vezi [GENESIS-004.md](GENESIS-004.md).
+
+## Recuperare eroare MySQL 1059 — release 0.9.1
+
+Dacă deploy-ul s-a oprit în `2026_11_16_160000_add_building_declarations` cu indexul `building_declaration_drafts_property_id_user_id_building_id_index`, cauza este numele automat de 65 de caractere, peste limita MySQL de 64. Numele explicit nou este `bld_draft_property_user_building_idx`.
+
+MySQL poate păstra modificările DDL anterioare erorii. Migrarea corectată detectează coloanele/tabelele deja create, păstrează identitățile și datele existente, completează indexurile/cheile externe lipsă și evită duplicarea reviziilor inițiale.
+
+După actualizarea codului, rulează din nou **Deploy** în Forge. Scriptul existent execută `php artisan migrate --force` și reia migrarea neînregistrată ca finalizată. Nu modifica manual tabela `migrations`, nu șterge tabele și nu folosi `migrate:fresh` sau rollback pe baza reală. Păstrează backup-ul obișnuit înaintea deploy-ului.
+
+Verificare locală MySQL 8.4.13: migrațiile până la Task 003, clădire/nivel/spațiu preexistente, eroarea originală 1059, două reluări ale corecției, păstrarea UUID-urilor și datelor, indexuri și chei externe complete, salvare declarație și retry idempotent, apoi `artisan migrate --force` cu succes. Aceasta nu confirmă executarea pe VPS.
+
+Referințe: [limitele identificatorilor MySQL](https://dev.mysql.com/doc/refman/8.0/en/identifier-length.html), [DDL și commit implicit](https://dev.mysql.com/doc/refman/8.0/en/atomic-ddl.html).
 
 ## Verificare după deploy
 
