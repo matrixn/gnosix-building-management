@@ -40,8 +40,9 @@ class BuildingDeclarationController extends Controller
     {
         $this->building($r, $organization, $property, $building, $studio, true);
         $draft = $studio->resume($r->user('web'), $property, $building);
+        $focus = $r->validate(['space' => 'nullable|uuid']);
 
-        return redirect()->route('app.declarations.editor', [$organization, $property, $draft->id]);
+        return redirect()->route('app.declarations.editor', [$organization, $property, $draft->id, ...array_filter($focus)]);
     }
 
     public function editor(Request $r, Organization $organization, Property $property, string $draft, BuildingDeclarationStudio $studio)

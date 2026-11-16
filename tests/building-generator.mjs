@@ -1,0 +1,22 @@
+import {generateBuilding} from '../resources/js/building-generator.js';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+const cfg=JSON.parse(execFileSync('php',['-r',"echo json_encode(require 'config/building-studio.php');"],{encoding:'utf8'}));
+const t=JSON.parse(execFileSync('php',['-r',"echo json_encode(require 'lang/en/building.php');"],{encoding:'utf8'}));
+const empty=()=>({identity:{name:'Atlas',classification:'hotel'},levels:[],unplaced_spaces:[],units:[]});
+const defaults={levels:5,rooms:10,firstLevel:1,area_m2:15,bed_count:2,capacity:2};
+const build=(state=empty(),opts=defaults)=>generateBuilding(state,opts,cfg,t,randomUUID);
+let tests=0;
+function check(name,run){run();tests++;console.log('PASS '+name);}
+check('5 floors / 50 rooms / 750 m² / 100 beds and occupants',()=>{const s=build();const rooms=s.levels.flatMap(l=>l.spaces);assert.equal(s.levels.length,5);assert.equal(rooms.length,50);assert.equal(rooms.reduce((n,s)=>n+s.area_m2,0),750);assert.equal(rooms.reduce((n,s)=>n+s.bed_count,0),100);assert.equal(rooms.reduce((n,s)=>n+s.capacity,0),100);assert.equal(rooms[0].number,'101');assert.equal(rooms[49].number,'510');assert.equal(s.units.length,0);});
+check('unknown values stay null, explicit zero stays zero',()=>{const s=build(empty(),{levels:1,rooms:1,bed_count:'',capacity:'0'});assert.equal(s.levels[0].spaces[0].bed_count,null);assert.equal(s.levels[0].spaces[0].area_m2,null);assert.equal(s.levels[0].spaces[0].capacity,0);});
+check('append preserves all existing UUIDs, values and units without mutating source',()=>{const s=build();s.units.push({key:randomUUID(),name:'Suite',unit_type:'suite',space_keys:[s.levels[0].spaces[0].key],bed_key:null});const before=structuredClone(s),next=build(s,{...defaults,levels:1,firstLevel:6,mode:'append'});assert.deepEqual(s,before);assert.deepEqual(next.levels.slice(0,5),s.levels);assert.deepEqual(next.units,s.units);assert.equal(next.levels.length,6);});
+check('replace affects proposal only, allowing undo',()=>{const s=build();const before=structuredClone(s);const next=build(s,{...defaults,levels:1,rooms:2,mode:'replace'});assert.deepEqual(s,before);assert.equal(next.levels.length,1);assert.notEqual(next.levels[0].key,s.levels[0].key);});
+check('individual beds and optional bed units retain correct links',()=>{const s=build(empty(),{...defaults,levels:1,rooms:2,individualBeds:true,units:true});assert.equal(s.units.length,4);s.units.forEach(u=>{const room=s.levels[0].spaces.find(s=>s.key===u.space_keys[0]);assert(room.beds.some(b=>b.key===u.bed_key));});});
+check('basement, ground and upper levels and room numbers',()=>{const s=build(empty(),{...defaults,levels:3,rooms:2,firstLevel:-1});assert.deepEqual(s.levels.map(l=>l.kind),['basement','ground','upper']);assert.equal(new Set(s.levels.flatMap(l=>l.spaces.map(s=>s.number))).size,6);});
+check('over 99 rooms have unique numbering across floors',()=>{const s=build(empty(),{...defaults,rooms:150});assert.equal(new Set(s.levels.flatMap(l=>l.spaces.map(s=>s.number))).size,750);});
+check('unknown preset and invalid numbers are rejected',()=>{assert.throws(()=>build({...empty(),identity:{classification:null}}));for(const opts of [{levels:1.5},{rooms:-1},{area_m2:-5},{bed_count:1.5},{capacity:1001},{area_m2:'abc'},{firstLevel:301},{mode:'bad'}])assert.throws(()=>build(empty(),{...defaults,...opts}));});
+check('all cumulative server limits checked before allocation',()=>{assert.throws(()=>build(empty(),{...defaults,levels:100,rooms:500}));assert.throws(()=>build(empty(),{...defaults,rooms:500,bed_count:1000,individualBeds:true}));const s=build(empty(),{...defaults,levels:100,rooms:50});assert.equal(s.levels.flatMap(l=>l.spaces).length,5000);assert.throws(()=>build(s,{...defaults,levels:1,rooms:1,mode:'append'}));});
+check('room units remain separate from physical spaces',()=>{const s=build(empty(),{...defaults,units:true});assert.equal(s.units.length,50);assert.equal(s.levels[0].spaces[0].beds.length,0);});
+console.log(`${tests} generator regression tests passed`);

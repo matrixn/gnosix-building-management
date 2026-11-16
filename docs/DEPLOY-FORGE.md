@@ -78,6 +78,10 @@ Verificare locală MySQL 8.4.13: migrațiile până la Task 003, clădire/nivel/
 
 Referințe: [limitele identificatorilor MySQL](https://dev.mysql.com/doc/refman/8.0/en/identifier-length.html), [DDL și commit implicit](https://dev.mysql.com/doc/refman/8.0/en/atomic-ddl.html).
 
+## Building Studio unificat — 0.10.0
+
+Nu adaugă migrații, variabile de mediu sau dependențe. Build-ul Vite și cache-ul rutelor trebuie regenerate prin deploy-ul existent. Verifică **Camere și spații → clădire → Studio**, generarea 5 × 10 camere cu suprafață/paturi/locuri, editarea unei camere și salvarea/reintrarea în clădire. Pentru spații vechi fără clădire, verifică asocierea explicită și accesul viewer/editor. Detalii în [BUILDING-STUDIO-WORKFLOWS.md](BUILDING-STUDIO-WORKFLOWS.md).
+
 ## Verificare după deploy
 
 - `/` și `/confidentialitate`: conținut, linkuri, fonturi și formular.

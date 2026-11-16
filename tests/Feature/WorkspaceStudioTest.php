@@ -52,7 +52,7 @@ class WorkspaceStudioTest extends TestCase
         $this->assertDatabaseCount('properties',$properties);
         $this->get($url.'/studio')->assertOk();
         $this->get($url.'/properties')->assertOk()->assertSee('Meridian');
-        $this->get($url.'/properties/'.Property::first()->id)->assertOk()->assertSee('data-space-building', false)->assertSee('data-space-floor', false)->assertDontSee('@include', false);
+        $this->get($url.'/properties/'.Property::first()->id)->assertOk()->assertSee('bld-library-grid', false)->assertDontSee('data-space-form', false)->assertDontSee('@include', false);
         $this->get($url.'/spaces')->assertOk();
         $this->get($url.'/workspace-settings')->assertOk();
         if ($scenario==='group') {
@@ -134,7 +134,7 @@ class WorkspaceStudioTest extends TestCase
         $this->login($u)->post($url.'/properties/'.$p->id.'/spaces',['name'=>'Garden','space_type'=>'common','area'=>100])->assertRedirect();
         $s=Space::sole(); $this->assertNull($s->building_id); $this->assertNull($s->floor_id);
         $this->assertEquals(9.29,$s->area_m2);
-        $this->get($url.'/properties/'.$p->id.'/spaces/'.$s->id.'/edit')->assertOk();
+        $this->get($url.'/properties/'.$p->id.'/spaces/'.$s->id.'/edit')->assertRedirect(route('app.spaces.index', $o).'#unassigned-'.$s->uuid);
     }
     public function test_organization_preferences_logo_privacy_and_group_management(): void
     {

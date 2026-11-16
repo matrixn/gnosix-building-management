@@ -65,7 +65,7 @@ class BuildingDeclarationStudio
             $state = $b ? $this->snapshot($b) : $this->schema->empty();
             $this->rooms($u, $p, $state);
 
-            return BuildingDeclarationDraft::create(['id' => (string) Str::uuid(), 'property_id' => $p->id, 'user_id' => $u->id, 'building_id' => $b?->id, 'base_version' => $b?->declaration_version, 'version' => 1, 'state' => $state]);
+            return BuildingDeclarationDraft::create(['id' => (string) Str::uuid(), 'property_id' => $p->id, 'user_id' => $u->id, 'building_id' => $b?->id, 'base_version' => $b?->declaration_version, 'version' => 1, 'stage' => $b ? 'structure' : 'identity', 'state' => $state]);
         });
     }
 
@@ -206,7 +206,7 @@ class BuildingDeclarationStudio
         }
         DB::table('floors')->where('building_id', $b->id)->whereNotIn('uuid', array_column($levelRows, 'uuid'))->whereNull('archived_at')->update(['archived_at' => $now]);
         DB::table('spaces')->where('building_id', $b->id)->whereNotIn('uuid', array_column($spaceRows, 'uuid'))->whereNull('archived_at')->update(['archived_at' => $now]);
-        DB::table('space_beds')->whereIn('space_id',$spaceIds->values())->whereNotIn('uuid',array_column($bedRows,'uuid'))->whereNull('archived_at')->update(['archived_at' => $now]);
-        DB::table('accommodation_units')->where('building_id',$b->id)->whereNotIn('uuid',array_column($unitRows,'uuid'))->whereNull('archived_at')->update(['archived_at' => $now]);
+        DB::table('space_beds')->whereIn('space_id', $spaceIds->values())->whereNotIn('uuid', array_column($bedRows, 'uuid'))->whereNull('archived_at')->update(['archived_at' => $now]);
+        DB::table('accommodation_units')->where('building_id', $b->id)->whereNotIn('uuid', array_column($unitRows, 'uuid'))->whereNull('archived_at')->update(['archived_at' => $now]);
     }
 }

@@ -6,6 +6,18 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
 
+### Building Studio unificat — 0.10.0
+
+- [x] Camere și Spații devine biblioteca de clădiri a organizației: căutare, filtre după proprietate/stare, paginare și acces conform apartenenței/granturilor.
+- [x] Click pe clădire deschide direct Building Studio pentru editori; viewerii explorează dashboardul fără drepturi de modificare.
+- [x] Formularele separate pentru clădiri, niveluri și camere sunt înlocuite în interfață cu Studio; linkurile vechi către camere deschid inspectorul din Studio.
+- [x] Generator cu nivel de început/parter/subsol, camere per nivel, suprafață m², paturi și capacitate per cameră; sumar live. Exemplu verificat: 5 × 10 camere × 15 m² / 2 paturi / 2 locuri.
+- [x] Extindere prin niveluri noi sau înlocuire explicită a ciornei, cu undo, autosave și păstrarea identităților la editare.
+- [x] Click/Enter pe cameră deschide inspectorul: nume, tip, număr, paturi, locuri, suprafață și mutare la alt nivel. Salvarea clădirii este disponibilă direct din bara persistentă.
+- [x] Spațiile vechi fără clădire pot fi asociate explicit unei clădiri din aceeași proprietate, cu UUID/date păstrate și audit.
+- [x] RO/EN, etichete pe plan și carduri, generator restrâns în modul editare, focus și filtre păstrate la schimbarea limbii.
+- [x] Șase teste PHP noi, zece teste JS pentru generator, build production și verificări în browser desktop/mobil/tastatură.
+
 ### Corecție deploy Forge — 0.9.1
 
 - [x] Indexul ciornelor Building Studio are nume explicit compatibil MySQL.
@@ -137,6 +149,8 @@ Pentru un `.env` mai vechi folosește `SESSION_DRIVER=file`, `CACHE_STORE=file` 
 
 ## Documentație
 
+- [Building Studio unificat — bibliotecă, generator și editare](docs/BUILDING-STUDIO-WORKFLOWS.md)
+
 - [Genesis 004 — Building Studio, identități și recuperare](docs/GENESIS-004.md)
 - [Audit Genesis 004 și alegerea vizualizării](docs/GENESIS-004-AUDIT.md)
 
@@ -160,12 +174,13 @@ Parolele nu se trimit ca argumente Artisan și nu se pun în Git. După provisio
 
 ```powershell
 php vendor/bin/phpunit
+node tests/building-generator.mjs
 npm run build
 composer validate --no-check-publish
 php artisan gnosix:check
 ```
 
-143 teste / 1.322 de aserțiuni au verificat declarațiile de clădiri, paturile/unitățile independente, migrarea, arhivarea/recuperarea, importul de 5.000 spații, cele șase scenarii Workspace Studio, structura proprietăților, accesul per proprietate, logo-urile private, unitățile, organizațiile și apartenențele, profilarea, capabilitățile, izolarea tenantului, ciornele, setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
+149 teste / 1.390 de aserțiuni au verificat declarațiile de clădiri, paturile/unitățile independente, migrarea, arhivarea/recuperarea, importul de 5.000 spații, cele șase scenarii Workspace Studio, structura proprietăților, accesul per proprietate, logo-urile private, unitățile, organizațiile și apartenențele, profilarea, capabilitățile, izolarea tenantului, ciornele, setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
 
 Au fost verificate în browser loginul cu parolă, setările SMTP, un test de email către un SMTP sink local, logoutul și paginile mobile. Nu a fost înregistrată o cheie pe dispozitivul real al utilizatorului și nu s-a trimis email extern. Pentru Task 003 s-au verificat suplimentar în browser autosave, refresh, back/forward, creare structură și spațiu comun, RO/EN, paginile de setări și viewport-uri de 1440 și 390 px. Verificarea finală a frontend-ului nu a raportat erori de consolă. Pentru Task 004 s-au verificat și editarea/salvarea declarației, suită cu două spații, spațiu tehnic, export descărcat și reimportat ca șablon, RO/EN, mobile/reduced-motion și navigarea până la nivelul 100 al clădirii cu 5.000 spații. Infrastructura Forge nu a fost modificată.
 
@@ -179,6 +194,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.9.1.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.10.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

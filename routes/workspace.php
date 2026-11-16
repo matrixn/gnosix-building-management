@@ -30,6 +30,7 @@ Route::prefix('organizations/{organization}')->group(function () {
         Route::post('properties/{property}/buildings/{building}/floors', [PropertyController::class, 'floor'])->name('app.floors.store');
         Route::patch('properties/{property}/buildings/{building}/floors/{floor}', [PropertyController::class, 'floor'])->name('app.floors.update');
         Route::post('properties/{property}/spaces', [PropertyController::class, 'space'])->name('app.spaces.store');
+        Route::post('properties/{property}/spaces/{space}/studio', [PropertyController::class, 'assignStudio'])->name('app.spaces.studio');
         Route::patch('properties/{property}/spaces/{space}', [PropertyController::class, 'space'])->name('app.spaces.update');
     });
 });

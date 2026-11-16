@@ -1,6 +1,7 @@
 const NS='http://www.w3.org/2000/svg';
 const node=(tag,attrs={},text)=>{const n=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,String(v)));if(text!==undefined)n.textContent=text;return n;};
 const points=p=>p.map(v=>v.join(',')).join(' ');
+const formatArea=value=>value==null?'—':new Intl.NumberFormat(document.documentElement.lang,{maximumFractionDigits:3}).format(Number(value));
 const color=type=>({technical:'#69dfe0',common:'#a993ff',corridor:'#7384aa',storage:'#7384aa',dormitory:'#65ddba',bathroom:'#69dfe0'}[type]||'#bafa59');
 export function drawBuilding(host,state,selection,options){
  const levels=state.levels, strings=options.strings, plan=options.view==='plan', selected=selection.level;
@@ -15,9 +16,11 @@ export function drawBuilding(host,state,selection,options){
   const visible=spaces.slice(0,active?100:8);const cols=Math.max(1,Math.ceil(Math.sqrt(Math.max(visible.length,1)*1.5))),rows=Math.ceil(Math.max(visible.length,1)/cols);
   visible.forEach((s,i)=>{const x=(i%cols)*220/cols,y=Math.floor(i/cols)*160/rows,w=220/cols-3,h=160/rows-3;
    const p=[project(x+2,y+2),project(x+w,y+2),project(x+w,y+h),project(x+2,y+h)];
-   const cell=node('g',{'class':'bld-svg-space','data-space':s.key,role:active?'button':'presentation',tabindex:active?0:-1,'aria-hidden':active?'false':'true','pointer-events':active?'auto':'none','aria-label':s.name});
-   cell.append(node('title',{},s.name),node('polygon',{points:points(p),fill:color(s.space_type),'fill-opacity':selection.space===s.key?'.9':active?'.34':'.08',stroke:color(s.space_type),'stroke-opacity':active?'.75':'.12','stroke-width':selection.space===s.key?2:1}));
-   if(active&&spaces.length<=40){const center=project(x+w/2,y+h/2);cell.append(node('text',{x:center[0],y:center[1]+4,'text-anchor':'middle',fill:'#f2f5e9','font-size':plan?(spaces.length<=16?26:18):11,'pointer-events':'none'},String(s.number||i+1).slice(0,10)));}
+   const cell=node('g',{'class':'bld-svg-space','data-space':s.key,role:active?'button':'presentation',tabindex:active?0:-1,'aria-hidden':active?'false':'true','pointer-events':active?'auto':'none','aria-label':`${s.name}, ${s.area_m2==null?strings.unknown:formatArea(s.area_m2)} m², ${s.bed_count??strings.unknown} ${strings.beds}, ${s.capacity??strings.unknown} ${strings.capacity_short}`});
+   cell.append(node('title',{},`${s.name} · ${formatArea(s.area_m2)} m² · ${s.bed_count??'—'} ${strings.beds} · ${s.capacity??'—'} ${strings.capacity_short}`),node('polygon',{points:points(p),fill:color(s.space_type),'fill-opacity':selection.space===s.key?'.9':active?'.34':'.08',stroke:color(s.space_type),'stroke-opacity':active?'.75':'.12','stroke-width':selection.space===s.key?2:1}));
+   if(active&&spaces.length<=40){const center=project(x+w/2,y+h/2);cell.append(node('text',{x:center[0],y:center[1]+4,'text-anchor':'middle',fill:selection.space===s.key?'#142217':'#f2f5e9','font-size':plan?(spaces.length<=16?26:18):11,'pointer-events':'none'},String(s.number||i+1).slice(0,10)));
+    if(plan&&spaces.length<=16){[`${formatArea(s.area_m2)} m²`,`${s.capacity??'—'} ${strings.capacity_short}`].forEach((text,line)=>cell.append(node('text',{x:center[0],y:center[1]+25+line*20,'text-anchor':'middle',fill:selection.space===s.key?'#142217':'#d1d8c8','font-size':18,'pointer-events':'none'},text)));}
+   }
    cell.addEventListener('click',e=>{e.stopPropagation();options.onSpace(s.key);});cell.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();options.onSpace(s.key);}});group.append(cell);
   });
   if(spaces.length>100&&active){const p=project(110,180);group.append(node('text',{x:p[0],y:p[1],fill:'#b9b3d1','text-anchor':'middle','font-size':12},`+${spaces.length-100} · ${strings.spaces}`));}

@@ -6,6 +6,7 @@
     $member = auth('web')->user();
     $pageTitle = trim($__env->yieldContent('title')) ?: __('identity.sign_in');
     $currentRoute = request()->route()?->getName();
+    $localeQuery = request()->routeIs('app.declarations.editor') ? request()->only('space') : (request()->routeIs('app.spaces.index') ? request()->only(['q', 'property', 'state', 'buildings_page', 'unassigned_page']) : []);
     $localeRoute = request()->isMethod('GET') && $currentRoute && ! request()->routeIs('verification.verify') ? $currentRoute : 'login';
 @endphp
 <!doctype html>
@@ -33,7 +34,7 @@
         <div class="identity-top-actions">
             <nav class="identity-language" aria-label="{{ __('identity.language') }}">
                 @foreach(['ro', 'en'] as $language)
-                <a href="{{ route($localeRoute, array_merge($localeRoute === $currentRoute ? request()->route()->parameters() : [], ['lang' => $language], request()->routeIs('password.reset') ? ['email' => request()->query('email', '')] : [])) }}" lang="{{ $language }}" @if(app()->getLocale() === $language) aria-current="page" @endif aria-label="{{ $language === 'ro' ? 'Română' : 'English' }}">{{ strtoupper($language) }}</a>
+                <a href="{{ route($localeRoute, array_merge($localeRoute === $currentRoute ? request()->route()->parameters() : [], $localeQuery, ['lang' => $language], request()->routeIs('password.reset') ? ['email' => request()->query('email', '')] : [])) }}" lang="{{ $language }}" @if(app()->getLocale() === $language) aria-current="page" @endif aria-label="{{ $language === 'ro' ? 'Română' : 'English' }}">{{ strtoupper($language) }}</a>
                 @endforeach
             </nav>
             @auth('web')<form method="POST" action="{{ route('logout') }}">@csrf<button class="identity-text-button">{{ __('identity.sign_out') }} <span aria-hidden="true">↗</span></button></form>@endauth
