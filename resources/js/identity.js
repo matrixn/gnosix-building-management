@@ -74,3 +74,5 @@ if (mobileNavigation) {
         }
     });
 }
+
+if(document.querySelector('[data-maintenance]')) import('./maintenance.js');

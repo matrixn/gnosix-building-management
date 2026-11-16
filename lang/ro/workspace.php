@@ -100,4 +100,6 @@ return [
     'no_js_save' => 'Fără JavaScript, folosește butonul de salvare pentru a păstra ciorna înainte de a închide pagina.',
     'cap_hospitality_workspace' => 'Workspace Studio',
     'role_admin' => 'Administrator',
+    'role_technician' => 'Tehnician mentenanță — documente restricționate',
+    'role_reporter' => 'Raportor — documente restricționate',
 ];

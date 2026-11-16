@@ -63,3 +63,6 @@ Extensie 0.14.0: adapterele Gemini/OpenRouter/Ollama și setările per furnizor 
 
 
 Extensie 0.15.0: registrul real de active, asocierea manuală a surselor și stratul distinct de aprobări sunt descrise în [SMART-ASSET-REGISTRY.md](SMART-ASSET-REGISTRY.md). Nu se mai aplică limitarea inițială privind lipsa registrului de echipamente.
+
+
+Extensie 0.16.0: mentenanța, ordinele de lucru, planurile preventive și integrarea Evidence sunt operaționale; vezi [MAINTENANCE-016.md](MAINTENANCE-016.md). Limitările istorice privind lipsa mentenanței descriu release-ul inițial.

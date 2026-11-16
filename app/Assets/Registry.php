@@ -3,6 +3,7 @@
 namespace App\Assets;
 
 use App\Evidence\Facts;
+use App\Maintenance\Retention;
 use App\Models\Asset;
 use App\Models\AssetAudit;
 use App\Models\AssetType;
@@ -202,6 +203,7 @@ class Registry
 
     public function purgeBuilding(Building $b, ?User $u): void
     {
+        app(Retention::class)->purge($b, $u);
         $ids = DB::table('spaces')->where('building_id', $b->id)->pluck('id');
         foreach (Asset::where('property_id', $b->property_id)->where('building_id', $b->id)->orderBy('id')->cursor() as $a) {
             $before = $a->attributesToArray();

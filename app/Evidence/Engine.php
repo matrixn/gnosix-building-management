@@ -15,6 +15,7 @@ use App\Models\Evidence\Source;
 use App\Models\Evidence\Version;
 use App\Models\Property;
 use App\Models\User;
+use App\Policies\MaintenancePolicy;
 use App\Support\CapabilityService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,12 @@ class Engine
     public function authorize(User $user, Building $building, bool $write = false, string $capability = 'evidence.upload'): void
     {
         abort_if($building->trashed(), 404);
+        if ($capability === 'maintenance.report') {
+            abort_unless(app(MaintenancePolicy::class)->report($user, $building->property), 403);
+            abort_if($building->state === 'archived', 403);
+
+            return;
+        }
         Gate::forUser($user)->authorize($write ? 'update' : 'view', $building->property);
         abort_unless($capability === 'evidence.read' ? (app(CapabilityService::class)->allows($user, $building->property->organization, 'evidence.upload') || app(CapabilityService::class)->allows($user, $building->property->organization, 'evidence.review')) : app(CapabilityService::class)->allows($user, $building->property->organization, $capability), 403);
         if ($write) {
@@ -47,9 +54,9 @@ class Engine
         return Building::whereKey($b->id)->lockForUpdate()->firstOrFail();
     }
 
-    public function uploads(User $u, Building $b, array $files, string $type, ?string $documentId = null): array
+    public function uploads(User $u, Building $b, array $files, string $type, ?string $documentId = null, string $capability = 'evidence.upload'): array
     {
-        $this->authorize($u, $b, true);
+        $this->authorize($u, $b, true, $capability);
         $settings = app(Settings::class)->all();
         $prepared = [];
         if (count($files) < 1 || count($files) > config('evidence.max_files') || ($documentId && count($files) !== 1)) {
@@ -77,9 +84,9 @@ class Engine
         }
         $written = [];
         try {
-            return DB::transaction(function () use ($u, $b, $prepared, $type, $documentId, $settings, &$written) {
+            return DB::transaction(function () use ($u, $b, $prepared, $type, $documentId, $settings, &$written, $capability) {
                 $b = $this->lock($b);
-                $this->authorize($u, $b, true);
+                $this->authorize($u, $b, true, $capability);
                 $result = [];
                 $target = $documentId ? Document::where('building_id', $b->id)->whereNull('archived_at')->findOrFail($documentId) : null;
                 foreach ($prepared as $file) {

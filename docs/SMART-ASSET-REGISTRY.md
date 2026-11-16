@@ -76,3 +76,6 @@ Comparația Evidence pentru câmpuri tip string păstrează acum identitatea tex
 Limite intenționate: un activ și sistemele sale aparțin unei proprietăți, cu mai multe clădiri/spații posibile; transferul între proprietăți și sisteme care traversează proprietăți diferite nu sunt incluse. Matching-ul este determinist, fără deduplicare automată sau presupuneri după producător/model. Atributele personalizate se declară manual; maparea aplicabilă din documente folosește cheile deja existente în Evidence. Mentenanța programată, intervențiile, QR și certificarea profesională rămân viitoare. Nu au fost făcute apeluri AI live sau modificări pe VPS.
 
 Următorul task recomandat: mentenanță preventivă legată de active și spații, cu scadențe, responsabil, checklist/intervenții și dovezi, apoi acces rapid prin QR. Se poate baza pe acest registru fără să creeze o identitate separată pentru echipament.
+
+
+Extensie 0.16.0: mentenanța, ordinele de lucru, planurile preventive și integrarea Evidence sunt operaționale; vezi [MAINTENANCE-016.md](MAINTENANCE-016.md). Limitările istorice privind lipsa mentenanței descriu release-ul inițial.

@@ -31,7 +31,7 @@ return [
         'hospitality.workspace' => ['enabled' => true, 'operational' => true, 'icon' => '⌘', 'route' => 'app.studio', 'manage_only' => true],
         'hospitality.buildings' => ['enabled' => true, 'operational' => true, 'icon' => '◇', 'route' => 'app.properties.index'],
         'hospitality.rooms' => ['enabled' => true, 'operational' => true, 'icon' => '▤', 'route' => 'app.spaces.index'],
-        'hospitality.maintenance' => ['enabled' => true, 'operational' => false, 'icon' => '⌘'],
+        'hospitality.maintenance' => ['enabled' => true, 'operational' => true, 'icon' => '⌘', 'route' => 'app.maintenance.index', 'nav_label' => 'maintenance.center'],
         'evidence.upload' => ['enabled' => true, 'operational' => true, 'icon' => '↥', 'route' => 'app.evidence.index', 'nav_label' => 'evidence.memory'],
         'evidence.review' => ['enabled' => true, 'operational' => true, 'icon' => '◎', 'route' => 'app.evidence.index', 'nav_label' => 'evidence.memory'],
         'evidence.conflicts' => ['enabled' => true, 'operational' => true, 'icon' => '⇄', 'route' => 'app.evidence.index', 'nav_label' => 'evidence.memory'],
@@ -39,6 +39,10 @@ return [
         'construction.handover' => ['enabled' => false, 'operational' => false, 'icon' => '↗'],
         'facility.portfolio' => ['enabled' => false, 'operational' => false, 'icon' => '▦'],
         'facility.contracts' => ['enabled' => false, 'operational' => false, 'icon' => '≡'],
+    ],
+    'role_denied_capabilities' => [
+        'technician' => ['evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.manage', 'assets.review', 'assets.types', 'hospitality.workspace'],
+        'reporter' => ['evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.manage', 'assets.review', 'assets.types', 'hospitality.workspace'],
     ],
     'navigation' => [
         ['route' => 'app.dashboard', 'label' => 'identity.overview', 'icon' => '◇'],

@@ -22,6 +22,8 @@ class CapabilityService
         }
         $profile = $organization->profile()->first();
         $overrides = $organization->capabilityOverrides()->pluck('enabled', 'capability');
+        $role = $organization->memberships()->where('user_id', $user->id)->value('role');
+        $denied = config('profiles.role_denied_capabilities.'.$role, []);
         $result = [];
         foreach ($this->registry->profile($profile?->profile_key)['capabilities'] ?? [] as $key) {
             $definition = $this->registry->capability($key) ?? ['enabled' => false, 'operational' => false, 'icon' => '◇'];
@@ -33,6 +35,9 @@ class CapabilityService
                 $allowed = false;
             }
             if (isset($required) && $required && ! ($overrides[$required] ?? true)) {
+                $allowed = false;
+            }
+            if (in_array($key, $denied, true)) {
                 $allowed = false;
             }
             $result[$key] = array_merge($definition, ['allowed' => $allowed]);

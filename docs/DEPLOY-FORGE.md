@@ -163,3 +163,28 @@ Fotografiile folosesc discul privat Evidence în subdirectorul assets; storage r
 Smoke test pe o proprietate de test: creează un activ în cameră, editează pașaportul, încarcă o fotografie, leagă o afirmație/document, verifică justificarea și înlocuirea explicită la diferențe, importă un candidat, arhivează/restaurează, apoi click pe cameră în Building Studio. Verifică și un viewer fără drept de editare. Performanța de 10.000 active a fost testată pe SQLite local; monitorizează interogările și discul pe configurația VPS reală. Nu s-a făcut deploy sau test pe DB-ul de producție în această livrare.
 
 La purjarea unei clădiri, activele fizice sunt arhivate la proprietate cu identitatea păstrată; sursele eliminate devin indisponibile, iar aprobările dependente sunt retrase. Detalii și fișiere: [SMART-ASSET-REGISTRY.md](SMART-ASSET-REGISTRY.md).
+
+
+## Maintenance Intelligence — 0.16.0
+
+Deploy-ul standard aplică migrarea aditivă 2026_11_17_000000_create_maintenance_workflows și rebuild/cache. Nu există dependențe Composer/NPM sau chei .env noi. Păstrează backup DB + storage privat și nu rula migrate:fresh sau rollback pe date reale. Storage Evidence rămâne privat și partajat între release-uri.
+
+Adaugă în Forge un worker separat:
+
+```bash
+php artisan queue:work database --queue=maintenance --sleep=3 --tries=3 --timeout=60
+```
+
+Conexiunea database existentă are retry_after 90, mai mare decât timeout-ul jobului/workerului 60. Păstrează workerul evidence separat și repornește ambii workeri la deploy. Schedulerul Laravel trebuie să ruleze în fiecare minut; comanda orară pune generarea în coada maintenance. Verificare manuală:
+
+```bash
+php artisan gnosix:maintenance-generate
+php artisan queue:failed
+php artisan schedule:list
+```
+
+Fără worker nu se generează ordine programate și nu se trimit notificările de mentenanță. Raportarea/ordinele manuale funcționează fără AI și fără worker. SMTP se configurează numai în administrarea existentă. Testează un destinatar autorizat cu preferința planului activată; retry-ul SMTP poate produce notificări repetate, dar cheia plan/dată nu produce ordine duplicate.
+
+Smoke după deploy pe proprietate de test: rol Raportor → sesizare cu foto; coordonator → ordin alocat unui Tehnician; tehnician → lucrări/checklist; coordonator → verificare/închidere; atașament și candidat Evidence rămas proposed; plan scadent → command/worker, apoi repetarea comenzii fără ordin duplicat. Verifică și un utilizator cu grant pe altă proprietate, filtrarea portofoliului și notele private. În Admin → Mentenanță se configurează pragul/fereastra observațiilor. Rolurile vechi își păstrează drepturile; pentru personal cu documente restricționate alege rolurile noi explicit.
+
+Nu s-a făcut deploy sau validare MariaDB/MySQL/SMTP reală în această livrare locală. Detalii și limite: [MAINTENANCE-016.md](MAINTENANCE-016.md).

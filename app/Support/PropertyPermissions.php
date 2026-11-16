@@ -17,6 +17,9 @@ class PropertyPermissions
         if (! $membership || ! Gate::forUser($user)->allows('view', $organization)) {
             return $query->whereRaw('1 = 0');
         }
+        if ($write && in_array($membership->role, ['technician', 'reporter'], true)) {
+            return $query->whereRaw('1=0');
+        }
         if ($membership->role === 'owner') {
             return $query;
         }
@@ -35,6 +38,9 @@ class PropertyPermissions
         }
         $membership = $organization->memberships()->where('user_id', $user->id)->first();
         if (! $membership) {
+            return false;
+        }
+        if ($write && in_array($membership->role, ['technician', 'reporter'], true)) {
             return false;
         }
         if ($membership->role === 'owner') {

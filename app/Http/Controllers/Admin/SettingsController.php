@@ -20,7 +20,7 @@ class SettingsController extends Controller
 {
     public function show(Request $request, SmtpSettings $settings)
     {
-        $tab = in_array($request->query('tab'), ['general', 'gnosix', 'smtp', 'security', 'evidence']) ? $request->query('tab') : 'general';
+        $tab = in_array($request->query('tab'), ['general', 'gnosix', 'smtp', 'security', 'evidence', 'maintenance']) ? $request->query('tab') : 'general';
         $smtp = $settings->resolved();
         $hasPassword = filled($smtp['password']);
         unset($smtp['password']);
@@ -33,6 +33,7 @@ class SettingsController extends Controller
         $aiSelected = $aiSettings->forProvider($aiProvider);
 
         return view('admin.settings', [
+            'maintenance' => app(\App\Maintenance\Settings::class)->all(),
             'tab' => $tab, 'smtp' => $smtp, 'hasPassword' => $hasPassword,
             'site' => app(SiteSettings::class)->all(),
             'evidence' => array_diff_key($aiSelected, ['api_key' => true]),
@@ -144,5 +145,16 @@ class SettingsController extends Controller
         $settings->save($v->validated(), Auth::guard('platform_admin')->id());
 
         return redirect()->route('admin.settings', ['tab' => 'evidence'])->with('status', 'Setările Evidence Engine au fost salvate. Salvarea nu trimite documente către furnizor.');
+    }
+
+    public function updateMaintenance(Request $request)
+    {
+        $v = Validator::make($request->all(), ['repeat_days' => 'required|integer|between:7,3650', 'repeat_threshold' => 'required|integer|between:2,20']);
+        if ($v->fails()) {
+            return redirect()->route('admin.settings', ['tab' => 'maintenance'])->withErrors($v)->withInput($request->only('repeat_days', 'repeat_threshold'));
+        }
+        PlatformSetting::updateOrCreate(['key' => 'maintenance'], ['value' => $v->validated(), 'updated_by' => Auth::guard('platform_admin')->id()]);
+
+        return redirect()->route('admin.settings', ['tab' => 'maintenance'])->with('status', 'Setările de mentenanță au fost salvate.');
     }
 }

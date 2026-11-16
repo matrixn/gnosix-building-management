@@ -100,4 +100,6 @@ return [
     'no_js_save' => 'Without JavaScript, use the save button to keep your draft before leaving the page.',
     'cap_hospitality_workspace' => 'Workspace Studio',
     'role_admin' => 'Administrator',
+    'role_technician' => 'Maintenance technician — restricted documents',
+    'role_reporter' => 'Reporter — restricted documents',
 ];

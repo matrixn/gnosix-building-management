@@ -1,10 +1,28 @@
 # GNOSIX Building Management
 
-Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Evidence Engine oferă documente private/versionate, afirmații cu proveniență, review și conflicte. Smart Asset Registry adaugă pașapoarte și echipamente legate de spații/sisteme și dovezi. Mentenanța rămâne în dezvoltare.
+Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Evidence Engine oferă documente private/versionate, afirmații cu proveniență, review și conflicte. Smart Asset Registry adaugă pașapoarte și echipamente legate de spații/sisteme și dovezi. Mentenanța conectează sesizări, ordine de lucru, planuri preventive și dovezi.
 
 ## Checklist de livrare
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
+
+### Maintenance Intelligence & Work Orders — 0.16.0
+
+- [x] Audit al implementării 0.15; păstrarea Laravel/Blade/Vite, Asset Registry, Evidence și permisiunilor existente.
+- [x] Sesizări contextualizate din clădire, cameră, activ și centrul de mentenanță, cu ciornă/trimitere, simptome, severitate, impact și atașamente private.
+- [x] Ordine distincte și relație multe-la-multe cu sesizările; alocare, priorități, termene și stări flexibile cu motive, redeschidere și control de revizie.
+- [x] Execuție cu checklist, lucrări, materiale/componente și costuri nullable; verificare/închidere de coordonator cu autor/timestamps și audit append-only reutilizat.
+- [x] Roluri Raportor/Tehnician configurabile, granturi pe proprietate, note private și documente generale restricționate; atribuirea unui ordin nu extinde accesul Evidence.
+- [x] Planuri recurente zilnice/săptămânale/lunare/trimestriale/anuale/custom, suspendare/reluare, istoric de execuție și generare idempotentă prin scheduler/coadă.
+- [x] Notificare SMTP opțională per plan, după commit; usage/IoT reprezentat explicit ca viitor, fără intervale legale inventate.
+- [x] Integrare cu versiunile/afirmațiile/conflictele existente, candidați documentari revizuibili și istoric al activului, fără suprascriere automată sau apel AI obligatoriu.
+- [x] Observații repetitive deterministe cu trimiteri și prag/fereastră configurabile în administrare, în DB; fără setări business noi în .env.
+- [x] Command Center RO/EN: metrici reale, listă/panou paginat, filtre de portofoliu/proprietate/clădire, căutare server-side, costuri pe monedă și focus/reduced-motion.
+- [x] 230 teste PHP / 2.075 aserțiuni și 10 verificări JS trecute; build production, Pint/lint/cache, browser desktop/mobil, documentație și arhivă 0.16.0.
+- [ ] Smoke deploy pe VPS/MariaDB/MySQL, worker maintenance și livrare SMTP reală; acestea nu au fost executate local.
+- [ ] QR, SLA/escaladări, calendar avansat, portal furnizori și măsurători IoT sunt release-uri viitoare.
+
+Arhitectură, fișiere, reguli și limite: [MAINTENANCE-016.md](docs/MAINTENANCE-016.md).
 
 ### Smart Asset Registry — 0.15.0
 
@@ -19,7 +37,7 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 - [x] Politici/granturi și capabilități view/manage/review/types, CSRF/throttling, tranzacții, audit, archive/restore și integrare sigură cu coșul/purjarea clădirilor.
 - [x] Dataset de 10.000 active: căutare/filtre/paginare pe server, 24 carduri și lookup-uri de 20; teste pentru scenarii, tenant, seriale, dovezi, arhivare, fotografii și retenție.
 - [x] Teste și build production, verificare browser desktop/mobil RO/EN, documentație și pachet Forge actualizate; fără dependențe noi.
-- [ ] Validare de deploy pe VPS/MySQL/MariaDB; transfer între proprietăți, mentenanță/intervenții și QR sunt milestone-uri ulterioare.
+- [ ] Validare de deploy pe VPS/MySQL/MariaDB; transfer între proprietăți și QR sunt milestone-uri ulterioare; mentenanța/intervențiile sunt livrate în 0.16.0.
 
 Arhitectură, fișiere, retenție și limite: [SMART-ASSET-REGISTRY.md](docs/SMART-ASSET-REGISTRY.md).
 
@@ -138,7 +156,7 @@ Implementare, fișiere, limite și verificări: [GENESIS-005.md](docs/GENESIS-00
 - [x] Opțiuni de capabilități per organizație în DB; dezactivarea elimină accesul și linkul, fără ștergerea datelor.
 - [x] Salvare automată și manuală a ciornei, reluare după refresh, control al versiunii și finalizare idempotentă.
 - [x] Schimbarea profilului/formei fără ștergerea organizației, membrilor, datelor sau opțiunilor anterioare; test de upgrade viitor cu clădiri reale și dovezi-fixture.
-- [x] UI pentru organizații/setări/membri și pagini de context al modulelor; mentenanța rămâne pagină de context; dovezile sunt operaționale din Task 005; proprietățile/spațiile devin operaționale în Task 003.
+- [x] UI pentru organizații/setări/membri și pagini de context al modulelor; mentenanța devine operațională în 0.16.0; dovezile sunt operaționale din Task 005; proprietățile/spațiile devin operaționale în Task 003.
 - [x] Teste de autorizare, IDOR, izolare între utilizatori/organizații, CSRF, profile indisponibile, concurență și regresii Task 001.
 
 ### Genesis 003 — Adaptive Workspace & Hospitality Onboarding
@@ -182,7 +200,8 @@ Implementare, fișiere, limite și verificări: [GENESIS-005.md](docs/GENESIS-00
 - [ ] Activarea profilului Property & Facility Management și a fluxurilor sale.
 - [ ] Arhivarea proprietăților/grupurilor, politici automate de retenție și mutarea spațiilor între proprietăți.
 - [x] Registru operațional de echipamente și pașapoarte — livrat în 0.15.0.
-- [ ] Mentenanță, intervenții, calendar și QR în aplicația operațională.
+- [x] Mentenanță, intervenții și planuri preventive operaționale — 0.16.0.
+- [ ] Calendar avansat, SLA și QR.
 - [x] Încărcarea/stocarea/versionarea și revizuirea documentelor/dovezilor reale — livrate în Task 005; extracția live necesită configurarea furnizorului.
 - [ ] Evidence Engine operațional: proveniență și detectarea contradicțiilor.
 - [ ] Time Machine operațional și Building DNA cu relații reale între active.
@@ -266,6 +285,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.15.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.16.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.
