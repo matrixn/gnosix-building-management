@@ -23,4 +23,14 @@ class WorkOrder extends MaintenanceRecord
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
+
+    public function fieldInvitations()
+    {
+        return $this->belongsToMany(FieldInvitation::class, 'field_invitation_work');
+    }
+
+    public function serviceReports()
+    {
+        return $this->hasMany(ServiceReport::class);
+    }
 }

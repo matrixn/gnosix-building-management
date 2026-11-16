@@ -1,10 +1,29 @@
 # GNOSIX Building Management
 
-Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Evidence Engine oferă documente private/versionate, afirmații cu proveniență, review și conflicte. Smart Asset Registry adaugă pașapoarte și echipamente legate de spații/sisteme și dovezi. Mentenanța conectează sesizări, ordine de lucru, planuri preventive și dovezi.
+Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Evidence Engine oferă documente private/versionate, afirmații cu proveniență, review și conflicte. Smart Asset Registry adaugă pașapoarte și echipamente legate de spații/sisteme și dovezi. Mentenanța conectează sesizări, ordine de lucru, planuri preventive și dovezi. Release 0.17 adaugă QR securizat, acces extern limitat și portal de teren cu rapoarte PDF versionate.
 
 ## Checklist de livrare
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
+
+### Smart QR, Secure Access & Technician Portal — 0.17.0
+
+- [x] Audit 0.16; identitate web, permisiuni, WorkOrder/Workflow, Asset Registry și Evidence reutilizate, fără sisteme paralele.
+- [x] UUID QR permanent pentru clădiri, niveluri, spații și active/sisteme tehnice; locator public opac, generare/rotire/revocare, PNG/SVG, etichete GNOSIX și print preview în lot.
+- [x] QR anonim fără metadate; rezolvare cu autorizare curentă, arhivare/restaurare fără pierderea identității și audit lifecycle.
+- [x] Invitații cu token hash, răscumpărare idempotentă pentru un singur cont, expirare, revocare, email opțional de legare și scop pe ordine/activ; fără membership sau abonament obligatoriu.
+- [x] Firme externe prin invitații individuale și identități verificate; documente explicit partajate, fără acces general Evidence sau note interne.
+- [x] Portal mobil RO/EN: lucrări autorizate, localizare/activ, checklist, foto nativă, materiale, timp, costuri permise, ciornă/reluare și trimitere cu declarație.
+- [x] Rapoarte append-only draft/submitted/reviewed/accepted/returned, PDF privat versionat, verificare manager, surse/istoric în Asset Passport și Building Memory.
+- [x] Observații deterministe din istoricul autorizat, garanție/manual și contradicții de serie; candidați Evidence separați de faptele confirmate, fără apel AI nou.
+- [x] CSRF/throttling, fișiere semnate și reautorizate, headere private, scop tenant, tranzacții/revizii, retragere la anulare/pierderea autorizării/purjare.
+- [x] Durata invitațiilor configurabilă în Admin → QR & Tehnicieni, în DB și cu recent admin authentication; fără setări business noi în .env.
+- [x] 250 teste PHP / 2.235 aserțiuni și 10 scenarii JS trecute; build, audit Composer, lint/Pint/cache și browser desktop/mobil RO/EN; registru QR cu 10.000 active, PDF-uri randate și inspectate.
+- [x] Documentație de arhitectură/securitate/deploy și pachet Forge 0.17.0 cu checksum, surse și frontend compilat.
+- [ ] Smoke deploy pe VPS/MariaDB/MySQL, SMTP real și cameră/imprimantă fizice; nu au fost executate în QA local.
+- [ ] SLA/escaladări, calendar avansat, PWA/offline și semnătură calificată sunt dezvoltări ulterioare.
+
+Detalii, rezultate, fișiere și limite: [FIELD-017.md](docs/FIELD-017.md). Deploy: [DEPLOY-FORGE.md](docs/DEPLOY-FORGE.md).
 
 ### Maintenance Intelligence & Work Orders — 0.16.0
 
@@ -20,7 +39,7 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 - [x] Command Center RO/EN: metrici reale, listă/panou paginat, filtre de portofoliu/proprietate/clădire, căutare server-side, costuri pe monedă și focus/reduced-motion.
 - [x] 230 teste PHP / 2.075 aserțiuni și 10 verificări JS trecute; build production, Pint/lint/cache, browser desktop/mobil, documentație și arhivă 0.16.0.
 - [ ] Smoke deploy pe VPS/MariaDB/MySQL, worker maintenance și livrare SMTP reală; acestea nu au fost executate local.
-- [ ] QR, SLA/escaladări, calendar avansat, portal furnizori și măsurători IoT sunt release-uri viitoare.
+- [x] QR și acces extern pentru tehnicieni/firme sunt livrate în 0.17.0; SLA/escaladări, calendar avansat și IoT rămân planificate.
 
 Arhitectură, fișiere, reguli și limite: [MAINTENANCE-016.md](docs/MAINTENANCE-016.md).
 
@@ -37,7 +56,7 @@ Arhitectură, fișiere, reguli și limite: [MAINTENANCE-016.md](docs/MAINTENANCE
 - [x] Politici/granturi și capabilități view/manage/review/types, CSRF/throttling, tranzacții, audit, archive/restore și integrare sigură cu coșul/purjarea clădirilor.
 - [x] Dataset de 10.000 active: căutare/filtre/paginare pe server, 24 carduri și lookup-uri de 20; teste pentru scenarii, tenant, seriale, dovezi, arhivare, fotografii și retenție.
 - [x] Teste și build production, verificare browser desktop/mobil RO/EN, documentație și pachet Forge actualizate; fără dependențe noi.
-- [ ] Validare de deploy pe VPS/MySQL/MariaDB; transfer între proprietăți și QR sunt milestone-uri ulterioare; mentenanța/intervențiile sunt livrate în 0.16.0.
+- [ ] Validare de deploy pe VPS/MySQL/MariaDB și transfer între proprietăți; QR este livrat în 0.17.0, iar mentenanța/intervențiile în 0.16.0.
 
 Arhitectură, fișiere, retenție și limite: [SMART-ASSET-REGISTRY.md](docs/SMART-ASSET-REGISTRY.md).
 
@@ -194,16 +213,17 @@ Implementare, fișiere, limite și verificări: [GENESIS-005.md](docs/GENESIS-00
 - [x] Navigare mobilă compactă, plan/listă alternativă, tastatură, motion redus și randare limitată la 12 niveluri/40 carduri de spații simultan.
 - [x] Teste pentru toate scenariile cerute, 5.000 spații, migrarea datelor existente, istoric/recuperare, securitate și regresii; verificare browser desktop/mobil.
 
-### Etape următoare — neimplementate operațional
+### Status module și etape următoare
 
 - [ ] Activarea profilului Construction & Development și a fluxurilor sale.
 - [ ] Activarea profilului Property & Facility Management și a fluxurilor sale.
 - [ ] Arhivarea proprietăților/grupurilor, politici automate de retenție și mutarea spațiilor între proprietăți.
 - [x] Registru operațional de echipamente și pașapoarte — livrat în 0.15.0.
 - [x] Mentenanță, intervenții și planuri preventive operaționale — 0.16.0.
-- [ ] Calendar avansat, SLA și QR.
+- [x] QR și portal de teren cu invitații limitate — 0.17.0.
+- [ ] Calendar avansat și SLA.
 - [x] Încărcarea/stocarea/versionarea și revizuirea documentelor/dovezilor reale — livrate în Task 005; extracția live necesită configurarea furnizorului.
-- [ ] Evidence Engine operațional: proveniență și detectarea contradicțiilor.
+- [x] Evidence Engine operațional: proveniență și detectarea contradicțiilor — Task 005, extins prin rapoartele 0.17.0.
 - [ ] Time Machine operațional și Building DNA cu relații reale între active.
 - [ ] Trust Passport, Zero-Entry asistat AI, Handover între organizații și LifeCycle Simulator.
 - [ ] Invitații prin email, transfer de proprietar și delegare granulară dincolo de proprietate.
@@ -285,6 +305,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.16.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.17.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

@@ -189,4 +189,10 @@ return [
     'similar_hint' => 'Other reports in this category for this asset or space within :days days. These may describe the same event; they are not automatically merged.',
     'remove_part' => 'Remove material',
     'portfolio' => 'Portfolio / brand',
+    'event_field_access' => 'Field access',
+    'event_report_draft' => 'Service draft saved',
+    'event_report_submitted' => 'Service report submitted',
+    'event_report_reviewed' => 'Service report reviewed',
+    'event_report_accepted' => 'Service report accepted',
+    'event_report_returned' => 'Service report returned',
 ];

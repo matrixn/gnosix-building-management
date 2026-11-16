@@ -8,6 +8,7 @@ require __DIR__.'/building-studio.php';
 require __DIR__.'/evidence.php';
 require __DIR__.'/assets.php';
 require __DIR__.'/maintenance.php';
+require __DIR__.'/field-admin.php';
 
 Route::get('organizations', [OrganizationController::class, 'index'])->name('app.organizations.index');
 Route::get('organizations/create', [OrganizationController::class, 'create'])->name('app.organizations.create');

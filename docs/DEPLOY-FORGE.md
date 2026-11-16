@@ -1,5 +1,25 @@
 # Publicare GNOSIX pe Laravel Forge
 
+## Smart QR & Technician Portal — 0.17.0
+
+Folosește deploy-ul standard din repository: `composer install --no-dev --prefer-dist --optimize-autoloader`, `npm ci`, `npm run build`, `php artisan migrate --force`, cache config/rute/view-uri și restart workers. Migrarea `2026_11_17_100000_create_secure_field_service` este aditivă; nu resetează identități sau datele existente. Păstrează backup DB și storage privat înaintea aplicării. Nu folosi migrate:fresh sau rollback pe date reale.
+
+Pachete noi: Endroid QR 6.0.x și Dompdf >=3.1.6, din composer.lock. Pe PHP 8.4 verifică extensiile `gd` (export PNG), `dom`/`mbstring` (PDF) și extensiile deja necesare Laravel. `storage/app/private/service-renderer` trebuie să poată fi creat/scris de utilizatorul site-ului; acesta este cache privat pentru fonturi/temporare, nu director public. `storage` rămâne partajat între release-uri. Nu este necesar un worker nou pentru QR/rapoarte; generarea PDF este sincronă și păstrează quota Evidence. Păstrează workerii maintenance/evidence existenți și schedulerul pentru funcțiile lor.
+
+Nu sunt variabile .env noi. În Admin → GNOSIX verifică URL-ul canonic `https://gnosix.zion3d.ro`, folosit în coduri și invitații. În Admin → QR & Tehnicieni configurează durata maximă a invitațiilor (implicit 90 zile). SMTP rămâne centralizat; tehnicienii noi au nevoie de livrarea verificării emailului prin SMTP. Invitațiile se copiază o singură dată și se transmit manual, nu sunt trimise automat.
+
+Portalul folosește HTTPS, sesiunea web existentă și fișiere private semnate. Nu publica discul Evidence, nu adăuga analytics/scripturi terțe pe `/field` și nu înregistra corpul POST/răspunsurile invitațiilor în APM, reverse proxy sau instrumente de suport. Fragmentul linkului este sensibil; codul QR este doar locator și nu acordă acces. După rotire/revocare reimprimă etichetele afectate.
+
+Smoke după deploy, pe o proprietate de test:
+
+1. Manager: QR pentru activ/nivel/clădire, SVG/PNG și print preview; anonim scanul nu dezvăluie metadate.
+2. Creează invitație cu email și un ordin, partajează numai manualul necesar; cont extern fără membership → email verificat → preview organizație → răscumpărare → lucrare permisă.
+3. Mobil real: fotografie prin cameră, checklist, materiale/timp, ciornă + refresh și trimitere. Verifică refuzul costurilor fără permisiune și al altui ordin/document.
+4. Manager: returnare → revizie nouă → review → acceptare → PDF nou în Evidence/Asset Passport; originalul rămâne și seria contradictorie este doar propusă.
+5. Revocă grantul: inclusiv linkurile semnate anterior trebuie refuzate. Verifică expirarea, anularea ordinului, pierderea drepturilor coordonatorului și QR după ștergere/restaurare reversibilă.
+
+Validarea locală nu înlocuiește smoke-ul pe VPS/MariaDB/MySQL, SMTP, dispozitiv mobil și imprimantă. Arhitectură, securitate și limite: [FIELD-017.md](FIELD-017.md).
+
 Destinație: `https://gnosix.zion3d.ro` · Repository: `matrixn/gnosix-building-management` · Ramură: `main`.
 
 ## Prima instalare

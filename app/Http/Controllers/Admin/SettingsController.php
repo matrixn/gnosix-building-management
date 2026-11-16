@@ -20,7 +20,7 @@ class SettingsController extends Controller
 {
     public function show(Request $request, SmtpSettings $settings)
     {
-        $tab = in_array($request->query('tab'), ['general', 'gnosix', 'smtp', 'security', 'evidence', 'maintenance']) ? $request->query('tab') : 'general';
+        $tab = in_array($request->query('tab'), ['general', 'gnosix', 'smtp', 'security', 'evidence', 'maintenance', 'field']) ? $request->query('tab') : 'general';
         $smtp = $settings->resolved();
         $hasPassword = filled($smtp['password']);
         unset($smtp['password']);
@@ -33,6 +33,7 @@ class SettingsController extends Controller
         $aiSelected = $aiSettings->forProvider($aiProvider);
 
         return view('admin.settings', [
+            'fieldSettings' => app(\App\Field\Settings::class)->all(),
             'maintenance' => app(\App\Maintenance\Settings::class)->all(),
             'tab' => $tab, 'smtp' => $smtp, 'hasPassword' => $hasPassword,
             'site' => app(SiteSettings::class)->all(),
@@ -156,5 +157,15 @@ class SettingsController extends Controller
         PlatformSetting::updateOrCreate(['key' => 'maintenance'], ['value' => $v->validated(), 'updated_by' => Auth::guard('platform_admin')->id()]);
 
         return redirect()->route('admin.settings', ['tab' => 'maintenance'])->with('status', 'Setările de mentenanță au fost salvate.');
+    }
+
+    public function updateField(Request $r)
+    {
+        $v = Validator::make($r->all(), ['invite_max_days' => 'required|integer|between:1,365']);
+        if ($v->fails()) {
+            return redirect()->route('admin.settings', ['tab' => 'field'])->withErrors($v)->withInput($r->only('invite_max_days'));
+        }PlatformSetting::updateOrCreate(['key' => 'field'], ['value' => $v->validated(), 'updated_by' => Auth::guard('platform_admin')->id()]);
+
+        return redirect()->route('admin.settings', ['tab' => 'field'])->with('status', 'Setările portalului au fost salvate.');
     }
 }

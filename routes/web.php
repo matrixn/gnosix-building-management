@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\ContactController;
+use App\Support\SiteSettings;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/admin.php';
 require __DIR__.'/identity.php';
+require __DIR__.'/field.php';
 
 Route::view('/', 'landing.index')->name('home');
 Route::view('/en', 'landing.index')->name('home.en');
@@ -16,8 +18,8 @@ Route::post('/program-pilot', ContactController::class)
     ->middleware('throttle:pilot')->name('pilot.store');
 
 Route::get('/robots.txt', function () {
-    $content = \App\Support\SiteSettings::value('indexable')
-        ? "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /app\nSitemap: ".\App\Support\SiteSettings::value('canonical_url')."/sitemap.xml\n"
+    $content = SiteSettings::value('indexable')
+        ? "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /app\nSitemap: ".SiteSettings::value('canonical_url')."/sitemap.xml\n"
         : "User-agent: *\nDisallow: /\n";
 
     return response($content)->header('Content-Type', 'text/plain; charset=UTF-8');

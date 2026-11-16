@@ -19,7 +19,7 @@ class Documents
     {
         Gate::forUser($u)->authorize('attach', $m);
         abort_unless($m->building, 422);
-        $versions = app(Engine::class)->uploads($u, $m->building, $files, 'maintenance', null, 'maintenance.report');
+        $versions = app(Engine::class)->uploads($u, $m->building, $files, 'maintenance', null, 'maintenance.report', $m instanceof WorkOrder ? $m : null);
         DB::transaction(function () use ($u, $m, $versions) {
             Gate::forUser($u)->authorize('attach', $m);
             foreach ($versions as $v) {

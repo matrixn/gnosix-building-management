@@ -1,0 +1,2 @@
+@extends('field.layout')
+@section('content')<section class="field-entry"><span class="field-kicker">GNOSIX / SMART QR</span><h1>{{ __('field.generic_scan') }}</h1><p>{{ __('field.scan_hint') }}</p><div class="field-actions">@guest('web')<a class="field-button" href="{{ route('login') }}">{{ __('identity.sign_in') }}</a>@endguest<a href="{{ route('field.invitation') }}">{{ __('field.invitation') }} ↗</a>@auth('web')<a href="{{ route('field.index') }}">{{ __('field.assigned') }} ↗</a>@endauth</div></section>@endsection

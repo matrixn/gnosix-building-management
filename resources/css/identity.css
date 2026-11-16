@@ -8,3 +8,4 @@
 @import './assets.css';
 
 @import './maintenance.css';
+.qr-preview svg{width:100%;max-width:240px;height:auto;background:white;border-radius:8px}

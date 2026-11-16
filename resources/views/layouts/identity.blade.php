@@ -1,12 +1,12 @@
 @php
-    $shell = request()->routeIs('app.dashboard', 'app.account', 'app.organizations.index', 'app.organizations.show', 'app.organizations.module', 'app.properties.*', 'app.spaces.*', 'app.workspace.settings', 'app.studio', 'app.declarations.*', 'app.evidence.*', 'app.assets.*', 'app.maintenance.*');
+    $shell = request()->routeIs('app.dashboard', 'app.account', 'app.organizations.index', 'app.organizations.show', 'app.organizations.module', 'app.properties.*', 'app.spaces.*', 'app.workspace.settings', 'app.studio', 'app.declarations.*', 'app.evidence.*', 'app.assets.*', 'app.maintenance.*','app.field.*','app.qr.*');
     $routeOrganization = request()->route('organization');
     $activeOrganization = $routeOrganization instanceof \App\Models\Organization && \Illuminate\Support\Facades\Gate::forUser(auth('web')->user())->allows('view', $routeOrganization) ? $routeOrganization : app(\App\Support\TenantContext::class)->current();
     $profileRegistry = app(\App\Support\ProfileRegistry::class);
     $member = auth('web')->user();
     $pageTitle = trim($__env->yieldContent('title')) ?: __('identity.sign_in');
     $currentRoute = request()->route()?->getName();
-    $localeQuery = request()->routeIs('app.assets.*','app.maintenance.*') ? request()->only(['q','property','building','space','type','state','status','system','candidate','page','evidence_page','documents_page','history_page','spaces_page','components_page','group','tab','view','assigned','overdue','priority','category','asset','issue','files_page','comments_page','related_page']) : (request()->routeIs('app.evidence.show') ? request()->only(['version','fact','status','facts_page','documents_page','audit_page']) : (request()->routeIs('app.declarations.editor') ? request()->only('space') : (request()->routeIs('app.spaces.index') ? request()->only(['q', 'property', 'state', 'buildings_page', 'unassigned_page']) : [])));
+    $localeQuery = request()->routeIs('app.assets.*','app.maintenance.*','app.qr.*','app.field.*') ? request()->only(['q','property','building','space','type','state','status','system','candidate','page','evidence_page','documents_page','history_page','spaces_page','components_page','group','tab','view','assigned','overdue','priority','category','asset','issue','files_page','comments_page','related_page']) : (request()->routeIs('app.evidence.show') ? request()->only(['version','fact','status','facts_page','documents_page','audit_page']) : (request()->routeIs('app.declarations.editor') ? request()->only('space') : (request()->routeIs('app.spaces.index') ? request()->only(['q', 'property', 'state', 'buildings_page', 'unassigned_page']) : [])));
     $localeRoute = request()->isMethod('GET') && $currentRoute && ! request()->routeIs('verification.verify') ? $currentRoute : 'login';
 @endphp
 <!doctype html>

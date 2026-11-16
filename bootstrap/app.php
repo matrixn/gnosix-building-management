@@ -41,7 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(ResponseHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->dontFlash(['token', 'smtp_password', 'api_key']);
+        $exceptions->dontFlash(['token', 'invitation_token', 'smtp_password', 'api_key']);
         $exceptions->respond(function (Response $response) {
             if (request()->is('app', 'app/*')) {
                 $response->headers->set('Cache-Control', 'no-store, private');

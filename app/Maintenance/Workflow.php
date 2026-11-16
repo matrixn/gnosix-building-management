@@ -2,6 +2,7 @@
 
 namespace App\Maintenance;
 
+use App\Field\Access;
 use App\Jobs\NotifyMaintenance;
 use App\Models\Asset;
 use App\Models\AssetAudit;
@@ -142,7 +143,7 @@ class Workflow
         return DB::transaction(function () use ($u, $p, $input, $work) {
             $this->allowed($u, $p, true);
             Property::whereKey($p->id)->lockForUpdate()->firstOrFail();
-            $d = $this->common($input) + Validator::make($input, ['priority' => ['required', Rule::in(config('maintenance.severities'))], 'assigned_to' => 'nullable|integer', 'team' => 'nullable|string|max:120', 'due_at' => 'nullable|date_format:Y-m-d\\TH:i', 'issue_ids' => 'nullable|array|max:30', 'issue_ids.*' => 'integer|distinct', 'revision' => $work ? 'required|integer|min:1' : 'nullable|integer'])->validate();
+            $d = $this->common($input) + Validator::make($input, ['priority' => ['required', Rule::in(config('maintenance.severities'))], 'assigned_to' => 'nullable|integer', 'team' => 'nullable|string|max:120', 'require_photo' => 'sometimes|boolean', 'due_at' => 'nullable|date_format:Y-m-d\\TH:i', 'issue_ids' => 'nullable|array|max:30', 'issue_ids.*' => 'integer|distinct', 'revision' => $work ? 'required|integer|min:1' : 'nullable|integer'])->validate();
             $location = $this->location($p, $d);
             $issues = MaintenanceIssue::where('property_id', $p->id)->available()->where('state', '!=', 'draft')->whereIn('id', $d['issue_ids'] ?? [])->get();
             if ($issues->count() !== count($d['issue_ids'] ?? [])) {
@@ -168,7 +169,7 @@ class Workflow
             } else {
                 $work = new WorkOrder(['organization_id' => $p->organization_id, 'property_id' => $p->id, 'created_by' => $u->id, 'state' => 'reported']);
             }
-            $work->fill(array_intersect_key($d, array_flip(['title', 'description', 'category', 'priority', 'team'])) + $location);
+            $work->fill(array_intersect_key($d, array_flip(['title', 'description', 'category', 'priority', 'team', 'require_photo'])) + $location);
             $work->assigned_to = $this->assignee($u, $p, $d['assigned_to'] ?? null);
             $work->due_at = filled($d['due_at'] ?? null) ? CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $d['due_at'], $p->timezone)->utc() : null;
             $work->checklist = $this->checklist($input['checklist'] ?? []);
@@ -183,7 +184,7 @@ class Workflow
     public function perform(User $u, WorkOrder $m, array $input): void
     {
         DB::transaction(function () use ($u, $m, $input) {
-            $d = Validator::make($input, ['revision' => 'required|integer|min:1', 'work_performed' => 'nullable|string|max:8000', 'labor_cost' => 'nullable|numeric|min:0|max:999999999999', 'external_cost' => 'nullable|numeric|min:0|max:999999999999', 'currency' => 'nullable|required_with:labor_cost,external_cost|string|regex:/^[A-Z]{3}$/', 'parts' => 'nullable|array|max:30', 'parts.*.name' => 'required|string|max:160', 'parts.*.quantity' => 'nullable|numeric|min:0.001|max:1000000', 'parts.*.asset_reference' => 'nullable|string|max:100', 'parts.*.asset_id' => 'nullable|integer', 'parts.*.cost' => 'nullable|numeric|min:0|max:999999999999'])->validate();
+            $d = Validator::make($input, ['revision' => 'required|integer|min:1', 'work_performed' => 'nullable|string|max:8000', 'minutes_spent' => 'nullable|integer|between:0,100000', 'observed_condition' => 'nullable|string|max:4000', 'labor_cost' => 'nullable|numeric|min:0|max:999999999999', 'external_cost' => 'nullable|numeric|min:0|max:999999999999', 'currency' => 'nullable|required_with:labor_cost,external_cost|string|regex:/^[A-Z]{3}$/', 'parts' => 'nullable|array|max:30', 'parts.*.name' => 'required|string|max:160', 'parts.*.quantity' => 'nullable|numeric|min:0.001|max:1000000', 'parts.*.asset_reference' => 'nullable|string|max:100', 'parts.*.asset_id' => 'nullable|integer', 'parts.*.cost' => 'nullable|numeric|min:0|max:999999999999'])->validate();
             $m = $this->lock($m, (int) $d['revision']);
             Gate::forUser($u)->authorize('update', $m);
             abort_if(in_array($m->state, ['closed', 'cancelled', 'verified']), 422);
@@ -201,7 +202,14 @@ class Workflow
                 }
             }
             unset($part);
-            $m->fill(array_intersect_key($d, array_flip(['work_performed', 'parts', 'labor_cost', 'external_cost', 'currency'])));
+            $ctx = app(Access::class)->context($u, $m);
+            if (($ctx['external'] ?? false) && collect($d['parts'])->contains(fn ($p) => isset($p['asset_id']) && $p['asset_id'] !== $m->asset_id)) {
+                abort(403);
+            }
+            if (($ctx['external'] ?? false) && ! $ctx['costs'] && (filled($d['labor_cost'] ?? null) || filled($d['external_cost'] ?? null) || filled($d['currency'] ?? null) || collect($d['parts'])->contains(fn ($p) => isset($p['cost'])))) {
+                abort(403);
+            }
+            $m->fill(array_intersect_key($d, array_flip(['work_performed', 'minutes_spent', 'observed_condition', 'parts', 'labor_cost', 'external_cost', 'currency'])));
             $checked = $this->checklist($input['checklist'] ?? []);
             if (array_column($checked, 'text') !== array_column($m->checklist ?? [], 'text')) {
                 throw ValidationException::withMessages(['checklist' => __('maintenance.checklist_changed')]);

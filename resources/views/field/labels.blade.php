@@ -1,0 +1,2 @@
+@extends('field.layout')
+@section('content')<div class="field-print-tools"><h1>{{ __('field.bulk') }}</h1><button class="field-button" data-field-print>{{ __('field.print') }}</button></div><div class="field-labels">@foreach($labels as $label)<article class="field-label"><strong>GNOSIX <span>×</span></strong><div>{!! $label['svg'] !!}</div><h2>{{ $label['name'] }}</h2><p>{{ $label['reference'] }}</p><small>{{ __('field.label') }}</small></article>@endforeach</div>@endsection

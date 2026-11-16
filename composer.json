@@ -10,6 +10,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "dompdf/dompdf": "^3.1.6",
+        "endroid/qr-code": "~6.0.0",
         "giggsey/libphonenumber-for-php-lite": "^9.0",
         "laravel/framework": "^13.0",
         "laravel/tinker": "^3.0",

@@ -2,7 +2,7 @@
 @section('content')
 <div class="page-heading"><span class="eyebrow">CONFIGURAȚIA GLOBALĂ GNOSIX</span><h1>Setările platformei.</h1><p>Infrastructura din spatele fiecărei experiențe.</p></div>
 <nav class="settings-tabs" aria-label="Secțiuni setări">
-    @foreach (['general' => 'General', 'gnosix' => 'GNOSIX · Site & contact', 'smtp' => 'Email & SMTP', 'security' => 'Securitate & passkeys', 'evidence'=>'Evidence Engine & AI', 'maintenance'=>'Mentenanță'] as $key => $label)
+    @foreach (['general' => 'General', 'gnosix' => 'GNOSIX · Site & contact', 'smtp' => 'Email & SMTP', 'security' => 'Securitate & passkeys', 'evidence'=>'Evidence Engine & AI', 'maintenance'=>'Mentenanță','field'=>'QR & Tehnicieni'] as $key => $label)
     <a href="{{ route('admin.settings', ['tab' => $key]) }}" @if ($tab === $key) aria-current="page" @endif>{{ $label }}</a>
     @endforeach
 </nav>
@@ -10,6 +10,8 @@
 <section class="panel"><div class="panel-heading"><span class="panel-icon">◇</span><div><h2>Un spațiu pentru platformă.</h2><p>Identitatea și configurația instanței GNOSIX.</p></div><span class="badge">PLATFORM ADMIN</span></div>
 <dl class="definition-list"><div><dt>Aplicație</dt><dd>{{ config('app.name') }}</dd></div><div><dt>Adresă</dt><dd>{{ config('app.url') }}</dd></div><div><dt>Mediu</dt><dd>{{ app()->environment() }}</dd></div><div><dt>Cont</dt><dd>Administrator al platformei GNOSIX</dd></div><div><dt>Email sistem</dt><dd>SMTP centralizat · {{ $smtpSaved ? 'Configurat în admin' : 'Configurare inițială din mediu' }}</dd></div></dl></section>
 <section class="context-panel"><h3>Administrarea clienților este un spațiu diferit.</h3><p>Setările de aici sunt globale. Conturile viitorilor administratori de clădiri vor aparține aplicației pentru clienți, cu propriile permisiuni și date.</p></section>
+@elseif ($tab === 'field')
+<section class="panel"><h2>Acces securizat în teren</h2><p>Invitațiile au scop limitat, email verificat și pot fi revocate imediat. Locatorul QR nu acordă acces.</p><form method="POST" class="settings-form" action="{{ route('admin.field.update') }}">@csrf @method('PUT')<label>Durata maximă a unei invitații (zile)<input type="number" name="invite_max_days" min="1" max="365" required value="{{ old('invite_max_days',$fieldSettings['invite_max_days']) }}"></label><button class="button">Salvează setările</button></form></section>
 @elseif ($tab === 'maintenance')
 <section class="panel"><h2>Observații operaționale repetitive</h2><p>Reguli deterministe pentru intervenții rezolvate pe același activ și în aceeași categorie. Nu reprezintă o diagnoză sau o concluzie AI.</p><form class="settings-form" method="POST" action="{{ route('admin.maintenance.update') }}">@csrf @method('PUT')<label>Fereastră de observație (zile)<input type="number" name="repeat_days" required min="7" max="3650" value="{{ old('repeat_days',$maintenance['repeat_days']) }}"></label><label>Număr minim de intervenții<input type="number" name="repeat_threshold" required min="2" max="20" value="{{ old('repeat_threshold',$maintenance['repeat_threshold']) }}"></label><button class="button">Salvează setările</button></form></section>
 @elseif ($tab === 'evidence')

@@ -45,6 +45,7 @@ return [
         'reporter' => ['evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.manage', 'assets.review', 'assets.types', 'hospitality.workspace'],
     ],
     'navigation' => [
+        ['route' => 'field.index', 'label' => 'field.portal', 'icon' => '↗'],
         ['route' => 'app.dashboard', 'label' => 'identity.overview', 'icon' => '◇'],
         ['route' => 'app.organizations.index', 'label' => 'workspace.organizations', 'icon' => '▦'],
         ['route' => 'app.account', 'label' => 'identity.account', 'icon' => '◎'],

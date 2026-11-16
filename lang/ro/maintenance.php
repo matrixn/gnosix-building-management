@@ -189,4 +189,10 @@ return [
     'similar_hint' => 'Alte sesizări din aceeași categorie pentru acest activ sau spațiu în :days zile. Pot descrie același eveniment; nu sunt unite automat.',
     'remove_part' => 'Elimină material',
     'portfolio' => 'Portofoliu / brand',
+    'event_field_access' => 'Acces din teren',
+    'event_report_draft' => 'Ciornă service salvată',
+    'event_report_submitted' => 'Raport service trimis',
+    'event_report_reviewed' => 'Raport service revizuit',
+    'event_report_accepted' => 'Raport service acceptat',
+    'event_report_returned' => 'Raport service returnat',
 ];

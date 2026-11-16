@@ -15,6 +15,7 @@ use App\Models\Evidence\Source;
 use App\Models\Evidence\Version;
 use App\Models\Property;
 use App\Models\User;
+use App\Models\WorkOrder;
 use App\Policies\MaintenancePolicy;
 use App\Support\CapabilityService;
 use Illuminate\Http\UploadedFile;
@@ -54,9 +55,21 @@ class Engine
         return Building::whereKey($b->id)->lockForUpdate()->firstOrFail();
     }
 
-    public function uploads(User $u, Building $b, array $files, string $type, ?string $documentId = null, string $capability = 'evidence.upload'): array
+    private function authorizeWorkUpload(User $u, Building $b, string $capability, ?WorkOrder $work): void
     {
-        $this->authorize($u, $b, true, $capability);
+        if (! $work) {
+            $this->authorize($u, $b, true, $capability);
+
+            return;
+        }
+        $w = WorkOrder::findOrFail($work->id);
+        abort_unless($w->building_id === $b->id && ! $b->trashed() && $b->state !== 'archived', 403);
+        Gate::forUser($u)->authorize('attach', $w);
+    }
+
+    public function uploads(User $u, Building $b, array $files, string $type, ?string $documentId = null, string $capability = 'evidence.upload', ?WorkOrder $work = null): array
+    {
+        $this->authorizeWorkUpload($u, $b, $capability, $work);
         $settings = app(Settings::class)->all();
         $prepared = [];
         if (count($files) < 1 || count($files) > config('evidence.max_files') || ($documentId && count($files) !== 1)) {
@@ -84,9 +97,9 @@ class Engine
         }
         $written = [];
         try {
-            return DB::transaction(function () use ($u, $b, $prepared, $type, $documentId, $settings, &$written, $capability) {
+            return DB::transaction(function () use ($u, $b, $prepared, $type, $documentId, $settings, &$written, $capability, $work) {
                 $b = $this->lock($b);
-                $this->authorize($u, $b, true, $capability);
+                $this->authorizeWorkUpload($u, $b, $capability, $work);
                 $result = [];
                 $target = $documentId ? Document::where('building_id', $b->id)->whereNull('archived_at')->findOrFail($documentId) : null;
                 foreach ($prepared as $file) {
@@ -132,11 +145,16 @@ class Engine
         return mb_substr(preg_replace('~[\x00-\x1F\x7F/\\\\]~u', '_', trim($name)), 0, 180) ?: 'document';
     }
 
-    public function propose(User $u, Building $b, array $input, ?Version $version = null, ?Extraction $extraction = null, string $capability = 'evidence.upload'): Assertion
+    public function propose(User $u, Building $b, array $input, ?Version $version = null, ?Extraction $extraction = null, string $capability = 'evidence.upload', ?WorkOrder $work = null): Assertion
     {
-        return DB::transaction(function () use ($u, $b, $input, $version, $extraction, $capability) {
+        return DB::transaction(function () use ($u, $b, $input, $version, $extraction, $capability, $work) {
             $b = $this->lock($b);
-            $this->authorize($u, $b, true, $capability);
+            if ($work) {
+                $this->authorizeWorkUpload($u, $b, $capability, $work);
+                abort_unless($work->asset && in_array($input['semantic_key'] ?? '', ['equipment.serial_number', 'equipment.installation_date', 'maintenance.performed_on']) && ($input['subject_reference'] ?? null) === ($work->asset->external_reference ?: $work->asset->reference) && ($input['subject_type'] ?? null) === 'equipment' && ! $extraction, 403);
+            } else {
+                $this->authorize($u, $b, true, $capability);
+            }
             if ($version) {
                 abort_unless($version->building_id === $b->id, 404);
             }

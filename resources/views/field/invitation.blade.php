@@ -1,0 +1,5 @@
+@extends('field.layout')
+@section('content')
+<section class="field-entry"><span class="field-kicker">GNOSIX / SECURE FIELD ACCESS</span><h1>{{ __('field.invitation') }}</h1><p>{{ __('field.invitation_hint') }}</p>@guest('web')<div class="field-actions"><a class="field-button" href="{{ route('login') }}" target="_blank" rel="noopener">{{ __('field.sign_in') }} ↗</a><a href="{{ route('register') }}" target="_blank" rel="noopener">{{ __('field.register') }} ↗</a><button type="button" data-field-refresh>{{ __('field.refresh') }}</button></div>@endguest
+<form method="POST" action="{{ route('field.preview') }}" data-field-invitation data-field-submit>@csrf<label>{{ __('field.token') }}<input name="invitation_token" type="password" required minlength="64" maxlength="64" autocomplete="off" spellcheck="false"></label><button class="field-button" @guest('web') disabled @endguest>{{ __('field.review') }}</button></form></section>
+@endsection

@@ -14,7 +14,7 @@ abstract class MaintenanceRecord extends Model
 
     protected function casts(): array
     {
-        return ['revision' => 'integer', 'checklist' => 'array', 'parts' => 'array', 'anchor_on' => 'immutable_date', 'next_on' => 'immutable_date', 'next_at' => 'datetime', 'scheduled_for' => 'immutable_date', 'reported_at' => 'datetime', 'closed_at' => 'datetime', 'resolved_at' => 'datetime', 'verified_at' => 'datetime', 'due_at' => 'datetime', 'notify_assignee' => 'boolean', 'labor_cost' => 'decimal:2', 'external_cost' => 'decimal:2', 'materials_cost' => 'decimal:2'];
+        return ['require_photo' => 'boolean', 'minutes_spent' => 'integer', 'revision' => 'integer', 'checklist' => 'array', 'parts' => 'array', 'anchor_on' => 'immutable_date', 'next_on' => 'immutable_date', 'next_at' => 'datetime', 'scheduled_for' => 'immutable_date', 'reported_at' => 'datetime', 'closed_at' => 'datetime', 'resolved_at' => 'datetime', 'verified_at' => 'datetime', 'due_at' => 'datetime', 'notify_assignee' => 'boolean', 'labor_cost' => 'decimal:2', 'external_cost' => 'decimal:2', 'materials_cost' => 'decimal:2'];
     }
 
     protected static function booted(): void

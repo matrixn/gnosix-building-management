@@ -47,6 +47,8 @@ class MaintenanceController extends Controller
             'issue' => MaintenanceIssue::class,'work' => WorkOrder::class,'plan' => MaintenancePlan::class,default => abort(404)
         };
         $m = $class::where('organization_id', $o->id)->where('uuid', $uuid)->firstOrFail();
+        // A field invitation grants the restricted portal, not the general maintenance views/files.
+        abort_unless(app(Workflow::class)->policy()->report($r->user('web'), $m->property), 403);
         Gate::forUser($r->user('web'))->authorize($ability, $m);
 
         return $m;
@@ -247,7 +249,7 @@ class MaintenanceController extends Controller
     public function lookup(Request $r, Organization $organization)
     {
         $this->org($r, $organization);
-        $d = $r->validate(['kind' => 'required|in:property,building,space,asset,member,issue,group,version', 'property' => 'nullable|integer', 'building' => 'nullable|integer', 'q' => 'nullable|string|max:160', 'write' => 'nullable|boolean', 'page' => 'nullable|integer|min:1|max:100000']);
+        $d = $r->validate(['kind' => 'required|in:property,building,space,asset,member,issue,group,version,work', 'property' => 'nullable|integer', 'building' => 'nullable|integer', 'q' => 'nullable|string|max:160', 'write' => 'nullable|boolean', 'page' => 'nullable|integer|min:1|max:100000']);
         $kind = $d['kind'];
         $u = $r->user('web');
         if ($kind === 'group') {
@@ -257,10 +259,13 @@ class MaintenanceController extends Controller
         } else {
             $p = $this->prop($r, $organization, (int) ($d['property'] ?? 0));
             $q = match ($kind) {
-                'building' => $p->buildings()->where('state', '!=', 'archived'),'space' => $p->spaces()->where(fn ($q) => $q->whereNull('building_id')->orWhereHas('building')),'asset' => $p->assets()->available()->whereNull('archived_at'),'member' => User::whereIn('id', $organization->memberships()->select('user_id')),'version' => Version::whereIn('building_id', $p->buildings()->select('id')), 'issue' => $p->maintenanceIssues()->available()->where('state', '!=', 'draft')
+                'building' => $p->buildings()->where('state', '!=', 'archived'),'space' => $p->spaces()->where(fn ($q) => $q->whereNull('building_id')->orWhereHas('building')),'asset' => $p->assets()->available()->whereNull('archived_at'),'member' => User::whereIn('id', $organization->memberships()->select('user_id')),'version' => Version::whereIn('building_id', $p->buildings()->select('id')), 'work' => $p->workOrders()->available()->whereNotIn('state', ['cancelled', 'closed']), 'issue' => $p->maintenanceIssues()->available()->where('state', '!=', 'draft')
             };
             if ($kind === 'version') {
                 abort_unless(app(CapabilityService::class)->allows($u, $organization, 'evidence.upload') || app(CapabilityService::class)->allows($u, $organization, 'evidence.review'), 403);
+            }
+            if ($kind === 'work') {
+                app(Workflow::class)->allowed($u, $p, true);
             }
             if ($kind === 'member') {
                 app(Workflow::class)->allowed($u, $p, true);
@@ -269,7 +274,7 @@ class MaintenanceController extends Controller
                 $q->where('building_id', $d['building']);
             }
         }
-        $column = $kind === 'issue' ? 'title' : ($kind === 'version' ? 'original_name' : 'name');
+        $column = in_array($kind, ['issue', 'work']) ? 'title' : ($kind === 'version' ? 'original_name' : 'name');
         $rows = $q->when($d['q'] ?? null, fn ($q, $s) => $q->where($column, 'like', '%'.$s.'%'))->orderBy('id')->simplePaginate(20);
 
         return response()->json(['items' => collect($rows->items())->map(fn ($m) => ['id' => $m->id, 'label' => $m->$column]), 'more' => $rows->hasMorePages()]);

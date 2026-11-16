@@ -1,0 +1,3 @@
+@extends('layouts.identity')
+@section('title',__('field.invitation'))
+@section('content')<section class="identity-card"><span class="identity-kicker">{{ __('field.scope_identity') }} / {{ $organization->name }}</span><h1>{{ __('field.invitation') }}</h1><p>{{ __('field.link_once') }}</p><label>{{ __('field.invitation') }}<textarea readonly rows="5" autocomplete="off" spellcheck="false">{{ $link }}</textarea></label><p>{{ __('field.expires') }}: {{ $invitation->expires_at }}</p><a class="identity-link" href="{{ route('app.field.manage',[$organization,'property'=>$invitation->property_id]) }}">{{ __('field.manage') }} ↗</a></section>@endsection
