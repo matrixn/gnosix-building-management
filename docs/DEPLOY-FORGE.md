@@ -92,7 +92,13 @@ Verifică în Camere și Spații pe o clădire de test: Șterge → Anulează (c
 
 Nu există migrații sau dependențe noi față de 0.10.1. Deploy-ul regenerează build-ul și cache-ul rutelor: ruta GET separată de confirmare a ștergerii a fost eliminată, iar confirmarea este un dialog în listă.
 
-Verifică pe date de test **Camere și spații → Șterge → Anulează/Escape**, apoi confirmă ștergerea, deschide **Coș de gunoi**, restaurează și verifică structura în Studio. Restaurarea funcționează și cu ștergerile existente care au istoricul creat de 0.10.1. Datele nu se șterg fizic; nu există golire a coșului. Viewerii nu pot restaura. Nu modifica sau șterge reviziile: restaurarea folosește structura ultimei ștergeri.
+Verifică pe date de test **Camere și spații → Șterge → Anulează/Escape**, apoi confirmă ștergerea, deschide **Coș de gunoi**, restaurează și verifică structura în Studio. Restaurarea funcționează și cu ștergerile existente care au istoricul creat de 0.10.1. Ștergerea obișnuită păstrează datele; din 0.12.0 există și ștergere definitivă individuală, prin dialog. Nu există golire în masă a coșului. Viewerii nu pot restaura. Nu modifica sau șterge reviziile: restaurarea folosește structura ultimei ștergeri.
+
+## Ștergere definitivă și proprietăți vizuale — 0.12.0
+
+Nu sunt migrații sau dependențe noi. Deploy-ul obișnuit regenerează build-ul și rutele; cele nouă assets SVG sunt livrate în public/illustrations/properties și nu necesită servicii sau permisiuni speciale.
+
+Verifică pagina Proprietăți: imagine distinctă după tip, click pe card, totaluri și mobil. Testează dialogul de ștergere definitivă numai pe o clădire de test din coș: Anulează/Escape păstrează clădirea, confirmarea o elimină împreună cu structura/ciornele/istoricul. După confirmare nu mai poate fi restaurată din aplicație. Verifică și accesul unui viewer; acesta nu poate purja. Politicile și backup-urile bazei rămân cele ale infrastructurii Forge.
 
 ## Verificare după deploy
 

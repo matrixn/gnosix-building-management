@@ -1,4 +1,4 @@
-# Building Studio unificat — 0.11.0
+# Building Studio și portofoliu — 0.12.0
 
 ## Fluxul clientului
 
@@ -50,14 +50,29 @@ Restaurarea se execută într-o tranzacție, sub blocarea proprietății și a c
 
 O revizie `restored` păstrează autorul, momentul și structura rezultată. Versiunea crește, astfel încât ciornele vechi nu pot suprascrie restaurarea. Repetarea ștergerii/restaurării nu creează copii ale structurii. Istoricul afișează linkuri de export numai pentru snapshot-uri complete.
 
-Dacă istoricul necesar lipsește, sunt rânduri lipsă sau versiunea este depășită, restaurarea este refuzată cu un mesaj explicit și nicio modificare parțială. Nu există ștergere definitivă sau golire a coșului în interfață.
+Dacă istoricul necesar lipsește, sunt rânduri lipsă sau versiunea este depășită, restaurarea este refuzată cu un mesaj explicit și nicio modificare parțială. Din 0.12.0, ștergerea definitivă individuală este disponibilă prin dialogul din coș; golirea întregului coș nu este implementată.
+
+## Ștergerea definitivă din coș
+
+În Coș de gunoi, editorii proprietății au **Restaurează clădirea** și **Șterge definitiv**. Ultimul deschide un dialog în aceeași pagină, cu numele/referința și explicația caracterului ireversibil. Anulează/Escape închid dialogul fără cerere DELETE. Confirmarea trimite CSRF, versiunea și răspunsul pozitiv; pagina separată de confirmare nu există.
+
+`BuildingDeclarationStudio::purge` este singura excepție explicit autorizată de utilizator de la păstrarea istoricului. Blochează proprietatea și clădirea, reverifică permisiunile/capabilitățile și versiunea și acceptă numai clădiri deja în coș. Elimină ciornele asociate, afirmațiile, reviziile, legăturile unitate-spațiu, unitățile, paturile, spațiile și nivelurile (inclusiv arhivate), apoi clădirea. ID-ul, referința și istoricul nu mai pot fi recuperate din aplicație după această acțiune. Proprietatea și celelalte clădiri rămân intacte.
+
+Operațiunea este o singură tranzacție și păstrează verificările FK active. O dependență externă neașteptată produce rollback integral și un mesaj de validare. Nu se dezactivează observerele care protejează apelurile generale `forceDelete`. Funcționalitatea acoperă datele actuale ale clădirii; viitoarele module de documente/active trebuie adăugate explicit fluxului de purjare înainte de publicare.
+
+## Proprietăți în carduri vizuale
+
+Pagina Proprietăți reutilizează stilul bibliotecii de clădiri: carduri complete accesibile la click/Enter, tip, nume, număr de clădiri curente și țară/fus orar. Datele necunoscute nu se inventează. Paginarea și granturile de proprietate rămân cele existente, iar clădirile din coș nu intră în totalul activ.
+
+Fiecare tip are o ilustrație arhitecturală originală SVG în `public/illustrations/properties`: house, cabin, guesthouse, hostel, hotel, resort, apartment, mixed și other. Sunt ilustrații de tip, nu fotografii sau planuri ale proprietății reale. Registrul `workspace.property_visuals` mapează tipurile la assets; pentru un tip fără vizual configurat se folosește other. Fișierele sunt locale, cu dimensiuni declarate, încărcare lazy și fără dependențe externe. Scriptul opțional `python scripts/build-property-illustrations.py` le regenerează reproductibil.
 
 ## Validare și deploy
 
-- `php vendor/bin/phpunit`: 158 teste / 1.495 aserțiuni; include biblioteca, granturi viewer/editor, filtre/tenant, linkuri vechi, asociere, 5 × 10 camere, modificare și mutare fără pierderea datelor/identității.
+- `php vendor/bin/phpunit`: 163 teste / 1.561 aserțiuni; include biblioteca, granturi viewer/editor, filtre/tenant, linkuri vechi, asociere, 5 × 10 camere, modificare și mutare fără pierderea datelor/identității.
 - `node tests/building-generator.mjs`: 10 teste; exemplul hotelului, unknown/zero, append/replace, integritatea legăturilor bed/unit, subsol/parter, numerotare și limite cumulative.
 - `npm run build`: build production; modulul Studio este încărcat dinamic numai pe paginile sale.
+- Browser 0.12.0: proprietăți cu ilustrații distincte și navigare Enter, RO/EN, viewport 390 × 844, dialog permanent fără schimbarea URL-ului, Anulează/Escape și ștergere definitivă pe o clădire fictivă dintr-o bază locală separată; fără erori/warnings de consolă.
 - Browser 0.11.0: dialog fără schimbarea URL-ului, Anulează/Escape, mutare în coș, restaurarea unei clădiri șterse și redeschidere în Studio cu 2 niveluri/4 camere/8 paturi declarate, RO/EN și coș mobil 390 × 844 fără overflow sau erori de consolă.
 - Browser local cu cont/bază de test separate: creare 50 camere, modificare/mutare/salvare, redeschidere din dashboard și bibliotecă, extindere/undo/autosave, asociere spațiu vechi, RO/EN, tastatură, viewport 390 × 844 fără overflow orizontal și fără erori/warnings de consolă.
 
-Versiunea 0.11.0 reutilizează migrarea deleted_at din 0.10.1; nu adaugă migrații, setări sau dependențe noi. Forge folosește fluxul existent: Composer, build Vite, migrații, cache și verificări. Arhiva `build/gnosix-atlas-forge-0.11.0.zip` conține sursele și frontend-ul compilat, fără `.env`, DB sau datele de test. Verificările sunt locale; deploy-ul pe VPS se execută separat.
+Versiunea 0.12.0 reutilizează migrarea deleted_at din 0.10.1; nu adaugă migrații, setări sau dependențe noi. Forge folosește fluxul existent: Composer, build Vite, migrații, cache și verificări. Arhiva `build/gnosix-atlas-forge-0.12.0.zip` conține sursele și frontend-ul compilat, fără `.env`, DB sau datele de test. Verificările sunt locale; deploy-ul pe VPS se execută separat.

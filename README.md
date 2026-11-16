@@ -6,6 +6,15 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
 
+### Ștergere definitivă și portofoliu vizual — 0.12.0
+
+- [x] Ștergere definitivă individuală din coșul de gunoi, cu dialog în aceeași pagină, explicație ireversibilă și Anulează/Escape.
+- [x] Purjare tranzacțională doar pentru clădiri deja șterse: structură activă/arhivată, paturi, unități, legături, ciorne, afirmații și revizii; alte clădiri/proprietăți sunt păstrate.
+- [x] Verificare server pentru confirmare, versiune, acces și capabilități; cheile externe rămân active și legăturile externe neașteptate anulează integral operațiunea.
+- [x] Proprietăți afișate în carduri ca în biblioteca de clădiri, cu click/tastatură, nume, tip, număr de clădiri active și date de localizare cunoscute.
+- [x] Nouă ilustrații SVG originale, distincte după tip: casă, cabană, pensiune, hostel, hotel, resort, apartamente, mixt și altul; assets locale, lazy loading, fără dependențe noi.
+- [x] RO/EN, teste automate, build și verificări în browser desktop/mobil pentru carduri, dialog, anulare și ștergerea unei clădiri fictive locale.
+
 ### Coș de gunoi și dialog de ștergere — 0.11.0
 
 - [x] Coș de gunoi accesibil din Camere și Spații, cu paginare și clădirile șterse vizibile conform accesului la proprietate.
@@ -126,7 +135,7 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 
 - [ ] Activarea profilului Construction & Development și a fluxurilor sale.
 - [ ] Activarea profilului Property & Facility Management și a fluxurilor sale.
-- [ ] Arhivarea proprietăților/grupurilor, politici de retenție/ștergere definitivă și mutarea spațiilor între proprietăți.
+- [ ] Arhivarea proprietăților/grupurilor, politici automate de retenție și mutarea spațiilor între proprietăți.
 - [ ] Mentenanță, echipamente, intervenții, calendar și QR în aplicația operațională.
 - [ ] Încărcarea/stocarea/versionarea și revizuirea documentelor/dovezilor reale.
 - [ ] Evidence Engine operațional: proveniență și detectarea contradicțiilor.
@@ -197,7 +206,7 @@ composer validate --no-check-publish
 php artisan gnosix:check
 ```
 
-158 teste / 1.495 de aserțiuni au verificat declarațiile de clădiri, paturile/unitățile independente, migrarea, arhivarea/recuperarea, importul de 5.000 spații, cele șase scenarii Workspace Studio, structura proprietăților, accesul per proprietate, logo-urile private, unitățile, organizațiile și apartenențele, profilarea, capabilitățile, izolarea tenantului, ciornele, setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
+163 teste / 1.561 de aserțiuni au verificat declarațiile de clădiri, paturile/unitățile independente, migrarea, arhivarea/recuperarea, importul de 5.000 spații, cele șase scenarii Workspace Studio, structura proprietăților, accesul per proprietate, logo-urile private, unitățile, organizațiile și apartenențele, profilarea, capabilitățile, izolarea tenantului, ciornele, setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
 
 Au fost verificate în browser loginul cu parolă, setările SMTP, un test de email către un SMTP sink local, logoutul și paginile mobile. Nu a fost înregistrată o cheie pe dispozitivul real al utilizatorului și nu s-a trimis email extern. Pentru Task 003 s-au verificat suplimentar în browser autosave, refresh, back/forward, creare structură și spațiu comun, RO/EN, paginile de setări și viewport-uri de 1440 și 390 px. Verificarea finală a frontend-ului nu a raportat erori de consolă. Pentru Task 004 s-au verificat și editarea/salvarea declarației, suită cu două spații, spațiu tehnic, export descărcat și reimportat ca șablon, RO/EN, mobile/reduced-motion și navigarea până la nivelul 100 al clădirii cu 5.000 spații. Infrastructura Forge nu a fost modificată.
 
@@ -211,6 +220,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.11.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.12.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

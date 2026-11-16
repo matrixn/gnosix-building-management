@@ -12,6 +12,7 @@ use App\Support\BuildingDeclarationStudio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class BuildingLibraryTest extends TestCase
@@ -343,5 +344,115 @@ class BuildingLibraryTest extends TestCase
         DB::table('building_revisions')->where('id', $revision->id)->update(['before_data' => null]);
         $this->post($path, ['version' => $version])->assertSessionHasErrors('building');
         $this->assertSame(0, $b->revisions()->where('action', 'restored')->count());
+    }
+
+    public function test_permanent_deletion_purges_all_dependent_data_and_leaves_other_buildings_untouched(): void
+    {
+        [$u, $o, $p] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Purge hotel']);
+        $other = $p->buildings()->create(['name' => 'Keep hotel']);
+        $floor = $b->floors()->create(['name' => 'Ground', 'position' => 0]);
+        $room = $b->spaces()->create(['property_id' => $p->id, 'floor_id' => $floor->id, 'name' => '101', 'space_type' => 'room']);
+        $old = $b->spaces()->create(['property_id' => $p->id, 'name' => 'Old room', 'space_type' => 'room', 'archived_at' => now()->subDay()]);
+        $bed = $room->beds()->create(['uuid' => (string) Str::uuid(), 'label' => 'Bed']);
+        $unit = $b->accommodationUnits()->create(['uuid' => (string) Str::uuid(), 'name' => 'Bed unit', 'unit_type' => 'bed', 'bed_id' => $bed->id]);
+        $unit->spaces()->attach($room);
+        $this->get(route('app.declarations.edit', [$o, $p, $b->uuid]))->assertRedirect();
+        $draft = BuildingDeclarationDraft::sole();
+        $this->delete(route('app.declarations.destroy', [$o, $p, $b->uuid]), ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertRedirect();
+        $path = route('app.declarations.purge', [$o, $p, $b->uuid]);
+        $this->get(route('app.spaces.trash', $o))->assertOk()->assertSee('Delete permanently')->assertSee('data-permanent-dialog', false);
+        $this->delete($path, ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertRedirect(route('app.spaces.trash', $o));
+        $this->assertDatabaseMissing('buildings', ['id' => $b->id]);
+        foreach (['floors', 'spaces', 'accommodation_units', 'building_declaration_drafts', 'building_assertions', 'building_revisions'] as $table) {
+            $this->assertDatabaseMissing($table, ['building_id' => $b->id]);
+        }
+        $this->assertDatabaseMissing('space_beds', ['id' => $bed->id]);
+        $this->assertDatabaseMissing('accommodation_unit_space', ['accommodation_unit_id' => $unit->id]);
+        $this->assertNotNull(Building::find($other->id));
+        $this->assertSame(1, $other->revisions()->count());
+        $this->post(route('app.declarations.restore', [$o, $p, $b->uuid]), ['version' => 1])->assertNotFound();
+        $this->get(route('app.declarations.editor', [$o, $p, $draft->id]))->assertNotFound();
+    }
+
+    public function test_permanent_delete_requires_trashed_building_confirmation_and_current_version(): void
+    {
+        [$u, $o, $p] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Protected active']);
+        $path = route('app.declarations.purge', [$o, $p, $b->uuid]);
+        $this->delete($path, ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertNotFound();
+        $this->delete(route('app.declarations.destroy', [$o, $p, $b->uuid]), ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertRedirect();
+        $version = $b->fresh()->declaration_version;
+        $this->delete($path, ['confirmed' => 0, 'version' => $version])->assertSessionHasErrors('confirmed');
+        $this->delete($path, ['confirmed' => 1])->assertSessionHasErrors('version');
+        $this->delete($path, ['confirmed' => 1, 'version' => $version - 1])->assertSessionHasErrors('version');
+        $this->assertSoftDeleted($b);
+    }
+
+    public function test_permanent_delete_enforces_property_membership_and_room_capability(): void
+    {
+        [$u, $o, $p, $m] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Protected trash']);
+        $this->delete(route('app.declarations.destroy', [$o, $p, $b->uuid]), ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertRedirect();
+        $path = route('app.declarations.purge', [$o, $p, $b->uuid]);
+        $data = ['confirmed' => 1, 'version' => $b->fresh()->declaration_version];
+        $m->update(['role' => 'member']);
+        $this->get(route('app.spaces.trash', $o))->assertOk()->assertDontSee($path, false);
+        $this->delete($path, $data)->assertForbidden();
+        $other = $o->properties()->create(['name' => 'Other', 'property_type' => 'hotel', 'country' => 'RO', 'timezone' => 'Europe/Bucharest']);
+        $this->delete(route('app.declarations.purge', [$o, $other, $b->uuid]), $data)->assertNotFound();
+        $m->update(['role' => 'owner']);
+        $o->capabilityOverrides()->create(['capability' => 'hospitality.rooms', 'enabled' => false]);
+        $this->delete($path, $data)->assertForbidden();
+        $this->assertSoftDeleted($b);
+    }
+
+    public function test_permanent_delete_rolls_back_if_an_external_dependency_prevents_it(): void
+    {
+        [$u, $o, $p] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Atomic purge']);
+        $other = $p->buildings()->create(['name' => 'External building']);
+        $floor = $b->floors()->create(['name' => 'Ground', 'position' => 0]);
+        $room = $b->spaces()->create(['property_id' => $p->id, 'floor_id' => $floor->id, 'name' => 'Room', 'space_type' => 'room']);
+        // Simulate an inconsistent external link: FK checks must prevent partial destruction.
+        $external = $other->accommodationUnits()->create(['uuid' => (string) Str::uuid(), 'name' => 'External unit', 'unit_type' => 'room']);
+        $external->spaces()->attach($room);
+        $studio = app(BuildingDeclarationStudio::class);
+        $studio->delete($u, $p, $b, $b->fresh()->declaration_version);
+        $count = $b->revisions()->count();
+        try {
+            $studio->purge($u, $p, $b, $b->fresh()->declaration_version);
+            $this->fail('FK dependency must prevent permanent deletion');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('building', $e->errors());
+        }
+        $this->assertSoftDeleted($b);
+        $this->assertSame($count, $b->revisions()->count());
+        $this->assertDatabaseHas('spaces', ['id' => $room->id]);
+        $this->assertDatabaseHas('accommodation_unit_space', ['accommodation_unit_id' => $external->id, 'space_id' => $room->id]);
+    }
+
+    public function test_property_cards_use_distinct_type_illustrations_and_tenant_scoped_counts(): void
+    {
+        [$u, $o, $p, $m] = $this->fixture();
+        foreach (config('workspace.property_types') as $type) {
+            $o->properties()->create(['name' => 'Card '.$type, 'property_type' => $type, 'country' => 'RO', 'timezone' => 'Europe/Bucharest']);
+        }
+        $p->buildings()->create(['name' => 'Active building']);
+        $b = $p->buildings()->create(['name' => 'Trashed building']);
+        app(BuildingDeclarationStudio::class)->delete($u, $p, $b, $b->fresh()->declaration_version);
+        $response = $this->get(route('app.properties.index', $o))->assertOk()->assertSee('data-property-library', false);
+        $hashes = [];
+        foreach (config('workspace.property_types') as $type) {
+            $response->assertSee('illustrations/properties/'.$type.'.svg', false);
+            $file = public_path('illustrations/properties/'.$type.'.svg');
+            $this->assertFileExists($file);
+            $hashes[] = hash_file('sha256', $file);
+        }
+        $this->assertSame(9, count(array_unique($hashes)));
+        $this->assertSame(1, $p->buildings()->count());
+        $m->update(['role' => 'member', 'access_scope' => 'properties']);
+        $m->propertyAccesses()->create(['property_id' => $p->id, 'permission' => 'viewer']);
+        $this->get(route('app.properties.index', $o))->assertOk()->assertSee('Atlas property')->assertDontSee('Card cabin');
     }
 }

@@ -124,6 +124,16 @@ class BuildingDeclarationController extends Controller
         return redirect()->route('app.spaces.index', $organization)->with('status', __('building.restored_success', ['name' => $building->name]));
     }
 
+    public function purge(Request $request, Organization $organization, Property $property, Building $building, BuildingDeclarationStudio $studio)
+    {
+        $this->building($request, $organization, $property, $building, $studio, true);
+        abort_unless($building->trashed(), 404);
+        $data = $request->validate(['confirmed' => ['required', 'accepted'], 'version' => ['required', 'integer', 'min:0']]);
+        $studio->purge($request->user('web'), $property, $building, (int) $data['version']);
+
+        return redirect()->route('app.spaces.trash', $organization)->with('status', __('building.purged_success', ['name' => $building->name]));
+    }
+
     public function export(Request $r, Organization $organization, Property $property, Building $building, BuildingDeclarationStudio $studio, ?BuildingRevision $revision = null)
     {
         $this->building($r, $organization, $property, $building, $studio);

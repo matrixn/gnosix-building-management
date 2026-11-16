@@ -2,6 +2,7 @@
 
 return [
     'property_types' => ['house', 'cabin', 'guesthouse', 'hostel', 'hotel', 'resort', 'apartment', 'mixed', 'other'],
+    'property_visuals' => ['house' => 'house', 'cabin' => 'cabin', 'guesthouse' => 'guesthouse', 'hostel' => 'hostel', 'hotel' => 'hotel', 'resort' => 'resort', 'apartment' => 'apartment', 'mixed' => 'mixed', 'other' => 'other'],
     'space_types' => ['room', 'apartment', 'dormitory', 'shared_room', 'technical', 'corridor', 'storage', 'common', 'house', 'other'],
     'amenities' => ['wifi', 'parking', 'pool', 'kitchen', 'accessible', 'meeting'],
     'facilities' => ['reception', 'pool', 'dining', 'garden'],

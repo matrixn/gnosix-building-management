@@ -12,6 +12,7 @@ Route::prefix('organizations/{organization}/properties/{property}')->group(funct
     Route::get('declarations/{building:uuid}/edit', [Studio::class, 'edit'])->name('app.declarations.edit');
     Route::delete('declarations/{building:uuid}', [Studio::class, 'destroy'])->middleware('throttle:customer-sensitive')->name('app.declarations.destroy');
     Route::post('declarations/{building:uuid}/restore', [Studio::class, 'restore'])->withTrashed()->middleware('throttle:customer-sensitive')->name('app.declarations.restore');
+    Route::delete('declarations/{building:uuid}/permanent', [Studio::class, 'purge'])->withTrashed()->middleware('throttle:customer-sensitive')->name('app.declarations.purge');
     Route::get('declarations/{building:uuid}/export', [Studio::class, 'export'])->name('app.declarations.export');
     Route::get('declarations/{building:uuid}/revisions/{revision}/export', [Studio::class, 'export'])->name('app.declarations.revision');
 });

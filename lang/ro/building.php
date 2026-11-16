@@ -1,5 +1,16 @@
 <?php
 return [
+    'property_buildings' => '{0} Fără clădiri|{1} :count clădire|[2,*] :count clădiri',
+    'purge_dependencies' => 'Clădirea are legături cu date din afara ei. Ștergerea a fost anulată integral. Contactează administratorul.',
+    'properties_title' => 'Proprietățile tale. Un portofoliu viu.',
+    'properties_hint' => 'De la o cabană la un întreg resort. Deschide o proprietate pentru a-i explora clădirile și spațiile.',
+    'properties_empty_hint' => 'Adaugă prima proprietate din Workspace Studio.',
+    'purge_building' => 'Șterge definitiv',
+    'purge_question' => 'Ștergi definitiv această clădire?',
+    'purge_explanation' => 'Această acțiune nu poate fi anulată. Clădirea și toate nivelurile, camerele, paturile, unitățile de cazare, ciornele și istoricul ei vor fi șterse definitiv. Nu o vei mai putea restaura din coșul de gunoi.',
+    'confirm_purge' => 'Da, șterge definitiv',
+    'purged_success' => 'Clădirea „:name” și datele ei au fost șterse definitiv.',
+    'purge_conflict' => 'Clădirea a fost modificată între timp. Reîncarcă coșul de gunoi și confirmă din nou.',
     'trash' => 'Coș de gunoi',
     'current_buildings' => 'Clădiri',
     'library_navigation' => 'Biblioteca de clădiri',

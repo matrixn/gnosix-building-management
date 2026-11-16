@@ -6,6 +6,7 @@ use App\Models\Building;
 use App\Models\BuildingDeclarationDraft;
 use App\Models\Property;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -195,6 +196,37 @@ class BuildingDeclarationStudio
             });
             BuildingAudit::record($building, 'restored', 'declaration', $building->uuid, ['deleted_at' => $revision->after_data['deleted_at'] ?? null], $this->snapshot($building));
         });
+    }
+
+    public function purge(User $user, Property $property, Building $building, int $version): void
+    {
+        try {
+            DB::transaction(function () use ($user, $property, $building, $version) {
+                Property::whereKey($property->id)->lockForUpdate()->firstOrFail();
+                $this->authorize($user, $property, true);
+                abort_unless(app(CapabilityService::class)->allows($user, $property->organization, 'hospitality.rooms'), 403);
+                $building = $property->buildings()->onlyTrashed()->lockForUpdate()->findOrFail($building->id);
+                if ($building->declaration_version !== $version) {
+                    throw ValidationException::withMessages(['version' => __('building.purge_conflict')]);
+                }
+                // Explicit permanent deletion is the sole exception to retained building history.
+                // Keep FK checks enabled: an unexpected external dependency rolls everything back.
+                DB::table('building_declaration_drafts')->where('property_id', $property->id)->where('building_id', $building->id)->delete();
+                DB::table('building_assertions')->where('building_id', $building->id)->delete();
+                DB::table('building_revisions')->where('building_id', $building->id)->delete();
+                DB::table('accommodation_unit_space')->whereIn('accommodation_unit_id', DB::table('accommodation_units')->where('building_id', $building->id)->select('id'))->delete();
+                DB::table('accommodation_units')->where('building_id', $building->id)->delete();
+                DB::table('space_beds')->whereIn('space_id', DB::table('spaces')->where('property_id', $property->id)->where('building_id', $building->id)->select('id'))->delete();
+                DB::table('spaces')->where('property_id', $property->id)->where('building_id', $building->id)->delete();
+                DB::table('floors')->where('building_id', $building->id)->delete();
+                DB::table('buildings')->where('property_id', $property->id)->whereNotNull('deleted_at')->where('id', $building->id)->delete();
+            });
+        } catch (QueryException $exception) {
+            if (in_array($exception->errorInfo[0] ?? null, ['23000', '23503'], true)) {
+                throw ValidationException::withMessages(['building' => __('building.purge_dependencies')]);
+            }
+            throw $exception;
+        }
     }
 
     private function checkKeys(array $s, ?Building $b): void

@@ -1,5 +1,16 @@
 <?php
 return [
+    'property_buildings' => '{0} No buildings|{1} :count building|[2,*] :count buildings',
+    'purge_dependencies' => 'This building has links to data outside its structure. Permanent deletion was fully cancelled. Contact your administrator.',
+    'properties_title' => 'Your properties. A living portfolio.',
+    'properties_hint' => 'From one cabin to an entire resort. Open a property to explore its buildings and spaces.',
+    'properties_empty_hint' => 'Add your first property in Workspace Studio.',
+    'purge_building' => 'Delete permanently',
+    'purge_question' => 'Permanently delete this building?',
+    'purge_explanation' => 'This action cannot be undone. The building and all its levels, rooms, beds, accommodation units, drafts and history will be permanently deleted. You will no longer be able to restore it from Trash.',
+    'confirm_purge' => 'Yes, delete permanently',
+    'purged_success' => 'Building “:name” and its data were permanently deleted.',
+    'purge_conflict' => 'The building has changed. Reload Trash and confirm again.',
     'trash' => 'Trash',
     'current_buildings' => 'Buildings',
     'library_navigation' => 'Building library',
