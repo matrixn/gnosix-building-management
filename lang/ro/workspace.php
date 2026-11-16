@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'cap_assets_view' => 'Vizualizarea activelor',
+    'cap_assets_manage' => 'Administrarea activelor',
+    'cap_assets_review' => 'Review pentru active',
+    'cap_assets_types' => 'Categorii de active',
+
     'organizations' => 'Organizații',
     'new_organization' => 'Organizație nouă',
     'choose_direction' => 'Ce construim împreună?',

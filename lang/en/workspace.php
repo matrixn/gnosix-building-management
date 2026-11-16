@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'cap_assets_view' => 'View assets',
+    'cap_assets_manage' => 'Manage assets',
+    'cap_assets_review' => 'Review asset facts',
+    'cap_assets_types' => 'Asset categories',
+
     'organizations' => 'Organizations',
     'new_organization' => 'New organization',
     'choose_direction' => 'What are we building together?',

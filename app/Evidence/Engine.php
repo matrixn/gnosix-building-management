@@ -162,7 +162,7 @@ class Engine
         $openCount = Conflict::where('building_id', $b->id)->where('status', 'open')->count();
         Assertion::where('building_id', $b->id)->where('id', '!=', $a->id)->where('subject_type', $a->subject_type)->where('subject_reference', $a->subject_reference)->where('semantic_key', $a->semantic_key)->whereIn('status', ['proposed', 'confirmed', 'disputed'])->orderBy('id')->chunkById(100, function ($peers) use ($a, $b, &$openCount) {
             foreach ($peers as $peer) {
-                if (! Facts::same($peer->value, $a->value)) {
+                if (! Facts::same($peer->value, $a->value, $a->value_type)) {
                     if (++$openCount > 2000) {
                         throw ValidationException::withMessages(['assertion' => __('evidence.review_capacity')]);
                     }Conflict::create(['building_id' => $b->id, 'assertion_id' => $a->id, 'existing_assertion_id' => $peer->id]);

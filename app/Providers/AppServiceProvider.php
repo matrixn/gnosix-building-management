@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Evidence\Extractor;
 use App\Evidence\ProviderExtractor;
 use App\Mail\PlatformMailManager;
+use App\Models\Asset;
 use App\Models\Building;
 use App\Models\Floor;
 use App\Models\Organization;
@@ -12,6 +13,7 @@ use App\Models\Property;
 use App\Models\Space;
 use App\Models\User;
 use App\Observers\BuildingStructureObserver;
+use App\Policies\AssetPolicy;
 use App\Policies\OrganizationPolicy;
 use App\Policies\PropertyPolicy;
 use App\Policies\UserPolicy;
@@ -41,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(Asset::class, AssetPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Organization::class, OrganizationPolicy::class);
         Gate::policy(Property::class, PropertyPolicy::class);

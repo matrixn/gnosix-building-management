@@ -1,4 +1,5 @@
 <?php
+
 return [
     'property_buildings' => '{0} Fără clădiri|{1} :count clădire|[2,*] :count clădiri',
     'purge_dependencies' => 'Clădirea are legături cu date din afara ei. Ștergerea a fost anulată integral. Contactează administratorul.',
@@ -148,9 +149,9 @@ return [
     'persistent_identity' => 'Un reper care rămâne.',
     'provenance' => 'PROVENIENȚĂ',
     'declared_identity' => 'Știm și de unde știm.',
-    'provenance_hint' => 'Modificările manuale și importurile sunt păstrate cu autor și moment. Informațiile viitoare extrase din documente vor avea surse separate.',
+    'provenance_hint' => 'Declarațiile manuale au propriul istoric. Documentele și afirmațiile lor sunt gestionate separat în Memoria clădirii, iar echipamentele în Registrul activelor.',
     'unverified' => 'Declarat · neverificat documentar',
-    'evidence_future' => 'Atașarea și verificarea documentelor urmează într-o etapă viitoare.',
+    'evidence_future' => 'Documentele pot fi încărcate și revizuite în Memoria clădirii. Aprobarea lor nu rescrie automat această declarație.',
     'no_units' => 'Nicio unitate de cazare declarată. Spațiile fizice rămân independente.',
     'history' => 'MEMORIA CLĂDIRII',
     'history_title' => 'Fiecare schimbare are un context.',
@@ -215,7 +216,7 @@ return [
     'previous' => 'Anterior',
     'next' => 'Următor',
     'why' => 'De ce contează?',
-    'memory_hint' => 'Contextul fiecărui spațiu va lega viitoarele documente, echipamente și intervenții de locul potrivit.',
+    'memory_hint' => 'Spațiul oferă context pentru echipamentele asociate și documentele din memoria clădirii. Intervențiile de mentenanță vor urma separat.',
     'choose_preset' => 'Alege mai întâi un tip de clădire.',
     'confirm_name' => 'Completează numele clădirii.',
     'no_spaces' => 'Fără spații declarate',

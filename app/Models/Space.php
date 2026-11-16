@@ -44,4 +44,9 @@ class Space extends Model
     {
         return $this->belongsTo(Floor::class);
     }
+
+    public function assets()
+    {
+        return $this->hasMany(Asset::class);
+    }
 }

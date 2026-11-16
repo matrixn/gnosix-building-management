@@ -1,0 +1,5 @@
+@php($selected=$selected??collect())
+<div class="asset-lookup" data-asset-lookup data-kind="{{ $kind }}" data-property="{{ $propertyId??'' }}" data-location="{{ $location??'0' }}" data-write="{{ $write??'0' }}">
+<label>{{ $label }}<select name="{{ $name }}" @if($multiple??false) multiple size="4" @endif @if($required??false) required @endif><option value="" @disabled($multiple??false)>{{ __('asset.unknown') }}</option>@foreach($selected as $item)<option value="{{ $item['id'] }}" selected>{{ $item['label'] }}</option>@endforeach</select></label>
+<div class="asset-lookup-tools"><input type="search" maxlength="160" data-lookup-search aria-label="{{ __('asset.search_for',['label'=>$label]) }}" placeholder="{{ __('asset.search') }}"><button type="button" class="identity-text-button" data-lookup-find>{{ __('asset.find') }}</button><button type="button" class="identity-text-button" data-lookup-next>{{ __('asset.more') }}</button></div><small role="status" data-lookup-status>{{ __('asset.lookup_help') }}</small>
+</div>

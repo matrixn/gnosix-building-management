@@ -1,10 +1,27 @@
 # GNOSIX Building Management
 
-Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Evidence Engine oferă documente private/versionate, afirmații cu proveniență, review și conflicte. Mentenanța rămâne în dezvoltare.
+Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Evidence Engine oferă documente private/versionate, afirmații cu proveniență, review și conflicte. Smart Asset Registry adaugă pașapoarte și echipamente legate de spații/sisteme și dovezi. Mentenanța rămâne în dezvoltare.
 
 ## Checklist de livrare
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
+
+### Smart Asset Registry — 0.15.0
+
+- [x] Audit al stackului și arhitecturii existente; Laravel 13 / Blade / Vite, fără migrare la Vue/Inertia sau motor Evidence duplicat.
+- [x] Active fizice universale cu UUID/referință stabile, proprietate, localizare opțională clădire/nivel/spațiu, sisteme și spații deservite în mai multe clădiri ale proprietății.
+- [x] Categorii și atribute configurabile în organizație, editor vizual, tipuri validate, preseturi pentru toate categoriile cerute; valori necunoscute păstrate null.
+- [x] Date manuale pentru producător/model/serie, instalare, achiziție, garanție, stare și note; fotografii private validate, semnate și restituibile după arhivare.
+- [x] Asset Passport Studio RO/EN, layout responsive, focus/controale accesibile, motion redus, date secundare extensibile și istoric de modificări.
+- [x] Asociere explicită cu afirmații/versiuni Evidence existente și aprobări documentare separate, cu justificare, revizii, conflicte vizibile și fără suprascriere silențioasă.
+- [x] Import asistat din documentele deja procesate: potriviri după serie/identificator, semnalare duplicate, confirmare înainte de creare/asociere; producătorul/modelul nu stabilesc singure identitatea.
+- [x] Building Studio încarcă echipamentele camerei la click, inclusiv sistemele comune care o deservesc, paginat și fără inventar complet în snapshot.
+- [x] Politici/granturi și capabilități view/manage/review/types, CSRF/throttling, tranzacții, audit, archive/restore și integrare sigură cu coșul/purjarea clădirilor.
+- [x] Dataset de 10.000 active: căutare/filtre/paginare pe server, 24 carduri și lookup-uri de 20; teste pentru scenarii, tenant, seriale, dovezi, arhivare, fotografii și retenție.
+- [x] Teste și build production, verificare browser desktop/mobil RO/EN, documentație și pachet Forge actualizate; fără dependențe noi.
+- [ ] Validare de deploy pe VPS/MySQL/MariaDB; transfer între proprietăți, mentenanță/intervenții și QR sunt milestone-uri ulterioare.
+
+Arhitectură, fișiere, retenție și limite: [SMART-ASSET-REGISTRY.md](docs/SMART-ASSET-REGISTRY.md).
 
 ### Furnizori AI alternativi și modele gratuite — 0.14.0
 
@@ -164,7 +181,8 @@ Implementare, fișiere, limite și verificări: [GENESIS-005.md](docs/GENESIS-00
 - [ ] Activarea profilului Construction & Development și a fluxurilor sale.
 - [ ] Activarea profilului Property & Facility Management și a fluxurilor sale.
 - [ ] Arhivarea proprietăților/grupurilor, politici automate de retenție și mutarea spațiilor între proprietăți.
-- [ ] Mentenanță, echipamente, intervenții, calendar și QR în aplicația operațională.
+- [x] Registru operațional de echipamente și pașapoarte — livrat în 0.15.0.
+- [ ] Mentenanță, intervenții, calendar și QR în aplicația operațională.
 - [x] Încărcarea/stocarea/versionarea și revizuirea documentelor/dovezilor reale — livrate în Task 005; extracția live necesită configurarea furnizorului.
 - [ ] Evidence Engine operațional: proveniență și detectarea contradicțiilor.
 - [ ] Time Machine operațional și Building DNA cu relații reale între active.
@@ -248,6 +266,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.14.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.15.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Assets\Registry;
 use App\Evidence\Retention;
 use App\Models\Building;
 use App\Models\BuildingDeclarationDraft;
@@ -210,6 +211,7 @@ class BuildingDeclarationStudio
                 if ($building->declaration_version !== $version) {
                     throw ValidationException::withMessages(['version' => __('building.purge_conflict')]);
                 }
+                app(Registry::class)->purgeBuilding($building, $user);
                 app(Retention::class)->purge($building);
                 // Explicit permanent deletion is the sole exception to retained building history.
                 // Keep FK checks enabled: an unexpected external dependency rolls everything back.

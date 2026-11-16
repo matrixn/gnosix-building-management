@@ -1,7 +1,7 @@
 @extends('layouts.identity')
 @section('title', $building->display_name ?: $building->name)
 @section('content')
-<div class="bld-shell" data-building-dashboard @can('update', $property) @if($rooms) data-edit-url="{{ route('app.declarations.edit', [$organization,$property,$building->uuid]) }}" @endif @endcan>
+<div class="bld-shell" data-building-dashboard @include('assets.building-context') @can('update', $property) @if($rooms) data-edit-url="{{ route('app.declarations.edit', [$organization,$property,$building->uuid]) }}" @endif @endcan>
     <header class="bld-heading">
         <div>
             <a class="identity-link" href="{{ route('app.properties.show', [$organization, $property]) }}">← {{ $property->name }}</a>

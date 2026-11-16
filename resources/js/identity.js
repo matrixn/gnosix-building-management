@@ -1,3 +1,4 @@
+if(document.querySelector('[data-asset-studio]')) import('./assets.js');
 if(document.querySelector('[data-evidence-studio]')) import('./evidence.js');
 import './building-library.js';
 if (document.querySelector('[data-building-studio], [data-building-dashboard]')) import('./building-studio.js');

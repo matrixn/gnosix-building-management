@@ -64,4 +64,9 @@ class Building extends Model
     {
         return $this->hasMany(Space::class);
     }
+
+    public function assets()
+    {
+        return $this->hasMany(Asset::class);
+    }
 }

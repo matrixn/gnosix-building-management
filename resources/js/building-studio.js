@@ -1,3 +1,4 @@
+import {mountRoomAssets} from './asset-room.js';
 import {generateBuilding} from './building-generator.js';
 import {drawBuilding} from './building-scene.js';
 const root=document.querySelector('[data-building-studio],[data-building-dashboard]');
@@ -53,7 +54,7 @@ if(root){
   const host=$('[data-inspector]');host.replaceChildren();const selected=flatSpaces().find(s=>s.key===space);
   if(unit){if(editing)paintUnitInspector(host);else{const u=state.units.find(x=>x.key===unit);host.append(el('h2',{},u.name),el('p',{},t['unit_'+u.unit_type]));flatSpaces().filter(s=>u.space_keys.includes(s.key)).forEach(s=>host.append(el('p',{},s.name)));}return;}
   if(selected){
-   host.append(el('h2',{},selected.name));
+   host.append(el('h2',{},selected.name));mountRoomAssets(root,host,selected.key);
    if(!editing){host.append(el('p',{},t['type_'+selected.space_type]||selected.space_type));['number','bed_count','capacity','area_m2'].forEach(k=>host.append(metric(k,selected[k]??t.unknown)));if(selected.beds.length)host.append(el('h3',{},t.individual_beds),...selected.beds.map(b=>el('p',{},b.label)));return;}
    host.append(inputField(t.space_name,selected.name,v=>selected.name=v,'text',{maxlength:150}),selectField(t.space_type,selected.space_type,cfg.space_types.map(k=>[k,t['type_'+k]]),v=>selected.space_type=v),inputField(t.number,selected.number,v=>selected.number=v||null,'text',{maxlength:40}));
    ['capacity','bed_count','area_m2'].forEach(k=>host.append(inputField(t[k],selected[k],v=>selected[k]=v===''?null:Number(v),'number',{min:0,max:k==='area_m2'?100000000:1000,step:k==='area_m2'?'.001':1})));

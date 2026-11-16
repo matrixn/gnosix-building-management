@@ -1,4 +1,5 @@
 <?php
+
 return [
     'property_buildings' => '{0} No buildings|{1} :count building|[2,*] :count buildings',
     'purge_dependencies' => 'This building has links to data outside its structure. Permanent deletion was fully cancelled. Contact your administrator.',
@@ -148,9 +149,9 @@ return [
     'persistent_identity' => 'An identity that endures.',
     'provenance' => 'PROVENANCE',
     'declared_identity' => 'What we know. How we know it.',
-    'provenance_hint' => 'Manual changes and imports keep their author and time. Future document-extracted information will have separate sources.',
+    'provenance_hint' => 'Manual declarations retain their own history. Documents and assertions are managed separately in Building Memory, and equipment in the Asset Registry.',
     'unverified' => 'Declared · not document-verified',
-    'evidence_future' => 'Document attachment and verification will follow in a future stage.',
+    'evidence_future' => 'Documents can be uploaded and reviewed in Building Memory. Approval never automatically rewrites this declaration.',
     'no_units' => 'No accommodation units declared. Physical spaces remain independent.',
     'history' => 'BUILDING MEMORY',
     'history_title' => 'Every change has context.',
@@ -215,7 +216,7 @@ return [
     'previous' => 'Previous',
     'next' => 'Next',
     'why' => 'Why does it matter?',
-    'memory_hint' => 'Each space provides context for future documents, equipment and maintenance.',
+    'memory_hint' => 'Spaces provide context for linked equipment and building evidence. Maintenance workflows will follow separately.',
     'choose_preset' => 'Choose a building type first.',
     'confirm_name' => 'Enter the building name.',
     'no_spaces' => 'No declared spaces',

@@ -60,3 +60,6 @@ Următorul milestone recomandat: registru de echipamente și sisteme cu identit�
 
 
 Extensie 0.14.0: adapterele Gemini/OpenRouter/Ollama și setările per furnizor sunt documentate în [AI-PROVIDERS.md](AI-PROVIDERS.md). Paragrafele de mai sus descriu livrarea inițială 0.13.0.
+
+
+Extensie 0.15.0: registrul real de active, asocierea manuală a surselor și stratul distinct de aprobări sunt descrise în [SMART-ASSET-REGISTRY.md](SMART-ASSET-REGISTRY.md). Nu se mai aplică limitarea inițială privind lipsa registrului de echipamente.

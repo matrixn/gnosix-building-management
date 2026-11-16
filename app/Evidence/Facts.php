@@ -69,9 +69,9 @@ class Facts
         return ['subject_type' => $subject, 'subject_reference' => $reference, 'space_id' => $spaceId, 'semantic_key' => $key, 'value_type' => $type, 'value' => $value, 'original_value' => $raw, 'quote' => self::clean($d['quote'] ?? null), 'page' => $d['page'] ?? null, 'region' => $region, 'ai_confidence' => $d['confidence'] ?? null, 'effective_on' => $d['effective_on'] ?? null];
     }
 
-    public static function same(mixed $a, mixed $b): bool
+    public static function same(mixed $a, mixed $b, ?string $type = null): bool
     {
-        if (is_numeric($a) && is_numeric($b)) {
+        if ($type !== 'string' && is_numeric($a) && is_numeric($b)) {
             return round((float) $a, 6) === round((float) $b, 6);
         }
 

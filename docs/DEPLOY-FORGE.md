@@ -152,3 +152,14 @@ Purjarea din coș elimină metadatele într-o tranzacție și programează șter
 ## Furnizori alternativi — 0.14.0
 
 Fără migrații sau dependențe noi. Configurația OpenAI existentă se păstrează. După deploy, din Setări → Evidence Engine & AI poți alege Gemini/OpenRouter/Ollama și introduce modelul/cheia sursei respective. Workerul evidence și schedulerul existent rămân necesare, iar workerii trebuie reporniți pentru noul binding. Pentru Ollama este necesară instalarea serviciului local separat și dezactivarea cloud; aplicația nu face instalări pe VPS. PDF-urile merg prin Gemini/OpenAI, iar OpenRouter/Ollama acceptă în această integrare PNG/JPEG. Configurarea gratuită și limitele sunt în [AI-PROVIDERS.md](AI-PROVIDERS.md). Nu au fost făcute apeluri AI live sau modificări pe VPS în verificarea locală.
+
+
+## Smart Asset Registry — 0.15.0
+
+Deploy-ul existent aplică migrarea aditivă `2026_11_16_220000_create_smart_asset_registry`, apoi regenerează build-ul și cache-urile. Nu sunt dependențe sau chei .env noi. Păstrează backup pentru DB și storage privat înainte de deploy; nu rula rollback sau migrate:fresh pe date reale.
+
+Fotografiile folosesc discul privat Evidence în subdirectorul assets; storage rămâne partajat între release-uri, fără link public. Limitele sunt 3 × 5 MB/încărcare și 20 originale/activ. Schedulerul/workerul Evidence existent rămân necesare pentru funcțiile lor; registrul și importul din afirmații existente nu necesită un worker nou și nu trimit automat date către AI.
+
+Smoke test pe o proprietate de test: creează un activ în cameră, editează pașaportul, încarcă o fotografie, leagă o afirmație/document, verifică justificarea și înlocuirea explicită la diferențe, importă un candidat, arhivează/restaurează, apoi click pe cameră în Building Studio. Verifică și un viewer fără drept de editare. Performanța de 10.000 active a fost testată pe SQLite local; monitorizează interogările și discul pe configurația VPS reală. Nu s-a făcut deploy sau test pe DB-ul de producție în această livrare.
+
+La purjarea unei clădiri, activele fizice sunt arhivate la proprietate cu identitatea păstrată; sursele eliminate devin indisponibile, iar aprobările dependente sunt retrase. Detalii și fișiere: [SMART-ASSET-REGISTRY.md](SMART-ASSET-REGISTRY.md).

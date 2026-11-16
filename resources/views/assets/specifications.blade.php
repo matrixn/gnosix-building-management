@@ -1,0 +1,5 @@
+<section class="identity-card asset-panel"><h2>{{ __('asset.specifications') }}</h2>
+@php($coreFields=['manufacturer','model','serial_number','installation_date','warranty_end'])
+<div class="asset-fact-grid">@foreach($coreFields as $field)@include('assets.fact') @endforeach</div>
+<details class="asset-optional-facts"><summary>{{ __('asset.purchase_warranty') }} / {{ __('asset.field_notes') }}</summary><p class="field-help">{{ __('asset.optional_information') }}</p><div class="asset-fact-grid">@foreach(array_unique([...array_diff(config('assets.fields'),$coreFields),'in_service']) as $field)@include('assets.fact') @endforeach</div></details>
+@if(count($asset->manual_data['attributes']??[]))<h3>{{ __('asset.custom_attributes') }}</h3><dl class="asset-definition">@foreach($asset->manual_data['attributes'] as $key=>$value)@php($spec=collect($asset->type->attribute_schema)->firstWhere('key',$key))<div><dt>{{ $spec['label']??$key }} @if(filled($spec['unit']??null))({{ $spec['unit'] }})@endif</dt><dd>{{ $value===null?__('asset.unknown'):(is_bool($value)?__($value?'asset.yes':'asset.no'):$value) }}</dd></div>@endforeach</dl>@endif</section>

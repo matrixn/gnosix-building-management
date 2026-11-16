@@ -23,7 +23,7 @@ class Retention
     {
         $count = 0;
         foreach (DB::table('evidence_file_deletions')->orderBy('id')->limit(500)->get() as $file) {
-            if (! preg_match('~^\d+/[a-f0-9-]{36}/[a-f0-9-]{36}/original\.bin$~D', $file->path)) {
+            if (! preg_match('~^(?:assets/)?\d+/[a-f0-9-]{36}/[a-f0-9-]{36}/original\.bin$~D', $file->path)) {
                 continue;
             }
             if (! Storage::disk('evidence')->exists($file->path) || Storage::disk('evidence')->delete($file->path)) {
