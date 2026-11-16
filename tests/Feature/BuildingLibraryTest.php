@@ -148,4 +148,98 @@ class BuildingLibraryTest extends TestCase
         $this->post($path, ['building_id' => $b->id])->assertForbidden();
         $this->get($url.'/spaces')->assertForbidden();
     }
+
+    public function test_confirmation_is_read_only_and_requires_positive_answer_and_current_version(): void
+    {
+        [$u, $o, $p, $m, $url] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Confirm building']);
+        $path = route('app.declarations.destroy', [$o, $p, $b->uuid]);
+        $this->get(route('app.declarations.delete', [$o, $p, $b->uuid]))->assertOk()->assertSee('Yes, delete building')->assertSee('Cancel');
+        $this->assertNotNull(Building::find($b->id));
+        $this->delete($path, ['confirmed' => 'no', 'version' => $b->fresh()->declaration_version])->assertSessionHasErrors('confirmed');
+        $this->delete($path, ['confirmed' => '1'])->assertSessionHasErrors('version');
+        $oldVersion = $b->fresh()->declaration_version;
+        $b->update(['name' => 'Changed after confirmation']);
+        $this->delete($path, ['confirmed' => '1', 'version' => $oldVersion])->assertSessionHasErrors('version');
+        $this->assertNotNull(Building::find($b->id));
+    }
+
+    public function test_confirmed_deletion_removes_the_whole_building_from_workflows_but_preserves_identity_and_history(): void
+    {
+        [$u, $o, $p, $m, $url] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Delete this hotel']);
+        $other = $p->buildings()->create(['name' => 'Keep this hotel']);
+        $floor = $b->floors()->create(['name' => 'Ground', 'position' => 0]);
+        $space = $b->spaces()->create(['property_id' => $p->id, 'floor_id' => $floor->id, 'name' => 'Room 101', 'space_type' => 'room', 'bed_count' => 1, 'area_m2' => 15]);
+        $bed = $space->beds()->create(['uuid' => (string) Str::uuid(), 'label' => 'Bed A']);
+        $unit = $b->accommodationUnits()->create(['uuid' => (string) Str::uuid(), 'name' => 'Unit A', 'unit_type' => 'room']);
+        $unit->spaces()->attach($space);
+        $this->get(route('app.declarations.edit', [$o, $p, $b->uuid]))->assertRedirect();
+        $draft = BuildingDeclarationDraft::sole();
+        $historyCount = $b->revisions()->count();
+        $version = $b->fresh()->declaration_version;
+        $this->delete(route('app.declarations.destroy', [$o, $p, $b->uuid]), ['confirmed' => 1, 'version' => $version])->assertRedirect(route('app.spaces.index', $o))->assertSessionHas('status');
+        $this->assertSoftDeleted('buildings', ['id' => $b->id, 'uuid' => $b->uuid]);
+        $this->assertNull(Building::find($b->id));
+        $this->assertSame($version + 1, Building::withTrashed()->find($b->id)->declaration_version);
+        $this->assertDatabaseHas('spaces', ['id' => $space->id, 'uuid' => $space->uuid, 'area_m2' => 15]);
+        $this->assertSame(0, $p->spaces()->count());
+        $this->assertSame(0, $b->floors()->count());
+        $this->assertSame(0, $space->beds()->count());
+        $this->assertSame(0, $b->accommodationUnits()->count());
+        $this->assertDatabaseHas('accommodation_unit_space', ['space_id' => $space->id, 'accommodation_unit_id' => $unit->id]);
+        $this->assertSame($historyCount + 1, $b->revisions()->count());
+        $deletion = $b->revisions()->where('action', 'deleted')->sole();
+        $this->assertSame($u->id, $deletion->actor_id);
+        $this->assertSame($space->uuid, $deletion->before_data['levels'][0]['spaces'][0]['key']);
+        $this->get($url.'/spaces')->assertOk()->assertDontSee('<h3>Delete this hotel</h3>', false)->assertSee('Keep this hotel');
+        $this->get(route('app.declarations.show', [$o, $p, $b->uuid]))->assertNotFound();
+        $this->get(route('app.declarations.editor', [$o, $p, $draft->id]))->assertNotFound();
+        $this->postJson(route('app.declarations.commit', [$o, $p, $draft->id]), ['version' => 1, 'state' => $draft->state])->assertNotFound();
+        $this->assertNotNull(Building::find($other->id));
+    }
+
+    public function test_delete_is_denied_for_viewer_other_tenant_and_disabled_rooms(): void
+    {
+        [$u, $o, $p, $m, $url] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Protected hotel']);
+        $b->spaces()->create(['property_id' => $p->id, 'name' => 'Protected room', 'space_type' => 'room']);
+        $path = route('app.declarations.destroy', [$o, $p, $b->uuid]);
+        $data = ['confirmed' => 1, 'version' => $b->fresh()->declaration_version];
+        $m->update(['role' => 'member']);
+        $this->get(route('app.declarations.delete', [$o, $p, $b->uuid]))->assertForbidden();
+        $this->delete($path, $data)->assertForbidden();
+        $this->get($url.'/spaces')->assertOk()->assertDontSee(route('app.declarations.delete', [$o, $p, $b->uuid]), false);
+        $m->update(['role' => 'owner']);
+        $other = Organization::create(['name' => 'Foreign organization']);
+        $foreign = $other->properties()->create(['name' => 'Foreign', 'property_type' => 'hotel', 'country' => 'RO', 'timezone' => 'Europe/Bucharest']);
+        $this->delete(route('app.declarations.destroy', [$o, $foreign, $b->uuid]), $data)->assertNotFound();
+        $this->delete(route('app.declarations.destroy', [$other, $foreign, $b->uuid]), $data)->assertNotFound();
+        $o->capabilityOverrides()->create(['capability' => 'hospitality.rooms', 'enabled' => false]);
+        $this->delete($path, $data)->assertForbidden();
+        $this->assertNotNull(Building::find($b->id));
+    }
+
+    public function test_force_deletion_is_still_blocked_to_preserve_identity_history(): void
+    {
+        [$u, $o, $p] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Keep history']);
+        $this->expectException(\LogicException::class);
+        $b->forceDelete();
+    }
+
+    public function test_deleted_building_reference_remains_reserved_with_validation_instead_of_database_error(): void
+    {
+        [$u, $o, $p] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Reserved identity', 'reference' => 'HOTEL-ORIGINAL']);
+        $this->delete(route('app.declarations.destroy', [$o, $p, $b->uuid]), ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertRedirect();
+        $this->get(route('app.declarations.new', [$o, $p]))->assertRedirect();
+        $draft = BuildingDeclarationDraft::sole();
+        $state = $draft->state;
+        $state['identity']['name'] = 'New building';
+        $state['identity']['reference'] = 'HOTEL-ORIGINAL';
+        $this->postJson(route('app.declarations.commit', [$o, $p, $draft->id]), ['version' => 1, 'state' => $state])->assertUnprocessable()->assertJsonValidationErrors('reference');
+        $this->assertSame(0, Building::count());
+        $this->assertSame(1, Building::withTrashed()->count());
+    }
 }

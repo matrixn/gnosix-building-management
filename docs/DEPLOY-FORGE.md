@@ -82,6 +82,12 @@ Referințe: [limitele identificatorilor MySQL](https://dev.mysql.com/doc/refman/
 
 Nu adaugă migrații, variabile de mediu sau dependențe. Build-ul Vite și cache-ul rutelor trebuie regenerate prin deploy-ul existent. Verifică **Camere și spații → clădire → Studio**, generarea 5 × 10 camere cu suprafață/paturi/locuri, editarea unei camere și salvarea/reintrarea în clădire. Pentru spații vechi fără clădire, verifică asocierea explicită și accesul viewer/editor. Detalii în [BUILDING-STUDIO-WORKFLOWS.md](BUILDING-STUDIO-WORKFLOWS.md).
 
+## Ștergerea clădirilor — 0.10.1
+
+Deploy-ul aplică migrarea `2026_11_16_180000_add_building_soft_deletion`, care adaugă deleted_at nullable la buildings. Nu sunt setări sau dependențe noi. Build-ul și cache-ul rutelor se regenerează prin scriptul existent.
+
+Verifică în Camere și Spații pe o clădire de test: Șterge → Anulează (clădirea rămâne), apoi Șterge → Da (clădirea dispare din liste și Studio). Viewerii nu trebuie să vadă butonul. Istoricul rămâne păstrat; nu rula rollback al migrării pe date reale, deoarece elimină marcajele ștergerilor. Nu există încă o interfață de restaurare.
+
 ## Verificare după deploy
 
 - `/` și `/confidentialitate`: conținut, linkuri, fonturi și formular.

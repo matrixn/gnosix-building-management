@@ -98,7 +98,7 @@ class BuildingDeclarationStudio
                     if (! filled($identity['reference'])) {
                         unset($identity['reference']);
                     }
-                    $duplicate = isset($identity['reference']) && Building::where('reference', $identity['reference'])->when($b, fn ($q) => $q->where('id', '!=', $b->id))->exists();
+                    $duplicate = isset($identity['reference']) && Building::withTrashed()->where('reference', $identity['reference'])->when($b, fn ($q) => $q->where('id', '!=', $b->id))->exists();
                     if ($duplicate) {
                         throw ValidationException::withMessages(['reference' => __('building.reference_taken')]);
                     }
@@ -125,6 +125,30 @@ class BuildingDeclarationStudio
             $draft->save();
 
             return $draft;
+        });
+    }
+
+    public function delete(User $user, Property $property, Building $building, int $version): void
+    {
+        DB::transaction(function () use ($user, $property, $building, $version) {
+            Property::whereKey($property->id)->lockForUpdate()->firstOrFail();
+            $this->authorize($user, $property, true);
+            $building = $property->buildings()->lockForUpdate()->findOrFail($building->id);
+            if ($building->declaration_version !== $version) {
+                throw ValidationException::withMessages(['version' => __('building.delete_conflict')]);
+            }
+            $before = $this->snapshot($building);
+            $this->rooms($user, $property, $before);
+            $now = now();
+            DB::table('space_beds')->whereIn('space_id', DB::table('spaces')->where('building_id', $building->id)->select('id'))->whereNull('archived_at')->update(['archived_at' => $now]);
+            foreach (['floors', 'spaces', 'accommodation_units'] as $table) {
+                DB::table($table)->where('building_id', $building->id)->whereNull('archived_at')->update(['archived_at' => $now]);
+            }
+            BuildingAudit::without(function () use ($building) {
+                $building->update(['state' => 'archived']);
+                $building->delete();
+            });
+            BuildingAudit::record($building, 'deleted', 'declaration', $building->uuid, $before, ['identity' => $building->only(config('building-studio.identity_fields')), 'deleted_at' => $building->deleted_at->toISOString()]);
         });
     }
 

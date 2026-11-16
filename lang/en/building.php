@@ -1,5 +1,14 @@
 <?php
 return [
+    'delete_building' => 'Delete building',
+    'delete_question' => 'Delete this building?',
+    'delete_explanation' => 'This building and its rooms, levels and accommodation units will be removed from active lists and workflows. History remains preserved in the database. Other properties and buildings are unaffected.',
+    'cancel_delete' => 'Cancel',
+    'confirm_delete' => 'Yes, delete building',
+    'deleting' => 'Deleting…',
+    'deleted_success' => 'Building “:name” was deleted.',
+    'delete_conflict' => 'The building has changed. Reopen the confirmation page before deleting it.',
+    'action_deleted' => 'Building deleted',
     'generator_tools' => 'Level and room generator · extend or reconfigure',
     'library_title' => 'Your buildings. One Studio.',
     'library_hint' => 'Open a building and configure levels, rooms, beds and spaces in Building Studio. This library follows your access in the current organization.',

@@ -1,5 +1,14 @@
 <?php
 return [
+    'delete_building' => 'Șterge clădirea',
+    'delete_question' => 'Ștergi această clădire?',
+    'delete_explanation' => 'Clădirea, camerele, nivelurile și unitățile ei vor fi eliminate din listele și fluxurile active. Istoricul rămâne păstrat în baza de date. Clădirile și spațiile altor proprietăți nu sunt afectate.',
+    'cancel_delete' => 'Anulează',
+    'confirm_delete' => 'Da, șterge clădirea',
+    'deleting' => 'Se șterge…',
+    'deleted_success' => 'Clădirea „:name” a fost ștearsă.',
+    'delete_conflict' => 'Clădirea a fost modificată între timp. Redeschide confirmarea înainte de ștergere.',
+    'action_deleted' => 'Clădire ștearsă',
     'generator_tools' => 'Generator de niveluri și camere · extinde sau reconfigurează',
     'library_title' => 'Clădirile tale. Un singur Studio.',
     'library_hint' => 'Deschide o clădire și configurează niveluri, camere, paturi și spații în Building Studio. Lista respectă accesul tău în organizația curentă.',

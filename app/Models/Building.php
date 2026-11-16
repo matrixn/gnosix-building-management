@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Building extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['property_id', 'name', 'display_name', 'reference', 'classification', 'custom_classification', 'address', 'country', 'timezone', 'latitude', 'longitude', 'construction_year', 'state'];
 
     protected function casts(): array
@@ -21,7 +24,7 @@ class Building extends Model
             if ($m->reference === null) {
                 do {
                     $reference = 'GNX-'.implode('-', str_split(strtoupper(Str::random(16)), 4));
-                } while (static::where('reference', $reference)->exists());
+                } while (static::withTrashed()->where('reference', $reference)->exists());
                 $m->reference = $reference;
             }
         });

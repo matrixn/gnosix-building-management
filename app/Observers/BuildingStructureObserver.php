@@ -20,6 +20,9 @@ class BuildingStructureObserver
 
     public function deleting(Model $m): void
     {
+        if ($m instanceof Building && ! $m->isForceDeleting()) {
+            return;
+        }
         throw new \LogicException('Archive structures instead of deleting history.');
     }
 

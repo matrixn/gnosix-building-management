@@ -6,6 +6,14 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
 
+### Ștergerea clădirilor — 0.10.1
+
+- [x] Buton Șterge clădirea în Camere și Spații, doar pentru utilizatorii care pot edita proprietatea.
+- [x] Confirmare RO/EN cu numele/referința clădirii, explicația efectului și Anulează / Da, șterge clădirea; GET și anularea nu modifică date.
+- [x] Ștergere logică tranzacțională: clădirea dispare din liste/Studio, spațiile/nivelurile/paturile/unitățile sunt retrase din fluxurile active; UUID-urile, legăturile și istoricul sunt păstrate.
+- [x] Validare server, CSRF, permisiuni/tenant/capabilități, verificarea versiunii și blocarea ciornelor vechi după ștergere; referințele șterse rămân rezervate.
+- [x] Migrare aditivă deleted_at, teste automate, build și verificare în browser pentru anulare și confirmare pe date locale de test.
+
 ### Building Studio unificat — 0.10.0
 
 - [x] Camere și Spații devine biblioteca de clădiri a organizației: căutare, filtre după proprietate/stare, paginare și acces conform apartenenței/granturilor.
@@ -180,7 +188,7 @@ composer validate --no-check-publish
 php artisan gnosix:check
 ```
 
-149 teste / 1.390 de aserțiuni au verificat declarațiile de clădiri, paturile/unitățile independente, migrarea, arhivarea/recuperarea, importul de 5.000 spații, cele șase scenarii Workspace Studio, structura proprietăților, accesul per proprietate, logo-urile private, unitățile, organizațiile și apartenențele, profilarea, capabilitățile, izolarea tenantului, ciornele, setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
+154 teste / 1.440 de aserțiuni au verificat declarațiile de clădiri, paturile/unitățile independente, migrarea, arhivarea/recuperarea, importul de 5.000 spații, cele șase scenarii Workspace Studio, structura proprietăților, accesul per proprietate, logo-urile private, unitățile, organizațiile și apartenențele, profilarea, capabilitățile, izolarea tenantului, ciornele, setările de sistem și importul lor, contactul bilingv, emailul și telefonul, SEO, izolarea admin/client, provisioning-ul, criptarea și aplicarea SMTP globală, precum și înregistrarea și loginul WebAuthn cu semnături ES256 reale generate de un autentificator sintetic. Testele resping origini/RP ID/challenge/semnături incorecte, lipsa verificării utilizatorului, credențiale revocate și reutilizarea challenge-ului.
 
 Au fost verificate în browser loginul cu parolă, setările SMTP, un test de email către un SMTP sink local, logoutul și paginile mobile. Nu a fost înregistrată o cheie pe dispozitivul real al utilizatorului și nu s-a trimis email extern. Pentru Task 003 s-au verificat suplimentar în browser autosave, refresh, back/forward, creare structură și spațiu comun, RO/EN, paginile de setări și viewport-uri de 1440 și 390 px. Verificarea finală a frontend-ului nu a raportat erori de consolă. Pentru Task 004 s-au verificat și editarea/salvarea declarației, suită cu două spații, spațiu tehnic, export descărcat și reimportat ca șablon, RO/EN, mobile/reduced-motion și navigarea până la nivelul 100 al clădirii cu 5.000 spații. Infrastructura Forge nu a fost modificată.
 
@@ -194,6 +202,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.10.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.10.1.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

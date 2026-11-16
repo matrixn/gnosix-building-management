@@ -9,7 +9,7 @@
 <div class="identity-field"><label for="building-state">{{ __('building.state') }}</label><select id="building-state" name="state"><option value="">{{ __('building.all_states') }}</option>@foreach(['draft','active','archived'] as $s)<option value="{{ $s }}" @selected(request('state') === $s)>{{ __('building.state_'.$s) }}</option>@endforeach</select></div>
 <button class="identity-button">{{ __('building.filter') }}</button><a class="identity-link" href="{{ route('app.spaces.index', $organization) }}">{{ __('building.clear_filters') }}</a>
 </form>
-@include('buildings.cards')
+@include('buildings.cards', ['allowDeletion' => true])
 {{ $buildings->links('properties.pagination') }}
 <section id="new-building" class="identity-card bld-new-building"><span class="identity-kicker">BUILDING STUDIO / +</span><h2>{{ __('studio.add_building') }}</h2><p>{{ __('building.choose_property') }}</p><div class="bld-property-actions">@foreach($properties as $p)@can('update', $p)<a class="identity-link" href="{{ route('app.declarations.new', [$organization,$p]) }}">+ {{ $p->name }} ↗</a>@endcan @endforeach</div>@if($properties->isEmpty())<a class="identity-link" href="{{ route('app.studio', $organization) }}">{{ __('building.create_property_first') }} ↗</a>@endif</section>
 @if($unassigned->isNotEmpty())
