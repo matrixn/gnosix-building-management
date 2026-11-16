@@ -130,6 +130,16 @@ class PropertyController extends Controller
         return redirect()->route('app.declarations.edit', [$organization, $property, $space->building->uuid, 'space' => $space->uuid]);
     }
 
+    public function trash(Request $request, Organization $organization, PropertyPermissions $permissions)
+    {
+        $this->authorizeList($request, $organization, 'hospitality.rooms');
+        $this->authorizeList($request, $organization);
+        $buildings = Building::onlyTrashed()->whereIn('property_id', $permissions->visible($request->user('web'), $organization)->select('id'))
+            ->with('property')->latest('deleted_at')->orderByDesc('id')->paginate(24);
+
+        return view('buildings.trash', compact('organization', 'buildings'));
+    }
+
     public function assignStudio(Request $request, Organization $organization, Property $property, Space $space)
     {
         $this->authorizeProperty($request, $organization, $property, true, true);

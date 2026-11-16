@@ -86,7 +86,13 @@ Nu adaugă migrații, variabile de mediu sau dependențe. Build-ul Vite și cach
 
 Deploy-ul aplică migrarea `2026_11_16_180000_add_building_soft_deletion`, care adaugă deleted_at nullable la buildings. Nu sunt setări sau dependențe noi. Build-ul și cache-ul rutelor se regenerează prin scriptul existent.
 
-Verifică în Camere și Spații pe o clădire de test: Șterge → Anulează (clădirea rămâne), apoi Șterge → Da (clădirea dispare din liste și Studio). Viewerii nu trebuie să vadă butonul. Istoricul rămâne păstrat; nu rula rollback al migrării pe date reale, deoarece elimină marcajele ștergerilor. Nu există încă o interfață de restaurare.
+Verifică în Camere și Spații pe o clădire de test: Șterge → Anulează (clădirea rămâne), apoi Șterge → Da (clădirea dispare din liste și Studio). Viewerii nu trebuie să vadă butonul. Istoricul rămâne păstrat; nu rula rollback al migrării pe date reale, deoarece elimină marcajele ștergerilor. Din 0.11.0, restaurarea este disponibilă în Coșul de gunoi.
+
+## Coș de gunoi și dialog — 0.11.0
+
+Nu există migrații sau dependențe noi față de 0.10.1. Deploy-ul regenerează build-ul și cache-ul rutelor: ruta GET separată de confirmare a ștergerii a fost eliminată, iar confirmarea este un dialog în listă.
+
+Verifică pe date de test **Camere și spații → Șterge → Anulează/Escape**, apoi confirmă ștergerea, deschide **Coș de gunoi**, restaurează și verifică structura în Studio. Restaurarea funcționează și cu ștergerile existente care au istoricul creat de 0.10.1. Datele nu se șterg fizic; nu există golire a coșului. Viewerii nu pot restaura. Nu modifica sau șterge reviziile: restaurarea folosește structura ultimei ștergeri.
 
 ## Verificare după deploy
 

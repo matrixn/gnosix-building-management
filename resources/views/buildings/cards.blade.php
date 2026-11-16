@@ -9,7 +9,9 @@
     <div class="bld-card-counts"><span>{{ $building->floors_count }} {{ __('building.levels') }}</span>@if($canSpaces ?? true)<span>{{ $building->spaces_count }} {{ __('building.spaces') }}</span>@endif</div>
     <strong class="bld-card-cta">{{ $editable ? __('building.open_studio') : __('building.view_building') }} ↗</strong>
 </a>
-@if(($allowDeletion ?? false) && $editable)<footer><a class="bld-danger" href="{{ route('app.declarations.delete', [$organization,$ownerProperty,$building->uuid]) }}">{{ __('building.delete_building') }} <span class="identity-sr-only">{{ $building->name }}</span></a></footer>@endif
+@if(($allowDeletion ?? false) && $editable)<footer><form method="POST" action="{{ route('app.declarations.destroy', [$organization,$ownerProperty,$building->uuid]) }}" data-building-delete data-building-name="{{ $building->display_name ?: $building->name }}" data-building-reference="{{ $building->reference }}">
+@csrf @method('DELETE')<input type="hidden" name="confirmed" value="0"><input type="hidden" name="version" value="{{ $building->declaration_version }}">
+<button type="submit" class="bld-danger" disabled>{{ __('building.delete_building') }} <span class="identity-sr-only">{{ $building->name }}</span></button></form></footer>@endif
 </article>
 @empty
 <div class="identity-card bld-library-empty"><h2>{{ __('building.no_buildings') }}</h2><p>{{ __('building.no_buildings_hint') }}</p></div>

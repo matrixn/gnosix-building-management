@@ -68,7 +68,7 @@
                     <span>{{ $revision->created_at->timezone($building->timezone ?? $property->timezone)->format('Y-m-d H:i T') }} · {{ $revision->actor?->name ?? __('building.system') }} · {{ __('building.source_'.$revision->source_kind) }} · {{ __('building.entity_'.$revision->entity_type) }}</span>
                 </div>
                 @if($revision->entity_type === 'declaration' && $rooms)
-                    <a class="identity-link" href="{{ route('app.declarations.revision', [$organization, $property, $building->uuid, $revision->id]) }}">{{ __('building.revision_export') }} ↗</a>
+                    @if($revision->has_after)<a class="identity-link" href="{{ route('app.declarations.revision', [$organization, $property, $building->uuid, $revision->id]) }}">{{ __('building.revision_export') }} ↗</a>@endif
                     @if($revision->has_before)
                         <a class="identity-link" href="{{ route('app.declarations.revision', [$organization, $property, $building->uuid, $revision->id, 'side' => 'before']) }}">{{ __('building.before_export') }} ↗</a>
                     @endif

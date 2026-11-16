@@ -8,7 +8,9 @@ use App\Models\Organization;
 use App\Models\Space;
 use App\Models\User;
 use App\Support\BuildingDeclarationSchema;
+use App\Support\BuildingDeclarationStudio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -154,7 +156,8 @@ class BuildingLibraryTest extends TestCase
         [$u, $o, $p, $m, $url] = $this->fixture();
         $b = $p->buildings()->create(['name' => 'Confirm building']);
         $path = route('app.declarations.destroy', [$o, $p, $b->uuid]);
-        $this->get(route('app.declarations.delete', [$o, $p, $b->uuid]))->assertOk()->assertSee('Yes, delete building')->assertSee('Cancel');
+        $this->get($url.'/spaces')->assertOk()->assertSee('data-building-delete-dialog', false)->assertSee('Yes, delete building')->assertSee('Cancel');
+        $this->get($path.'/delete')->assertNotFound();
         $this->assertNotNull(Building::find($b->id));
         $this->delete($path, ['confirmed' => 'no', 'version' => $b->fresh()->declaration_version])->assertSessionHasErrors('confirmed');
         $this->delete($path, ['confirmed' => '1'])->assertSessionHasErrors('version');
@@ -207,9 +210,8 @@ class BuildingLibraryTest extends TestCase
         $path = route('app.declarations.destroy', [$o, $p, $b->uuid]);
         $data = ['confirmed' => 1, 'version' => $b->fresh()->declaration_version];
         $m->update(['role' => 'member']);
-        $this->get(route('app.declarations.delete', [$o, $p, $b->uuid]))->assertForbidden();
         $this->delete($path, $data)->assertForbidden();
-        $this->get($url.'/spaces')->assertOk()->assertDontSee(route('app.declarations.delete', [$o, $p, $b->uuid]), false);
+        $this->get($url.'/spaces')->assertOk()->assertDontSee('data-building-delete data-building-name=', false);
         $m->update(['role' => 'owner']);
         $other = Organization::create(['name' => 'Foreign organization']);
         $foreign = $other->properties()->create(['name' => 'Foreign', 'property_type' => 'hotel', 'country' => 'RO', 'timezone' => 'Europe/Bucharest']);
@@ -241,5 +243,105 @@ class BuildingLibraryTest extends TestCase
         $this->postJson(route('app.declarations.commit', [$o, $p, $draft->id]), ['version' => 1, 'state' => $state])->assertUnprocessable()->assertJsonValidationErrors('reference');
         $this->assertSame(0, Building::count());
         $this->assertSame(1, Building::withTrashed()->count());
+    }
+
+    public function test_trash_restores_existing_deletion_with_all_structure_data_and_prior_archives_preserved(): void
+    {
+        [$u, $o, $p, $m, $url] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Restore hotel', 'classification' => 'hotel', 'state' => 'active', 'address' => 'Known address', 'construction_year' => null]);
+        $floor = $b->floors()->create(['name' => 'Mezzanine', 'kind' => 'mezzanine', 'position' => 7]);
+        $room = $b->spaces()->create(['property_id' => $p->id, 'floor_id' => $floor->id, 'name' => 'Suite 101', 'space_type' => 'room', 'number' => '101', 'bed_count' => 1, 'capacity' => 2, 'area_m2' => 27.5]);
+        $unplaced = $b->spaces()->create(['property_id' => $p->id, 'name' => 'Technical', 'space_type' => 'technical', 'capacity' => 0]);
+        $bed = $room->beds()->create(['uuid' => (string) Str::uuid(), 'label' => 'Bed A']);
+        $unit = $b->accommodationUnits()->create(['uuid' => (string) Str::uuid(), 'name' => 'Suite A', 'unit_type' => 'suite']);
+        $unit->spaces()->attach([$room->id, $unplaced->id]);
+        $oldBed = $room->beds()->create(['uuid' => (string) Str::uuid(), 'label' => 'Old bed', 'archived_at' => now()->subDays(5)]);
+        $oldUnit = $b->accommodationUnits()->create(['uuid' => (string) Str::uuid(), 'name' => 'Old unit', 'unit_type' => 'suite', 'archived_at' => now()->subDays(5)]);
+        $oldFloor = $b->floors()->create(['name' => 'Previously removed floor', 'position' => 9, 'archived_at' => now()->subDays(5)]);
+        $oldRoom = $b->spaces()->create(['property_id' => $p->id, 'floor_id' => $oldFloor->id, 'name' => 'Previously removed room', 'space_type' => 'room', 'archived_at' => now()->subDays(5)]);
+        $before = app(BuildingDeclarationStudio::class)->snapshot($b->fresh());
+        $this->delete(route('app.declarations.destroy', [$o, $p, $b->uuid]), ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertRedirect();
+        $this->get($url.'/spaces/trash')->assertOk()->assertSee('Restore hotel')->assertSee('Restore building');
+        $restore = route('app.declarations.restore', [$o, $p, $b->uuid]);
+        $this->post($restore, ['version' => $b->fresh()->declaration_version])->assertRedirect(route('app.spaces.index', $o));
+        $restored = Building::findOrFail($b->id);
+        $this->assertSame($b->uuid, $restored->uuid);
+        $this->assertSame($b->reference, $restored->reference);
+        $this->assertSame($before, app(BuildingDeclarationStudio::class)->snapshot($restored));
+        $this->assertDatabaseHas('floors', ['id' => $floor->id, 'uuid' => $floor->uuid, 'position' => 7, 'archived_at' => null]);
+        $this->assertDatabaseHas('space_beds', ['id' => $bed->id, 'uuid' => $bed->uuid, 'label' => 'Bed A', 'archived_at' => null]);
+        $this->assertDatabaseHas('accommodation_unit_space', ['accommodation_unit_id' => $unit->id, 'space_id' => $unplaced->id]);
+        $this->assertNotNull(DB::table('spaces')->find($oldRoom->id)->archived_at);
+        $this->assertNotNull(DB::table('floors')->find($oldFloor->id)->archived_at);
+        $this->assertNotNull(DB::table('space_beds')->find($oldBed->id)->archived_at);
+        $this->assertNotNull(DB::table('accommodation_units')->find($oldUnit->id)->archived_at);
+        $this->assertSame($u->id, $restored->revisions()->where('action', 'restored')->sole()->actor_id);
+        $this->get($url.'/spaces/trash')->assertOk()->assertDontSee('<h2>Restore hotel</h2>', false);
+        $this->get(route('app.declarations.edit', [$o, $p, $b->uuid]))->assertRedirect();
+        $deletion = $restored->revisions()->where('action', 'deleted')->sole();
+        $restoration = $restored->revisions()->where('action', 'restored')->sole();
+        $this->get(route('app.declarations.show', [$o, $p, $b->uuid]))->assertOk()
+            ->assertDontSee(route('app.declarations.revision', [$o, $p, $b->uuid, $deletion->id]).'"', false)
+            ->assertSee(route('app.declarations.revision', [$o, $p, $b->uuid, $restoration->id]), false);
+        $this->get(route('app.declarations.revision', [$o, $p, $b->uuid, $deletion->id, 'side' => 'before']))->assertOk();
+        $this->post($restore, ['version' => $restored->declaration_version])->assertNotFound();
+    }
+
+    public function test_repeated_delete_restore_cycles_preserve_state_and_do_not_duplicate_structure(): void
+    {
+        [$u, $o, $p] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Repeat', 'state' => 'draft']);
+        $room = $b->spaces()->create(['property_id' => $p->id, 'name' => 'Room', 'space_type' => 'room', 'area_m2' => 15]);
+        for ($i = 0; $i < 2; $i++) {
+            $this->delete(route('app.declarations.destroy', [$o, $p, $b->uuid]), ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertRedirect();
+            $this->post(route('app.declarations.restore', [$o, $p, $b->uuid]), ['version' => $b->fresh()->declaration_version])->assertRedirect();
+        }
+        $this->assertSame('draft', $b->fresh()->state);
+        $this->assertSame($room->uuid, $b->spaces()->sole()->uuid);
+        $this->assertSame(2, $b->revisions()->where('action', 'restored')->count());
+        $this->assertDatabaseCount('spaces', 1);
+    }
+
+    public function test_trash_and_restore_enforce_tenant_membership_property_grants_and_capabilities(): void
+    {
+        [$u, $o, $p, $m, $url] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Private trash']);
+        $b->spaces()->create(['property_id' => $p->id, 'name' => 'Room', 'space_type' => 'room']);
+        $this->delete(route('app.declarations.destroy', [$o, $p, $b->uuid]), ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertRedirect();
+        $path = route('app.declarations.restore', [$o, $p, $b->uuid]);
+        $data = ['version' => $b->fresh()->declaration_version];
+        $m->update(['role' => 'member', 'access_scope' => 'properties']);
+        $m->propertyAccesses()->create(['property_id' => $p->id, 'permission' => 'viewer']);
+        $this->get($url.'/spaces/trash')->assertOk()->assertSee('Private trash')->assertDontSee($path, false);
+        $this->post($path, $data)->assertForbidden();
+        $m->propertyAccesses()->delete();
+        $this->get($url.'/spaces/trash')->assertOk()->assertDontSee('Private trash');
+        $this->post($path, $data)->assertForbidden();
+        $m->update(['role' => 'owner']);
+        $o->capabilityOverrides()->create(['capability' => 'hospitality.rooms', 'enabled' => false]);
+        $this->get($url.'/spaces/trash')->assertForbidden();
+        $this->post($path, $data)->assertForbidden();
+        $this->assertSoftDeleted($b);
+    }
+
+    public function test_restore_failure_is_atomic_for_stale_version_missing_history_or_missing_structure(): void
+    {
+        [$u, $o, $p] = $this->fixture();
+        $b = $p->buildings()->create(['name' => 'Atomic restore']);
+        $floor = $b->floors()->create(['name' => 'Ground', 'position' => 0]);
+        $this->delete(route('app.declarations.destroy', [$o, $p, $b->uuid]), ['confirmed' => 1, 'version' => $b->fresh()->declaration_version])->assertRedirect();
+        $version = $b->fresh()->declaration_version;
+        $path = route('app.declarations.restore', [$o, $p, $b->uuid]);
+        $this->post($path, ['version' => $version - 1])->assertSessionHasErrors('version');
+        $revision = $b->revisions()->where('action', 'deleted')->sole();
+        $state = $revision->before_data;
+        $state['unplaced_spaces'][] = ['key' => (string) Str::uuid(), 'name' => 'Missing room', 'space_type' => 'room', 'beds' => []];
+        DB::table('building_revisions')->where('id', $revision->id)->update(['before_data' => json_encode($state)]);
+        $this->post($path, ['version' => $version])->assertSessionHasErrors('building');
+        $this->assertNotNull(DB::table('floors')->find($floor->id)->archived_at);
+        $this->assertSoftDeleted($b);
+        DB::table('building_revisions')->where('id', $revision->id)->update(['before_data' => null]);
+        $this->post($path, ['version' => $version])->assertSessionHasErrors('building');
+        $this->assertSame(0, $b->revisions()->where('action', 'restored')->count());
     }
 }

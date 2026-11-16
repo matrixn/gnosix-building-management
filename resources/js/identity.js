@@ -1,3 +1,4 @@
+import './building-library.js';
 if (document.querySelector('[data-building-studio], [data-building-dashboard]')) import('./building-studio.js');
 import './organization.js';
 import './studio.js';

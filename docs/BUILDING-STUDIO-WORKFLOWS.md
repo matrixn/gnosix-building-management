@@ -1,4 +1,4 @@
-# Building Studio unificat — 0.10.1
+# Building Studio unificat — 0.11.0
 
 ## Fluxul clientului
 
@@ -34,19 +34,30 @@ Spațiile vechi fără `building_id` apar separat în bibliotecă, 20 per pagin�
 
 ## Ștergerea clădirii
 
-În **Camere și spații**, butonul **Șterge clădirea** de sub card este disponibil pentru editorii proprietății. Deschide o pagină de confirmare cu numele/referința clădirii și numărul de niveluri/spații. **Anulează** revine la listă fără modificări. **Da, șterge clădirea** trimite cererea DELETE cu CSRF, confirmare și versiunea afișată.
+În **Camere și spații**, butonul **Șterge clădirea** de sub card este disponibil pentru editorii proprietății. Deschide un dialog modal în aceeași pagină, cu numele/referința clădirii și efectul operațiunii. **Anulează** sau Escape închide dialogul fără modificări; focusul revine la butonul inițial. Pagina/ruta separată de confirmare au fost eliminate. **Da, șterge clădirea** trimite cererea DELETE cu CSRF, confirmare și versiunea afișată.
 
-Clădirea primește `deleted_at` și dispare din liste, filtre, Studio, dashboard și exporturi. Nivelurile, spațiile, identitățile de paturi și unitățile sunt arhivate în aceeași tranzacție; UUID-urile, legăturile și reviziile nu sunt șterse fizic. Se înregistrează autorul, momentul și structura anterioară în revizia `deleted`. Alte clădiri/proprietăți nu sunt afectate. Nu există încă interfață de restaurare; o restaurare viitoare trebuie să folosească istoricul, nu doar eliminarea lui deleted_at.
+Clădirea primește `deleted_at` și dispare din liste, filtre, Studio, dashboard și exporturi. Nivelurile, spațiile, identitățile de paturi și unitățile sunt arhivate în aceeași tranzacție; UUID-urile, legăturile și reviziile nu sunt șterse fizic. Se înregistrează autorul, momentul și structura anterioară în revizia `deleted`. Alte clădiri/proprietăți nu sunt afectate. Restaurarea este disponibilă din **Coș de gunoi** și folosește istoricul ștergerii, nu doar eliminarea lui deleted_at.
 
-Serverul verifică accesul la proprietate și capabilitățile. Dacă o altă modificare a intervenit după afișarea confirmării, ștergerea este refuzată până la redeschiderea paginii. Ciornele vechi nu pot fi deschise sau confirmate după ștergere. Referințele clădirilor șterse rămân rezervate și produc eroare de validare dacă sunt reutilizate.
+Serverul verifică accesul la proprietate și capabilitățile. Dacă o altă modificare a intervenit după afișarea confirmării, ștergerea este refuzată până la reîncărcarea listei și redeschiderea dialogului. Ciornele vechi nu pot fi deschise sau confirmate după ștergere. Referințele clădirilor șterse rămân rezervate și produc eroare de validare dacă sunt reutilizate.
 
 Migrarea `2026_11_16_180000_add_building_soft_deletion` adaugă un timestamp nullable. Forge o aplică prin `php artisan migrate --force` în deploy-ul existent. Nu rula rollback pe date reale: eliminarea coloanei ar pierde marcajele ștergerilor.
 
+## Coș de gunoi și restaurare
+
+**Camere și spații → Coș de gunoi → Restaurează clădirea**. Lista afișează 24 de clădiri pe pagină, proprietatea, referința și data ștergerii. Apartenența, capabilitățile și granturile pe proprietate se aplică și aici; viewerii pot vedea clădirile autorizate, iar editorii le pot restaura.
+
+Restaurarea se execută într-o tranzacție, sub blocarea proprietății și a clădirii. Folosește UUID-urile din structura `before_data` a ultimei revizii `deleted`, inclusiv pentru ștergerile înregistrate de versiunea 0.10.1. Se reactivează doar nivelurile/spațiile/paturile/unitățile active la momentul ștergerii; cele arhivate anterior rămân arhivate. Valorile, pozițiile nivelurilor, ID-urile, UUID-urile și legăturile existente nu se rescriu. Starea anterioară draft/active/archived este restaurată.
+
+O revizie `restored` păstrează autorul, momentul și structura rezultată. Versiunea crește, astfel încât ciornele vechi nu pot suprascrie restaurarea. Repetarea ștergerii/restaurării nu creează copii ale structurii. Istoricul afișează linkuri de export numai pentru snapshot-uri complete.
+
+Dacă istoricul necesar lipsește, sunt rânduri lipsă sau versiunea este depășită, restaurarea este refuzată cu un mesaj explicit și nicio modificare parțială. Nu există ștergere definitivă sau golire a coșului în interfață.
+
 ## Validare și deploy
 
-- `php vendor/bin/phpunit`: 154 teste / 1.440 aserțiuni; include biblioteca, granturi viewer/editor, filtre/tenant, linkuri vechi, asociere, 5 × 10 camere, modificare și mutare fără pierderea datelor/identității.
+- `php vendor/bin/phpunit`: 158 teste / 1.495 aserțiuni; include biblioteca, granturi viewer/editor, filtre/tenant, linkuri vechi, asociere, 5 × 10 camere, modificare și mutare fără pierderea datelor/identității.
 - `node tests/building-generator.mjs`: 10 teste; exemplul hotelului, unknown/zero, append/replace, integritatea legăturilor bed/unit, subsol/parter, numerotare și limite cumulative.
 - `npm run build`: build production; modulul Studio este încărcat dinamic numai pe paginile sale.
+- Browser 0.11.0: dialog fără schimbarea URL-ului, Anulează/Escape, mutare în coș, restaurarea unei clădiri șterse și redeschidere în Studio cu 2 niveluri/4 camere/8 paturi declarate, RO/EN și coș mobil 390 × 844 fără overflow sau erori de consolă.
 - Browser local cu cont/bază de test separate: creare 50 camere, modificare/mutare/salvare, redeschidere din dashboard și bibliotecă, extindere/undo/autosave, asociere spațiu vechi, RO/EN, tastatură, viewport 390 × 844 fără overflow orizontal și fără erori/warnings de consolă.
 
-Versiunea 0.10.1 necesită migrarea aditivă pentru deleted_at, aplicată de Forge. Nu sunt setări sau dependențe noi. Forge folosește fluxul existent: Composer, build Vite, migrații, cache și verificări. Arhiva `build/gnosix-atlas-forge-0.10.1.zip` conține sursele și frontend-ul compilat, fără `.env`, DB sau datele de test. Verificările sunt locale; deploy-ul pe VPS se execută separat.
+Versiunea 0.11.0 reutilizează migrarea deleted_at din 0.10.1; nu adaugă migrații, setări sau dependențe noi. Forge folosește fluxul existent: Composer, build Vite, migrații, cache și verificări. Arhiva `build/gnosix-atlas-forge-0.11.0.zip` conține sursele și frontend-ul compilat, fără `.env`, DB sau datele de test. Verificările sunt locale; deploy-ul pe VPS se execută separat.

@@ -152,6 +152,51 @@ class BuildingDeclarationStudio
         });
     }
 
+    public function restore(User $user, Property $property, Building $building, int $version): void
+    {
+        DB::transaction(function () use ($user, $property, $building, $version) {
+            Property::whereKey($property->id)->lockForUpdate()->firstOrFail();
+            $this->authorize($user, $property, true);
+            $building = $property->buildings()->onlyTrashed()->lockForUpdate()->findOrFail($building->id);
+            if ($building->declaration_version !== $version) {
+                throw ValidationException::withMessages(['version' => __('building.restore_conflict')]);
+            }
+            $revision = $building->revisions()->where('action', 'deleted')->where('entity_type', 'declaration')->latest('id')->first();
+            $state = $revision?->before_data;
+            if (! is_array($state) || ! isset($state['identity']['state'], $state['levels'], $state['unplaced_spaces'], $state['units'])) {
+                throw ValidationException::withMessages(['building' => __('building.restore_unavailable')]);
+            }
+            $this->rooms($user, $property, $state);
+            $this->checkKeys($state, $building);
+            $spaces = collect($state['levels'])->flatMap(fn ($level) => $level['spaces'])->concat($state['unplaced_spaces']);
+            $sets = [
+                'floors' => array_column($state['levels'], 'key'),
+                'spaces' => $spaces->pluck('key')->all(),
+                'space_beds' => $spaces->flatMap(fn ($space) => $space['beds'])->pluck('key')->all(),
+                'accommodation_units' => array_column($state['units'], 'key'),
+            ];
+            foreach ($sets as $table => $keys) {
+                foreach (array_chunk($keys, 500) as $chunk) {
+                    $query = DB::table($table)->whereIn('uuid', $chunk);
+                    if ($table === 'space_beds') {
+                        $query->whereIn('space_id', DB::table('spaces')->where('building_id', $building->id)->select('id'));
+                    } else {
+                        $query->where('building_id', $building->id);
+                    }
+                    if ($query->count() !== count($chunk)) {
+                        throw ValidationException::withMessages(['building' => __('building.restore_unavailable')]);
+                    }
+                    $query->update(['archived_at' => null]);
+                }
+            }
+            BuildingAudit::without(function () use ($building, $state) {
+                $building->state = $state['identity']['state'];
+                $building->restore();
+            });
+            BuildingAudit::record($building, 'restored', 'declaration', $building->uuid, ['deleted_at' => $revision->after_data['deleted_at'] ?? null], $this->snapshot($building));
+        });
+    }
+
     private function checkKeys(array $s, ?Building $b): void
     {
         $spaces = collect($s['levels'])->flatMap(fn ($l) => $l['spaces'])->concat($s['unplaced_spaces']);

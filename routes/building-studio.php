@@ -10,8 +10,8 @@ Route::prefix('organizations/{organization}/properties/{property}')->group(funct
     Route::post('declaration-drafts/{draft}/complete', [Studio::class, 'save'])->middleware('throttle:customer-sensitive')->name('app.declarations.commit');
     Route::get('declarations/{building:uuid}', [Studio::class, 'show'])->name('app.declarations.show');
     Route::get('declarations/{building:uuid}/edit', [Studio::class, 'edit'])->name('app.declarations.edit');
-    Route::get('declarations/{building:uuid}/delete', [Studio::class, 'confirmDestroy'])->name('app.declarations.delete');
     Route::delete('declarations/{building:uuid}', [Studio::class, 'destroy'])->middleware('throttle:customer-sensitive')->name('app.declarations.destroy');
+    Route::post('declarations/{building:uuid}/restore', [Studio::class, 'restore'])->withTrashed()->middleware('throttle:customer-sensitive')->name('app.declarations.restore');
     Route::get('declarations/{building:uuid}/export', [Studio::class, 'export'])->name('app.declarations.export');
     Route::get('declarations/{building:uuid}/revisions/{revision}/export', [Studio::class, 'export'])->name('app.declarations.revision');
 });

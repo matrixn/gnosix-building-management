@@ -100,18 +100,9 @@ class BuildingDeclarationController extends Controller
             $state['unplaced_spaces'] = [];
             $state['units'] = [];
         }
-        $revisions = $building->revisions()->select(['id', 'building_id', 'actor_id', 'action', 'source_kind', 'entity_type', 'entity_reference', 'created_at'])->selectRaw('CASE WHEN before_data IS NULL THEN 0 ELSE 1 END AS has_before')->with('actor')->latest('id')->paginate(15);
+        $revisions = $building->revisions()->select(['id', 'building_id', 'actor_id', 'action', 'source_kind', 'entity_type', 'entity_reference', 'created_at'])->selectRaw("CASE WHEN action IN ('declared', 'revised', 'deleted') AND before_data IS NOT NULL THEN 1 ELSE 0 END AS has_before")->selectRaw("CASE WHEN action IN ('declared', 'revised', 'restored') AND after_data IS NOT NULL THEN 1 ELSE 0 END AS has_after")->with('actor')->latest('id')->paginate(15);
 
         return view('buildings.show', compact('organization', 'property', 'building', 'state', 'revisions', 'rooms'));
-    }
-
-    public function confirmDestroy(Request $request, Organization $organization, Property $property, Building $building, BuildingDeclarationStudio $studio)
-    {
-        $this->building($request, $organization, $property, $building, $studio, true);
-        $studio->rooms($request->user('web'), $property, $studio->snapshot($building));
-        $building->loadCount(['floors', 'spaces']);
-
-        return view('buildings.delete', compact('organization', 'property', 'building'));
     }
 
     public function destroy(Request $request, Organization $organization, Property $property, Building $building, BuildingDeclarationStudio $studio)
@@ -121,6 +112,16 @@ class BuildingDeclarationController extends Controller
         $studio->delete($request->user('web'), $property, $building, (int) $data['version']);
 
         return redirect()->route('app.spaces.index', $organization)->with('status', __('building.deleted_success', ['name' => $building->name]));
+    }
+
+    public function restore(Request $request, Organization $organization, Property $property, Building $building, BuildingDeclarationStudio $studio)
+    {
+        $this->building($request, $organization, $property, $building, $studio, true);
+        abort_unless($building->trashed(), 404);
+        $data = $request->validate(['version' => ['required', 'integer', 'min:0']]);
+        $studio->restore($request->user('web'), $property, $building, (int) $data['version']);
+
+        return redirect()->route('app.spaces.index', $organization)->with('status', __('building.restored_success', ['name' => $building->name]));
     }
 
     public function export(Request $r, Organization $organization, Property $property, Building $building, BuildingDeclarationStudio $studio, ?BuildingRevision $revision = null)

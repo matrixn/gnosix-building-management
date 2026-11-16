@@ -12,6 +12,7 @@ Route::prefix('organizations/{organization}')->group(function () {
     Route::get('logo', [WorkspaceSettingsController::class, 'logo'])->name('app.workspace.logo');
     Route::get('properties', [PropertyController::class, 'index'])->name('app.properties.index');
     Route::get('spaces', [PropertyController::class, 'spaces'])->name('app.spaces.index');
+    Route::get('spaces/trash', [PropertyController::class, 'trash'])->name('app.spaces.trash');
     Route::get('properties/{property}', [PropertyController::class, 'show'])->name('app.properties.show');
     Route::get('properties/{property}/spaces/{space}/edit', [PropertyController::class, 'editSpace'])->name('app.spaces.edit');
     Route::middleware('throttle:customer-sensitive')->group(function () {

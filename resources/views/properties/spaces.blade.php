@@ -3,6 +3,7 @@
 @section('content')
 <div class="bld-shell" data-building-library>
 <header class="bld-heading"><div><span class="identity-kicker">{{ $organization->name }} / BUILDING STUDIO</span><h1>{{ __('building.library_title') }}</h1><p>{{ __('building.library_hint') }}</p></div><a class="identity-link" href="#new-building">+ {{ __('studio.add_building') }}</a></header>
+<nav class="bld-library-tabs" aria-label="{{ __('building.library_navigation') }}"><a class="identity-link" aria-current="page" href="{{ route('app.spaces.index', $organization) }}">{{ __('building.current_buildings') }}</a><a class="identity-link" href="{{ route('app.spaces.trash', $organization) }}">{{ __('building.trash') }} ↗</a></nav>
 <form method="GET" class="bld-library-filters identity-card">
 <div class="identity-field"><label for="building-search">{{ __('building.search_buildings') }}</label><input id="building-search" type="search" name="q" value="{{ request('q') }}" maxlength="150"></div>
 <div class="identity-field"><label for="building-property">{{ __('studio.properties') }}</label><select id="building-property" name="property"><option value="">{{ __('building.all_properties') }}</option>@foreach($properties as $p)<option value="{{ $p->id }}" @selected(request('property') == $p->id)>{{ $p->name }}</option>@endforeach</select></div>
@@ -10,6 +11,7 @@
 <button class="identity-button">{{ __('building.filter') }}</button><a class="identity-link" href="{{ route('app.spaces.index', $organization) }}">{{ __('building.clear_filters') }}</a>
 </form>
 @include('buildings.cards', ['allowDeletion' => true])
+@include('buildings.delete-dialog')
 {{ $buildings->links('properties.pagination') }}
 <section id="new-building" class="identity-card bld-new-building"><span class="identity-kicker">BUILDING STUDIO / +</span><h2>{{ __('studio.add_building') }}</h2><p>{{ __('building.choose_property') }}</p><div class="bld-property-actions">@foreach($properties as $p)@can('update', $p)<a class="identity-link" href="{{ route('app.declarations.new', [$organization,$p]) }}">+ {{ $p->name }} ↗</a>@endcan @endforeach</div>@if($properties->isEmpty())<a class="identity-link" href="{{ route('app.studio', $organization) }}">{{ __('building.create_property_first') }} ↗</a>@endif</section>
 @if($unassigned->isNotEmpty())
