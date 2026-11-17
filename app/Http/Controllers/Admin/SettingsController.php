@@ -20,7 +20,7 @@ class SettingsController extends Controller
 {
     public function show(Request $request, SmtpSettings $settings)
     {
-        $tab = in_array($request->query('tab'), ['general', 'gnosix', 'smtp', 'security', 'evidence', 'maintenance', 'field']) ? $request->query('tab') : 'general';
+        $tab = in_array($request->query('tab'), ['general', 'gnosix', 'smtp', 'security', 'evidence', 'maintenance', 'field', 'dna']) ? $request->query('tab') : 'general';
         $smtp = $settings->resolved();
         $hasPassword = filled($smtp['password']);
         unset($smtp['password']);
@@ -33,6 +33,7 @@ class SettingsController extends Controller
         $aiSelected = $aiSettings->forProvider($aiProvider);
 
         return view('admin.settings', [
+            'dnaSettings' => app(\App\Dna\Settings::class)->all(),
             'fieldSettings' => app(\App\Field\Settings::class)->all(),
             'maintenance' => app(\App\Maintenance\Settings::class)->all(),
             'tab' => $tab, 'smtp' => $smtp, 'hasPassword' => $hasPassword,
@@ -167,5 +168,13 @@ class SettingsController extends Controller
         }PlatformSetting::updateOrCreate(['key' => 'field'], ['value' => $v->validated(), 'updated_by' => Auth::guard('platform_admin')->id()]);
 
         return redirect()->route('admin.settings', ['tab' => 'field'])->with('status', 'Setările portalului au fost salvate.');
+    }
+
+    public function updateDna(Request $r)
+    {
+        $d = $r->validate(['max_depth' => 'required|integer|between:1,12', 'max_nodes' => 'required|integer|between:40,300', 'timeout_ms' => 'required|integer|between:100,3000']);
+        PlatformSetting::updateOrCreate(['key' => 'dna'], ['value' => $d, 'updated_by' => Auth::guard('platform_admin')->id()]);
+
+        return redirect()->route('admin.settings', ['tab' => 'dna'])->with('status', 'Limitele Building DNA au fost salvate.');
     }
 }

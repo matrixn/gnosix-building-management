@@ -252,4 +252,9 @@ return [
     'event_maintenance.report_accepted' => 'Service report accepted',
     'event_maintenance.report_returned' => 'Service report returned',
     'event_field.qr_scanned' => 'QR label accessed',
+    'event_dna.created' => 'DNA relationship declared',
+    'event_dna.updated' => 'DNA declaration updated',
+    'event_dna.reviewed' => 'DNA relationship reviewed',
+    'event_dna.decision' => 'DNA review decision',
+    'event_dna.type_created' => 'DNA type created',
 ];

@@ -102,4 +102,7 @@ return [
     'role_admin' => 'Administrator',
     'role_technician' => 'Tehnician mentenanță — documente restricționate',
     'role_reporter' => 'Raportor — documente restricționate',
+    'cap_dna_view' => 'Building DNA · Explorare',
+    'cap_dna_manage' => 'Building DNA · Editare relații',
+    'cap_dna_review' => 'Building DNA · Review',
 ];

@@ -57,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
         foreach ([Building::class, Floor::class, Space::class] as $model) {
             $model::observe(BuildingStructureObserver::class);
         }
+        RateLimiter::for('dna-read', fn (Request $r) => Limit::perMinute(60)->by('dna:'.($r->user('web')?->id ?? $r->ip())));
         RateLimiter::for('field-read', fn (Request $r) => Limit::perMinute(120)->by('field-read:'.($r->user('web')?->id ?? $r->ip())));
         RateLimiter::for('field-redeem', fn (Request $r) => [Limit::perMinute(8)->by('field-redeem:'.$r->ip()), Limit::perHour(40)->by('field-user:'.($r->user('web')?->id ?? $r->ip()))]);
         RateLimiter::for('customer-login', fn (Request $request) => [

@@ -102,4 +102,7 @@ return [
     'role_admin' => 'Administrator',
     'role_technician' => 'Maintenance technician — restricted documents',
     'role_reporter' => 'Reporter — restricted documents',
+    'cap_dna_view' => 'Building DNA · Explore',
+    'cap_dna_manage' => 'Building DNA · Manage relationships',
+    'cap_dna_review' => 'Building DNA · Review',
 ];

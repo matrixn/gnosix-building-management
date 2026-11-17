@@ -12,7 +12,7 @@ if(root){
   if(host.dataset.previewMime==='application/pdf'){
    const lib=await import('pdfjs-dist');lib.GlobalWorkerOptions.workerSrc=workerUrl;
    pdf=await lib.getDocument({url:host.dataset.previewUrl,httpHeaders:{'X-Requested-With':'XMLHttpRequest'},isEvalSupported:false,enableXfa:false,disableFontFace:true,useSystemFonts:false,maxImageSize:24000000,cMapUrl:'/vendor/pdfjs/cmaps/',cMapPacked:true,standardFontDataUrl:'/vendor/pdfjs/standard_fonts/',wasmUrl:'/vendor/pdfjs/wasm/',iccUrl:'/vendor/pdfjs/iccs/',useWorkerFetch:true}).promise;
-   host.querySelector('[data-pdf-page]').max=maxPages();await render(1);
+   host.querySelector('[data-pdf-page]').max=maxPages();const requestedPage=Math.max(1,Number(cfg.initialPage)||1);await render(Math.min(maxPages(),requestedPage));if(requestedPage>maxPages())status.textContent=cfg.strings.page_unavailable;
   }else{host.querySelector('.ev-page-tools').hidden=true;const response=await fetch(host.dataset.previewUrl,{credentials:'same-origin',headers:{'X-Requested-With':'XMLHttpRequest'}});if(!response.ok)throw new Error('preview');const objectUrl=URL.createObjectURL(await response.blob());image.hidden=false;image.src=objectUrl;try{await image.decode();}finally{URL.revokeObjectURL(objectUrl);}status.textContent='';}
   const target=location.hash?root.querySelector('[id="'+CSS.escape(location.hash.slice(1))+'"] [data-source-link]'):null;if(target)await source(target);
  }catch{status.textContent=cfg.strings.preview_failed;}}

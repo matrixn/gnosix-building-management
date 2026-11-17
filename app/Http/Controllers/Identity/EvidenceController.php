@@ -44,7 +44,7 @@ class EvidenceController extends Controller
     public function show(Request $r, Organization $organization, Property $property, Building $building)
     {
         $this->authorize($r, $organization, $property, $building);
-        $filters = $r->validate(['version' => 'nullable|uuid', 'fact' => 'nullable|uuid', 'status' => ['nullable', Rule::in(config('evidence.statuses'))]]);
+        $filters = $r->validate(['page' => 'nullable|integer|between:1,300', 'version' => 'nullable|uuid', 'fact' => 'nullable|uuid', 'status' => ['nullable', Rule::in(config('evidence.statuses'))]]);
         $inventory = Version::where('building_id', $building->id)->with(['document', 'extraction'])->latest()->orderByDesc('id')->paginate(12, ['*'], 'documents_page')->withQueryString();
         $selected = isset($filters['version']) ? Version::where('building_id', $building->id)->with(['document', 'extraction'])->findOrFail($filters['version']) : $inventory->first();
         $assertions = Assertion::where('building_id', $building->id)->with(['references.version.document', 'reviewer'])->when($filters['version'] ?? null, fn ($q, $id) => $q->where('version_id', $id))->when($filters['fact'] ?? null, fn ($q, $id) => $q->where('id', $id))->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))->latest()->orderByDesc('id')->paginate(20, ['*'], 'facts_page')->withQueryString();
@@ -64,7 +64,9 @@ class EvidenceController extends Controller
         $preview = $selected ? URL::temporarySignedRoute('app.evidence.file', now()->addMinutes(10), [$organization, $property, $building->uuid, $selected->id, 'viewer' => $r->user('web')->id], false) : null;
         $conflictIds = Conflict::where('building_id', $building->id)->where('status', 'open')->get(['assertion_id', 'existing_assertion_id'])->flatMap(fn ($c) => [$c->assertion_id, $c->existing_assertion_id])->filter()->unique()->all();
 
-        return view('evidence.show', compact('organization', 'property', 'building', 'inventory', 'selected', 'assertions', 'conflicts', 'confirmed', 'documentCount', 'coverage', 'timeline', 'settings', 'available', 'formatSupported', 'canWrite', 'canReview', 'canResolve', 'preview', 'conflictIds'));
+        $initialPage = (int) ($filters['page'] ?? 1);
+
+        return view('evidence.show', compact('initialPage', 'organization', 'property', 'building', 'inventory', 'selected', 'assertions', 'conflicts', 'confirmed', 'documentCount', 'coverage', 'timeline', 'settings', 'available', 'formatSupported', 'canWrite', 'canReview', 'canResolve', 'preview', 'conflictIds'));
     }
 
     public function upload(Request $r, Organization $organization, Property $property, Building $building, Engine $engine)

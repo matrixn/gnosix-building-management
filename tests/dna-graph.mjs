@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {boundedMerge,downstream,groupMembers,positions} from '../resources/js/dna-graph.js';
+const n=(key,kind='asset')=>({node_key:key,kind,name:key});
+const e=(key,source,target,type_key='feeds',state='declared')=>({edge_key:key,source,target,type_key,state});
+const types={feeds:{impact:true,direction:'forward'},powered_by:{impact:true,direction:'reverse'},connected_to:{impact:false,direction:'both'},serves:{impact:true,direction:'forward'}};
+test('merge is immutable, deduplicates and respects the node budget',()=>{const existing={nodes:[n('A')],edges:[]},incoming={nodes:Array.from({length:10000},(_,i)=>n(String(i))),edges:[e('bad','A','hidden')]};const merged=boundedMerge(existing,incoming,40);assert.equal(merged.nodes.length,40);assert(merged.limited);assert.equal(merged.edges.length,0);assert.equal(existing.nodes.length,1);});
+test('merge retains stable edge IDs and drops unavailable endpoints',()=>{const g=boundedMerge({nodes:[n('A'),n('B')],edges:[e('same','A','B')]},{nodes:[n('A')],edges:[e('same','A','B'),e('orphan','A','C')]},40);assert.equal(g.edges.length,1);});
+test('loaded dependency highlighting obeys direction and excludes connectivity',()=>{const graph=[e('1','A','B'),e('2','C','B','powered_by'),e('3','A','hidden','connected_to')];assert.deepEqual([...downstream('A',graph,types)],['A','B','C']);});
+test('proposals, disputes and superseded edges do not propagate',()=>{const edges=['proposed','disputed','superseded'].map((s,i)=>e(String(i),'A',String(i),'feeds',s));assert.deepEqual([...downstream('A',edges,types)],['A']);});
+test('cycles terminate and breadth is bounded',()=>{const edges=[e('1','A','B'),e('2','B','A'),...Array.from({length:1000},(_,i)=>e('x'+i,'B','n'+i))];assert.equal(downstream('A',edges,types,40).size,40);});
+test('collapse follows containment, components and location, never service/dependency links',()=>{const edges=[e('1','B','F','contains'),e('2','A','B','part_of'),e('3','B','room','serves'),e('4','B','other','feeds'),e('5','local','F','located_in'),e('6','owned','B','registered_to')];assert.deepEqual([...groupMembers('B',edges)],['F','A','owned','local']);});
+test('architectural layout has unique positions even for wide neighborhoods',()=>{const nodes=[n('A'),...Array.from({length:150},(_,i)=>n('n'+i,'space')),n('last')],edges=nodes.slice(1,-1).map(v=>e(v.node_key,'A',v.node_key));edges.push(e('last','n0','last'));const result=positions(nodes,edges,'A');assert.equal(new Set([...result.values()].map(v=>`${v.x}:${v.y}`)).size,nodes.length);assert(result.get('last').y>result.get('n99').y);});

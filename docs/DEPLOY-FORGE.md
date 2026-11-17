@@ -1,5 +1,26 @@
 # Publicare GNOSIX pe Laravel Forge
 
+## Building DNA — 0.18.0
+
+Deploy-ul standard din `deploy/forge-zero-downtime.sh` rămâne valabil: Composer install, `npm ci`, build production, config cache, `php artisan migrate --force`, cache rute/view-uri și restart workers. Păstrează backup DB + storage înainte de aplicare. Migrarea `2026_11_17_180000_create_building_dna` este aditivă: UUID pentru proprietățile existente, tabele DNA/proveniență/revizii/decizii și index invers pe spațiile deservite. UUID-urile clădirilor, nivelurilor, spațiilor și activelor nu se schimbă. Proprietățile introduse încă de release-ul vechi în timpul deploy-ului primesc idempotent identitatea lipsă la încărcarea în aplicația nouă, fără regenerarea UUID-urilor existente. Nu folosi migrate:fresh sau rollback pe date reale.
+
+Singurul pachet nou este npm **cytoscape 3.35.0**, blocat în package-lock; nu sunt pachete Composer, graph DB, chei, worker sau variabile .env noi. Păstrează Node/PHP și workerii/schedulerul din release-urile precedente. Frontend-ul trebuie recompilat; chunkul DNA este încărcat numai în explorer. Fișierele Evidence rămân private și partajate între release-uri.
+
+În **Admin → Building DNA** configurează bugetele de explorare/simulare (implicit 6 pași, 160 noduri, 1200 ms). Păstrează autentificarea recentă și guard-ul separat. Capabilitățile `dna.view/manage/review` sunt în registrul organizației; dreptul la proprietate și capabilitățile assets/rooms rămân obligatorii. Invitația Field nu acordă drepturi DNA.
+
+Smoke după deploy pe o proprietate de test:
+
+1. Deschide DNA din Building Studio și Asset Passport; verifică proprietatea/nivelul/camera/activul, căutarea și lista alternativă pe mobil.
+2. Verifică un `serves` existent din Registry. Modifică spațiul deservit în Registry și verifică imediat graful, fără sincronizare/job.
+3. Creează boiler → circuit și circuit → camere; testează un link între clădirile aceleiași proprietăți și refuzul legăturii cu altă proprietate.
+4. Atașează o versiune/afirmație autorizată și o pagină. Propunerea rămâne în review; confirmă explicit și verifică istoricul. O versiune nouă/arhivată sau un conflict Evidence trebuie să semnaleze review nou.
+5. Din ordinul critic al boilerului, deschide SIMULARE. Verifică traseele și incertitudinea/rutele alternative; camerele și ordinul trebuie să rămână neschimbate.
+6. Contestă/retrage o relație cu motiv; verifică reviziile și Asset Passport. Încearcă o modificare dintr-o pagină veche, care trebuie refuzată.
+7. Viewer pe proprietate → read-only; utilizator pe altă proprietate/tehnician doar invitat → fără acces. Fără capabilitate Evidence nu trebuie expuse nume/UUID/URL de documente.
+8. Arhivează/restaurează un activ și o clădire de test; verifică reapariția identităților/relațiilor și păstrarea QR. Testează purjarea numai pe date explicit dispensabile.
+
+Monitorizează durata și planurile SQL în MySQL/MariaDB pe volumul VPS real. Bugetul de timp este cooperativ și nu întrerupe un statement SQL deja pornit; PHP-FPM/Nginx trebuie să păstreze timeout-urile operaționale adecvate. Rezultatele locale pe SQLite nu certifică performanța sau locking-ul bazei de producție. Nu s-a executat deploy sau modificare pe VPS în livrarea locală. Detalii: [DNA-018.md](DNA-018.md).
+
 ## Smart QR & Technician Portal — 0.17.0
 
 Folosește deploy-ul standard din repository: `composer install --no-dev --prefer-dist --optimize-autoloader`, `npm ci`, `npm run build`, `php artisan migrate --force`, cache config/rute/view-uri și restart workers. Migrarea `2026_11_17_100000_create_secure_field_service` este aditivă; nu resetează identități sau datele existente. Păstrează backup DB și storage privat înaintea aplicării. Nu folosi migrate:fresh sau rollback pe date reale.
@@ -25,7 +46,7 @@ Destinație: `https://gnosix.zion3d.ro` · Repository: `matrixn/gnosix-building-
 ## Prima instalare
 
 1. Creează site Laravel cu PHP 8.4, document root `/public` și zero-downtime. Selectează repository-ul și ramura `main`.
-2. Partajează `storage` între release-uri; `.env` este partajat implicit de Forge. Configurează o bază de date persistentă MySQL/PostgreSQL și valorile `DB_*`. Adminul, passkey-urile și setările SMTP necesită migrații; landing-ul nu mai este o aplicație fără bază de date.
+2. Partajează `storage` între release-uri; `.env` este partajat implicit de Forge. Configurează o bază de date persistentă MySQL/MariaDB și valorile `DB_*`. Adminul, passkey-urile și setările SMTP necesită migrații; landing-ul nu mai este o aplicație fără bază de date.
 3. Instalează Node 22.13+ sau 24 LTS și npm. Folosește `npm ci`, cu lockfile-ul din repository.
 4. Configurează DNS către VPS, inclusiv eventualul AAAA, certificatul TLS și redirecționarea HTTP către HTTPS.
 5. Pornește de la `.env.production.example`. Generează `APP_KEY` o singură dată și păstreaz-o între deploy-uri. Completează `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `PASSKEY_RP_ID` și `PASSKEY_ORIGIN` conform [instrucțiunilor admin](ADMIN.md). Contactul și indexarea sunt dezactivate implicit la instalare nouă; se configurează ulterior din administrare.

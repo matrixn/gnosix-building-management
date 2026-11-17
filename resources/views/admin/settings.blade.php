@@ -2,7 +2,7 @@
 @section('content')
 <div class="page-heading"><span class="eyebrow">CONFIGURAȚIA GLOBALĂ GNOSIX</span><h1>Setările platformei.</h1><p>Infrastructura din spatele fiecărei experiențe.</p></div>
 <nav class="settings-tabs" aria-label="Secțiuni setări">
-    @foreach (['general' => 'General', 'gnosix' => 'GNOSIX · Site & contact', 'smtp' => 'Email & SMTP', 'security' => 'Securitate & passkeys', 'evidence'=>'Evidence Engine & AI', 'maintenance'=>'Mentenanță','field'=>'QR & Tehnicieni'] as $key => $label)
+    @foreach (['general' => 'General', 'gnosix' => 'GNOSIX · Site & contact', 'smtp' => 'Email & SMTP', 'security' => 'Securitate & passkeys', 'evidence'=>'Evidence Engine & AI', 'maintenance'=>'Mentenanță','field'=>'QR & Tehnicieni','dna'=>'Building DNA'] as $key => $label)
     <a href="{{ route('admin.settings', ['tab' => $key]) }}" @if ($tab === $key) aria-current="page" @endif>{{ $label }}</a>
     @endforeach
 </nav>
@@ -10,6 +10,8 @@
 <section class="panel"><div class="panel-heading"><span class="panel-icon">◇</span><div><h2>Un spațiu pentru platformă.</h2><p>Identitatea și configurația instanței GNOSIX.</p></div><span class="badge">PLATFORM ADMIN</span></div>
 <dl class="definition-list"><div><dt>Aplicație</dt><dd>{{ config('app.name') }}</dd></div><div><dt>Adresă</dt><dd>{{ config('app.url') }}</dd></div><div><dt>Mediu</dt><dd>{{ app()->environment() }}</dd></div><div><dt>Cont</dt><dd>Administrator al platformei GNOSIX</dd></div><div><dt>Email sistem</dt><dd>SMTP centralizat · {{ $smtpSaved ? 'Configurat în admin' : 'Configurare inițială din mediu' }}</dd></div></dl></section>
 <section class="context-panel"><h3>Administrarea clienților este un spațiu diferit.</h3><p>Setările de aici sunt globale. Conturile viitorilor administratori de clădiri vor aparține aplicației pentru clienți, cu propriile permisiuni și date.</p></section>
+@elseif ($tab === 'dna')
+<section class="panel"><h2>Limitele explorării și simulării</h2><p>Simularea este read-only; limitele semnalează acoperirea incompletă, fără concluzii inventate.</p><form method="POST" action="{{ route('admin.dna.update') }}" class="settings-form">@csrf @method('PUT')<label>Adâncime maximă<input name="max_depth" type="number" min="1" max="12" required value="{{ old('max_depth',$dnaSettings['max_depth']) }}"></label><label>Noduri per explorare/simulare<input name="max_nodes" type="number" min="40" max="300" required value="{{ old('max_nodes',$dnaSettings['max_nodes']) }}"></label><label>Buget de timp (ms)<input name="timeout_ms" type="number" min="100" max="3000" required value="{{ old('timeout_ms',$dnaSettings['timeout_ms']) }}"></label><button class="button">Salvează limitele</button></form></section>
 @elseif ($tab === 'field')
 <section class="panel"><h2>Acces securizat în teren</h2><p>Invitațiile au scop limitat, email verificat și pot fi revocate imediat. Locatorul QR nu acordă acces.</p><form method="POST" class="settings-form" action="{{ route('admin.field.update') }}">@csrf @method('PUT')<label>Durata maximă a unei invitații (zile)<input type="number" name="invite_max_days" min="1" max="365" required value="{{ old('invite_max_days',$fieldSettings['invite_max_days']) }}"></label><button class="button">Salvează setările</button></form></section>
 @elseif ($tab === 'maintenance')

@@ -1,10 +1,31 @@
 # GNOSIX Building Management
 
-Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Evidence Engine oferă documente private/versionate, afirmații cu proveniență, review și conflicte. Smart Asset Registry adaugă pașapoarte și echipamente legate de spații/sisteme și dovezi. Mentenanța conectează sesizări, ordine de lucru, planuri preventive și dovezi. Release 0.17 adaugă QR securizat, acces extern limitat și portal de teren cu rapoarte PDF versionate.
+Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. Landing Atlas, identitate client Genesis și administrare separată a platformei. Organizațiile, profilarea multi-tenant și Workspace Studio sunt disponibile, cu proprietăți, clădiri, etaje și spații operaționale. Building Studio adaugă declarații persistente, machetă axonometrică și istoric. Evidence Engine oferă documente private/versionate, afirmații cu proveniență, review și conflicte. Smart Asset Registry adaugă pașapoarte și echipamente legate de spații/sisteme și dovezi. Mentenanța conectează sesizări, ordine de lucru, planuri preventive și dovezi. Release 0.17 adaugă QR securizat, acces extern limitat și portal de teren cu rapoarte PDF versionate. Building DNA 0.18 conectează structura și activele într-un graf tipizat, cu proveniență, review și simulare explicabilă a impactului potențial.
 
 ## Checklist de livrare
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
+
+### Building DNA — 0.18.0
+
+- [x] Audit 0.17; Laravel/Blade/Vite, autentificarea, tenant/granturile, Asset Registry, Maintenance și Evidence păstrate.
+- [x] Adaptor SQL pentru structura existentă, localizare, componente și spații deservite; fără registru sau graf de adevăr paralel.
+- [x] Noduri cu UUID stabil pentru proprietate/clădire/nivel/spațiu/activ/sistem; UUID aditiv și backfill numai pentru Property.
+- [x] Relații funcționale tipizate și tipuri custom configurabile, sens/cardinalitate/propagare/cicluri centralizate; conexiunile generice nu propagă defecțiuni.
+- [x] Declarații/propuneri/review/contestare/retragere/repropunere cu revizii, motive, audit și capete imuabile; serves folosește pivotul original.
+- [x] Explorer Cytoscape lazy RO/EN: zoom/pan/fit, selecție, inspector, căutare, extindere/paginare, grupuri, filtre și evidențiere; listă accesibilă actualizată și mobil/reduced-motion.
+- [x] Simulare read-only cu trasee explicabile, spații/echipamente potențial afectate, direcții semantice, redundanță/incertitudine, deduplicare și bugete de adâncime/noduri/timp.
+- [x] Referințe la versiunile/afirmațiile Evidence existente, pagină sursă, bază explicită de review și semnalarea surselor istorice/modificate/lipsă; fără confirmare sau AI automat.
+- [x] Observații deterministe pe proprietate/clădire, cu referințe, review/dismiss/resolve justificat și decizii istorice; informația lipsă nu este prezentată ca defect.
+- [x] Legături din Building Studio, Asset Passport și ordinul de mentenanță; QR și toate fluxurile existente păstrate.
+- [x] Capabilități DNA și autorizare server pentru fiecare endpoint; surse private redactate fără permisiune Evidence, CSRF/rate limiting/tranzacții și protecții de concurență.
+- [x] Bugete configurabile în Admin → Building DNA, în DB și cu autentificare recentă; fără setări business .env noi.
+- [x] 286 teste PHP / 2.428 aserțiuni și 17 scenarii JS trecute; dataset 10.000 active / 2.500 relații, build, lint/Pint/cache și browser desktop/mobil RO/EN.
+- [x] Documentație arhitectură/securitate/limite/deploy și pachet Forge 0.18.0 cu checksum.
+- [ ] Smoke pe VPS/MariaDB/MySQL, corpus tehnic real și validare asistivă pe dispozitive reale; acestea nu au fost executate local.
+- [ ] Time Machine operațional, calcule inginerești/capacități, indisponibilitate PMS și IoT fizic rămân dezvoltări viitoare.
+
+Arhitectură, fișiere, rezultate și limite: [DNA-018.md](docs/DNA-018.md). Deploy: [DEPLOY-FORGE.md](docs/DEPLOY-FORGE.md).
 
 ### Smart QR, Secure Access & Technician Portal — 0.17.0
 
@@ -224,7 +245,8 @@ Implementare, fișiere, limite și verificări: [GENESIS-005.md](docs/GENESIS-00
 - [ ] Calendar avansat și SLA.
 - [x] Încărcarea/stocarea/versionarea și revizuirea documentelor/dovezilor reale — livrate în Task 005; extracția live necesită configurarea furnizorului.
 - [x] Evidence Engine operațional: proveniență și detectarea contradicțiilor — Task 005, extins prin rapoartele 0.17.0.
-- [ ] Time Machine operațional și Building DNA cu relații reale între active.
+- [x] Building DNA cu relații reale între active — 0.18.0.
+- [ ] Time Machine operațional, bazat pe istoricul verificabil al datelor.
 - [ ] Trust Passport, Zero-Entry asistat AI, Handover între organizații și LifeCycle Simulator.
 - [ ] Invitații prin email, transfer de proprietar și delegare granulară dincolo de proprietate.
 - [ ] Passkeys pentru clienți, social login și 2FA.
@@ -305,6 +327,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.17.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.18.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

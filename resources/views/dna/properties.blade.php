@@ -1,0 +1,3 @@
+@extends('layouts.identity')
+@section('title',__('dna.title'))
+@section('content')<section class="dna-shell"><header class="dna-hero"><span class="identity-kicker">{{ __('dna.kicker') }}</span><h1>{{ __('dna.title') }} <span>⌬</span></h1><p>{{ __('dna.intro') }}</p><p>{{ __('dna.scope_hint') }}</p></header><h2>{{ __('dna.property') }}</h2><div class="dna-property-grid">@forelse($properties as $p)<a class="dna-property-card" href="{{ route('app.dna.index',[$organization,'property'=>$p->id]) }}"><span aria-hidden="true">⌬</span><h3>{{ $p->name }}</h3><p>{{ __('dna.open') }} ↗</p></a>@empty<p>{{ __('dna.empty') }}</p>@endforelse</div>{{ $properties->links() }}</section>@endsection

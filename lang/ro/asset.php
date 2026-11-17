@@ -252,4 +252,9 @@ return [
     'event_maintenance.report_accepted' => 'Raport service acceptat',
     'event_maintenance.report_returned' => 'Raport service returnat',
     'event_field.qr_scanned' => 'Etichetă QR accesată',
+    'event_dna.created' => 'Relație DNA declarată',
+    'event_dna.updated' => 'Declarație DNA actualizată',
+    'event_dna.reviewed' => 'Relație DNA revizuită',
+    'event_dna.decision' => 'Decizie de review DNA',
+    'event_dna.type_created' => 'Tip DNA creat',
 ];

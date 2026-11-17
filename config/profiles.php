@@ -8,7 +8,7 @@ return [
             'enabled' => true, 'icon' => 'hotel', 'schema_version' => 1,
             'kinds' => ['independent', 'company', 'portfolio'],
             'recommended_property_types' => ['hotel', 'guesthouse', 'apartment', 'mixed'],
-            'capabilities' => ['hospitality.workspace', 'hospitality.buildings', 'hospitality.rooms', 'hospitality.maintenance', 'evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.view', 'assets.manage', 'assets.review', 'assets.types'],
+            'capabilities' => ['dna.view', 'dna.manage', 'dna.review', 'hospitality.workspace', 'hospitality.buildings', 'hospitality.rooms', 'hospitality.maintenance', 'evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.view', 'assets.manage', 'assets.review', 'assets.types'],
         ],
         'construction' => [
             'enabled' => false, 'icon' => 'construction', 'schema_version' => 1,
@@ -24,6 +24,9 @@ return [
         ],
     ],
     'capabilities' => [
+        'dna.view' => ['requires' => 'assets.view', 'enabled' => true, 'operational' => true, 'icon' => '⌬', 'route' => 'app.dna.index', 'nav_label' => 'dna.title'],
+        'dna.manage' => ['requires' => 'dna.view', 'enabled' => true, 'operational' => true, 'icon' => '⌬', 'route' => 'app.dna.index', 'nav_label' => 'dna.title'],
+        'dna.review' => ['requires' => 'dna.view', 'enabled' => true, 'operational' => true, 'icon' => '⌬', 'route' => 'app.dna.index', 'nav_label' => 'dna.title'],
         'assets.view' => ['enabled' => true, 'operational' => true, 'icon' => '✦', 'route' => 'app.assets.index', 'nav_label' => 'asset.registry'],
         'assets.manage' => ['requires' => 'assets.view', 'enabled' => true, 'operational' => true, 'icon' => '✦', 'route' => 'app.assets.index', 'nav_label' => 'asset.registry'],
         'assets.review' => ['requires' => 'assets.view', 'enabled' => true, 'operational' => true, 'icon' => '◎', 'route' => 'app.assets.index', 'nav_label' => 'asset.registry'],
@@ -41,8 +44,8 @@ return [
         'facility.contracts' => ['enabled' => false, 'operational' => false, 'icon' => '≡'],
     ],
     'role_denied_capabilities' => [
-        'technician' => ['evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.manage', 'assets.review', 'assets.types', 'hospitality.workspace'],
-        'reporter' => ['evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.manage', 'assets.review', 'assets.types', 'hospitality.workspace'],
+        'technician' => ['dna.manage', 'dna.review', 'evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.manage', 'assets.review', 'assets.types', 'hospitality.workspace'],
+        'reporter' => ['dna.manage', 'dna.review', 'evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.manage', 'assets.review', 'assets.types', 'hospitality.workspace'],
     ],
     'navigation' => [
         ['route' => 'field.index', 'label' => 'field.portal', 'icon' => '↗'],

@@ -13,14 +13,14 @@ for entry in json.loads(manifest.read_text()).values():
         raise SystemExit('Compiled asset missing; rebuild before packaging.')
 
 directories = ['app', 'bootstrap', 'config', 'database', 'deploy', 'lang', 'resources', 'routes', 'public']
-files = ['artisan', 'composer.json', 'composer.lock', 'package.json', 'package-lock.json', 'vite.config.js', '.env.production.example', '.env.example', 'README.md', 'AGENTS.md', 'docs/DEPLOY-FORGE.md', 'docs/ADMIN.md', 'docs/CONTACT-AND-SEO.md', 'docs/SYSTEM-SETTINGS.md', 'docs/LANDING-EXPERIENCE.md', 'docs/GENESIS-001-AUDIT.md', 'docs/GENESIS-001.md', 'docs/GENESIS-002-AUDIT.md', 'docs/GENESIS-002.md', 'docs/GENESIS-003-AUDIT.md', 'docs/GENESIS-003.md', 'docs/GENESIS-004-AUDIT.md', 'docs/GENESIS-004.md', 'docs/BUILDING-STUDIO-WORKFLOWS.md', 'scripts/build-property-illustrations.py', 'scripts/sync-pdf-assets.mjs', 'docs/GENESIS-005-AUDIT.md', 'docs/GENESIS-005.md', 'docs/AI-PROVIDERS.md', 'docs/ASSET-REGISTRY-AUDIT.md', 'docs/SMART-ASSET-REGISTRY.md', 'docs/MAINTENANCE-AUDIT.md', 'docs/MAINTENANCE-016.md', 'docs/FIELD-017-AUDIT.md', 'docs/FIELD-017.md']
+files = ['artisan', 'composer.json', 'composer.lock', 'package.json', 'package-lock.json', 'vite.config.js', '.env.production.example', '.env.example', 'README.md', 'AGENTS.md', 'docs/DEPLOY-FORGE.md', 'docs/ADMIN.md', 'docs/CONTACT-AND-SEO.md', 'docs/SYSTEM-SETTINGS.md', 'docs/LANDING-EXPERIENCE.md', 'docs/GENESIS-001-AUDIT.md', 'docs/GENESIS-001.md', 'docs/GENESIS-002-AUDIT.md', 'docs/GENESIS-002.md', 'docs/GENESIS-003-AUDIT.md', 'docs/GENESIS-003.md', 'docs/GENESIS-004-AUDIT.md', 'docs/GENESIS-004.md', 'docs/BUILDING-STUDIO-WORKFLOWS.md', 'scripts/build-property-illustrations.py', 'scripts/sync-pdf-assets.mjs', 'docs/GENESIS-005-AUDIT.md', 'docs/GENESIS-005.md', 'docs/AI-PROVIDERS.md', 'docs/ASSET-REGISTRY-AUDIT.md', 'docs/SMART-ASSET-REGISTRY.md', 'docs/MAINTENANCE-AUDIT.md', 'docs/MAINTENANCE-016.md', 'docs/FIELD-017-AUDIT.md', 'docs/FIELD-017.md', 'docs/DNA-018-AUDIT.md', 'docs/DNA-018.md']
 selected = [ROOT / f for f in files]
 for name in directories:
     selected.extend(f for f in (ROOT / name).rglob('*') if f.is_file())
 selected.extend(f for f in (ROOT / 'storage').rglob('.gitignore'))
 selected = sorted({p for p in selected if p.name != 'hot' and p.suffix not in ['.sqlite', '.log'] and not p.name.endswith(('-wal', '-shm')) and not ('bootstrap/cache' in p.as_posix() and p.name != '.gitignore')})
 
-out = ROOT / 'build/gnosix-atlas-forge-0.17.0.zip'
+out = ROOT / 'build/gnosix-atlas-forge-0.18.0.zip'
 out.parent.mkdir(exist_ok=True)
 with ZipFile(out, 'w', ZIP_DEFLATED) as archive:
     for p in selected:

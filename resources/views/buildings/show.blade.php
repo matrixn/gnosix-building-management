@@ -21,6 +21,7 @@
                 <a class="identity-link" href="{{ route('app.declarations.export', [$organization, $property, $building->uuid]) }}">{{ __('building.export') }}</a>
             @endif
         </div>
+@include('dna.link',['dnaProperty'=>$property,'dnaFocus'=>'building:'.$building->uuid])
     </header>
     @if(!$rooms)
         <p class="identity-notice warning">{{ __('building.rooms_disabled') }}</p>
