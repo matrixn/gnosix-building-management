@@ -3,7 +3,7 @@
         @foreach (['ro', 'en'] as $locale)
         <url>
             <loc>{{ \App\Support\SiteSettings::value('canonical_url').\App\Support\PublicSite::path($locale, $privacy) }}</loc>
-            @foreach (['ro', 'en', 'x-default'] as $alternate)<xhtml:link rel="alternate" hreflang="{{ $alternate }}" href="{{ \App\Support\SiteSettings::value('canonical_url').\App\Support\PublicSite::path($alternate === 'x-default' ? 'ro' : $alternate, $privacy) }}"/>@endforeach
+            @foreach (['ro', 'en', 'x-default'] as $alternate)<xhtml:link rel="alternate" hreflang="{{ $alternate }}" href="{{ \App\Support\SiteSettings::value('canonical_url').($alternate === 'x-default' ? \App\Support\PublicSite::defaultPath($privacy) : \App\Support\PublicSite::path($alternate, $privacy)) }}"/>@endforeach
         </url>
         @endforeach
     @endforeach

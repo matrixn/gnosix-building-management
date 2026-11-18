@@ -1,7 +1,7 @@
 @php
     $locale = \App\Support\PublicSite::locale();
     $privacy = request()->routeIs('privacy', 'privacy.en');
-    $publicPage = request()->routeIs('home', 'home.en', 'privacy', 'privacy.en');
+    $publicPage = request()->routeIs('home', 'home.ro', 'home.en', 'privacy', 'privacy.en');
     $title = $privacy ? __('Confidențialitate — GNOSIX Building Management') : __('GNOSIX Building Management — Memoria digitală a clădirilor');
     $description = $privacy ? __('Cum folosim datele din formularul de contact GNOSIX: scop, livrare prin email și drepturile tale.') : __('Documente, echipamente și istoric tehnic, în contextul aceleiași clădiri. Descoperă GNOSIX și propune o colaborare în programul pilot.');
     $canonical = \App\Support\PublicSite::canonical();
@@ -22,7 +22,7 @@
     <link rel="canonical" href="{{ $canonical }}">
     <link rel="alternate" hreflang="ro" href="{{ \App\Support\PublicSite::canonical('ro') }}">
     <link rel="alternate" hreflang="en" href="{{ \App\Support\PublicSite::canonical('en') }}">
-    <link rel="alternate" hreflang="x-default" href="{{ \App\Support\PublicSite::canonical('ro') }}">
+    <link rel="alternate" hreflang="x-default" href="{{ \App\Support\SiteSettings::value('canonical_url').\App\Support\PublicSite::defaultPath($privacy) }}">
     @endif
     <meta name="theme-color" content="#101225">
     <meta property="og:type" content="website"><meta property="og:site_name" content="GNOSIX Building Management">

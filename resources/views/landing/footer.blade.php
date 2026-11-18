@@ -4,5 +4,9 @@
     <a href="{{ \App\Support\PublicSite::privacy() }}">{{ __('Confidențialitate') }}</a>
     <a href="{{ route('login', ['lang' => app()->getLocale()]) }}">{{ __('Contul meu') }}</a>
     <button class="motion-control" data-motion data-pause="{{ __('Pauză animații') }}" data-resume="{{ __('Reia animațiile') }}" aria-pressed="false">{{ __('Pauză animații') }}</button>
-    <small>© {{ date('Y') }} GNOSIX Building Management · {{ __('Produs în dezvoltare · Program parteneri pilot') }}</small>
+    <small>© {{ date('Y') }} GNOSIX Building Management · {{ __('Produs în dezvoltare · Program parteneri pilot') }}
+    @if(request()->routeIs('home', 'home.ro', 'home.en'))
+        · <a href="https://db-ip.com">{{ __('Localizare IP oferită de DB-IP') }}</a>
+    @endif
+    </small>
 </footer>

@@ -11,7 +11,11 @@ class PublicSite
 
     public static function home(?string $locale = null): string
     {
-        return route(($locale ?? self::locale()) === 'en' ? 'home.en' : 'home');
+        if (($locale ?? self::locale()) === 'en') {
+            return route('home.en');
+        }
+
+        return route(request()->routeIs('home.ro') ? 'home.ro' : 'home');
     }
 
     public static function privacy(?string $locale = null): string
@@ -26,11 +30,16 @@ class PublicSite
 
     public static function path(string $locale, bool $privacy = false): string
     {
-        return $privacy ? ($locale === 'en' ? '/en/privacy' : '/confidentialitate') : ($locale === 'en' ? '/en' : '/');
+        return $privacy ? ($locale === 'en' ? '/en/privacy' : '/confidentialitate') : ($locale === 'en' ? '/en' : '/ro');
+    }
+
+    public static function defaultPath(bool $privacy = false): string
+    {
+        return $privacy ? self::path('ro', true) : '/';
     }
 
     public static function canonical(?string $locale = null): string
     {
-        return \App\Support\SiteSettings::value('canonical_url').self::path($locale ?? self::locale(), request()->routeIs('privacy', 'privacy.en'));
+        return SiteSettings::value('canonical_url').self::path($locale ?? self::locale(), request()->routeIs('privacy', 'privacy.en'));
     }
 }

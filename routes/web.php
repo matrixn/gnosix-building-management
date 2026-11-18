@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ContactController;
+use App\Http\Middleware\ChooseLandingLanguage;
 use App\Http\Middleware\ObserveCampaign;
 use App\Support\SiteSettings;
 use Illuminate\Support\Facades\Route;
@@ -9,8 +10,9 @@ require __DIR__.'/admin.php';
 require __DIR__.'/identity.php';
 require __DIR__.'/field.php';
 
-Route::middleware(ObserveCampaign::class)->group(function () {
+Route::middleware([ChooseLandingLanguage::class, ObserveCampaign::class])->group(function () {
     Route::view('/', 'landing.index')->name('home');
+    Route::view('/ro', 'landing.index')->name('home.ro');
     Route::view('/en', 'landing.index')->name('home.en');
 });
 Route::view('/confidentialitate', 'privacy')->name('privacy');
