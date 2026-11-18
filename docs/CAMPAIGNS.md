@@ -10,6 +10,12 @@ Fiecare link oferă distribuția vizitelor după domeniul transmis în antetul R
 
 Conversia se atribuie ultimului link UTM activ din aceeași sesiune sau, în lipsa lui, intrării fără UTM. Fereastra este de două ore. Rata împarte vizitele cu cel puțin o conversie la vizitele înregistrate. Se contorizează o singură dată per vizită fiecare categorie: formular trimis cu succes și cont client creat. Confirmarea emailului este un pas separat.
 
+## Raport pe țări
+
+Tabelul **Vizite și conversii pe țări** urmărește filtrele existente și arată separat traficul cu UTM și fără UTM. Deschide **Țări pentru acest link** pentru distribuția linkului. Conversiile păstrează țara estimată la intrarea pe site, chiar dacă IP-ul se schimbă ulterior.
+
+Geolocalizarea folosește același index local IPv4/IPv6 ca selectorul de limbă. Se reține doar codul țării. Vizitele noi pentru care țara nu poate fi identificată apar la **Țară necunoscută**. Vizitele anterioare release-ului păstrează totalurile existente și nu primesc o țară retroactiv. Ștergerea sesiunilor de atribuire expirate păstrează totalurile pe țări.
+
 Scanerele de email care încarcă pagina pot apărea în estimare. Schimbarea dispozitivului și acțiunile după expirare pot lăsa conversii neatribuite. Cererile HEAD, prefetch și semnalele DNT/GPC sunt excluse. Raportul folosește sesiunea Laravel existentă, cu totaluri, etichete, domenii și identificatori de vizită temporari separați de datele de contact și de cont.
 
 Pe Forge, scriptul standard aplică migrarea și compilează frontend-ul. Schedulerul existent trebuie să ruleze pentru curățarea identificatorilor temporari după expirare. Comanda `php artisan gnosix:campaign-cleanup` poate verifica manual curățarea, cu păstrarea totalurilor. După activare, deschide un link UTM de test, creează un cont în aceeași sesiune și verifică rezultatul în administrare.

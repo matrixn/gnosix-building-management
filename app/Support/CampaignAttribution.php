@@ -15,6 +15,8 @@ class CampaignAttribution
 
     private const TAGS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id'];
 
+    public function __construct(private LandingCountry $country) {}
+
     public function observe(Request $request): void
     {
         if ($request->headers->get('Sec-GPC') === '1' || $request->headers->get('DNT') === '1') {
@@ -52,7 +54,8 @@ class CampaignAttribution
         try {
             $id = (string) Str::uuid();
             $expires = $now->copy()->addHours(2);
-            DB::transaction(function () use ($id, $path, $fingerprint, $tags, $tagged, $referrer, $now, $expires) {
+            $country = $this->country->forRequest($request);
+            DB::transaction(function () use ($id, $path, $fingerprint, $tags, $tagged, $referrer, $now, $expires, $country) {
                 DB::table('campaign_links')->insertOrIgnore([
                     'fingerprint' => $fingerprint,
                     'path' => $path,
@@ -61,11 +64,14 @@ class CampaignAttribution
                     'last_seen_at' => $now,
                 ]);
                 $link = DB::table('campaign_links')->where('fingerprint', $fingerprint)->first(['id']);
-                DB::table('campaign_visits')->insert(['id' => $id, 'campaign_link_id' => $link->id, 'expires_at' => $expires]);
+                DB::table('campaign_visits')->insert(['id' => $id, 'campaign_link_id' => $link->id, 'country_code' => $country, 'expires_at' => $expires]);
                 DB::table('campaign_links')->where('id', $link->id)->increment('visits', 1, ['last_seen_at' => $now]);
                 $source = ['campaign_link_id' => $link->id, 'host' => $referrer];
                 DB::table('campaign_link_referrers')->insertOrIgnore($source);
                 DB::table('campaign_link_referrers')->where($source)->increment('visits');
+                $location = ['campaign_link_id' => $link->id, 'country_code' => $country];
+                DB::table('campaign_link_countries')->insertOrIgnore($location);
+                DB::table('campaign_link_countries')->where($location)->increment('visits');
             }, 3);
             $request->session()->put($sessionKey, ['id' => $id, 'fingerprint' => $touchKey, 'expires' => $expires->timestamp]);
         } catch (Throwable $exception) {
@@ -163,10 +169,15 @@ class CampaignAttribution
 
                 DB::table('campaign_visits')->where('id', $visit->id)->update([$flag => true]);
                 $increments = [$counter => 1];
-                if (! $visit->contacted && ! $visit->registered) {
+                $firstConversion = ! $visit->contacted && ! $visit->registered;
+                if ($firstConversion) {
                     $increments['converted_visits'] = 1;
                 }
                 DB::table('campaign_links')->where('id', $visit->campaign_link_id)->incrementEach($increments);
+                if ($firstConversion && $visit->country_code !== null) {
+                    DB::table('campaign_link_countries')->where('campaign_link_id', $visit->campaign_link_id)
+                        ->where('country_code', $visit->country_code)->increment('converted_visits');
+                }
             }, 3);
         } catch (Throwable $exception) {
             $this->logFailure($exception);

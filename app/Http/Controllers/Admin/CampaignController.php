@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Support\SiteSettings;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -32,6 +33,8 @@ class CampaignController extends Controller
         }
 
         $totals = (clone $query)->selectRaw('COUNT(*) AS links, SUM(visits) AS visits, SUM(converted_visits) AS converted_visits, SUM(contacts) AS contacts, SUM(registrations) AS registrations')->first();
+        $countries = $this->countries(clone $query);
+        $countryCoverage = (int) ($totals->visits ?? 0) - $countries->sum(fn ($country) => $country->tagged_visits + $country->untagged_visits);
         $links = $query->orderByDesc(match ($sort) {
             'visits' => 'visits',
             'conversions' => 'converted_visits',
@@ -39,12 +42,15 @@ class CampaignController extends Controller
         })->orderByDesc('id')->paginate(25)->withQueryString();
         $baseUrl = rtrim(SiteSettings::value('canonical_url'), '/');
         $referrers = $this->referrers($links->pluck('id')->all());
-        $links->through(function ($link) use ($baseUrl, $referrers) {
+        $linkCountries = DB::table('campaign_link_countries')->whereIn('campaign_link_id', $links->pluck('id')->all())
+            ->orderByDesc('visits')->orderBy('country_code')->get()->groupBy('campaign_link_id');
+        $links->through(function ($link) use ($baseUrl, $referrers, $linkCountries) {
             $link->tags = json_decode($link->tags, true, flags: JSON_THROW_ON_ERROR);
             $link->url = $baseUrl.$link->path;
             if ($link->tags) {
                 $link->url .= '?'.http_build_query($link->tags, encoding_type: PHP_QUERY_RFC3986);
             }
+            $link->countries = $linkCountries->get($link->id, collect());
             $link->sources = $referrers->get($link->id, collect());
             $measured = (int) ($link->sources->first()?->measured ?? 0);
             $link->earlier_visits = max(0, $link->visits - $measured);
@@ -53,7 +59,22 @@ class CampaignController extends Controller
             return $link;
         });
 
-        return response()->view('admin.campaigns', compact('links', 'totals', 'search', 'sort', 'kind'))->header('Cache-Control', 'private, no-store');
+        return response()->view('admin.campaigns', compact('links', 'totals', 'search', 'sort', 'kind', 'countries', 'countryCoverage'))->header('Cache-Control', 'private, no-store');
+    }
+
+    private function countries(Builder $filteredLinks)
+    {
+        return DB::table('campaign_link_countries as locations')
+            ->joinSub($filteredLinks->select('id', 'is_tagged'), 'links', 'links.id', '=', 'locations.campaign_link_id')
+            ->select('locations.country_code')
+            ->selectRaw('SUM(CASE WHEN links.is_tagged THEN locations.visits ELSE 0 END) AS tagged_visits')
+            ->selectRaw('SUM(CASE WHEN links.is_tagged THEN locations.converted_visits ELSE 0 END) AS tagged_conversions')
+            ->selectRaw('SUM(CASE WHEN links.is_tagged THEN 0 ELSE locations.visits END) AS untagged_visits')
+            ->selectRaw('SUM(CASE WHEN links.is_tagged THEN 0 ELSE locations.converted_visits END) AS untagged_conversions')
+            ->groupBy('locations.country_code')
+            ->orderByRaw('SUM(locations.visits) DESC')
+            ->orderBy('locations.country_code')
+            ->get();
     }
 
     private function referrers(array $linkIds)

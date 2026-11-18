@@ -152,4 +152,52 @@ class CampaignAttributionTest extends TestCase
         $this->get('/admin/campaigns?kind=tagged')->assertOk()->assertSee('linkedin.com')->assertSee('Vizite anterioare, fără măsurarea provenienței')
             ->assertSee('50,0%')->assertDontSee('google.com/search');
     }
+
+    public function test_country_counts_split_tagged_and_untagged_and_use_entry_ip_for_conversions(): void
+    {
+        Mail::fake();
+        $this->withServerVariables(['REMOTE_ADDR' => '86.34.0.1'])->get(self::CAMPAIGN)->assertOk();
+        $this->withServerVariables(['REMOTE_ADDR' => '8.8.8.8'])->post('/contact', $this->contact())->assertSessionHas('contact_sent', true);
+        $this->post('/contact', $this->contact())->assertSessionHas('contact_sent', true);
+
+        $this->withHeaders(['Referer' => 'https://example.com/'])->get('/en')->assertOk();
+        $this->assertDatabaseHas('campaign_link_countries', ['country_code' => 'US', 'visits' => 1, 'converted_visits' => 0]);
+        $this->travel(2)->hours();
+        $this->withServerVariables(['REMOTE_ADDR' => '86.34.0.1'])->flushHeaders()->get('/')->assertOk();
+        $this->post('/contact', $this->contact())->assertSessionHas('contact_sent', true);
+        $this->assertDatabaseHas('campaign_link_countries', ['country_code' => 'RO', 'campaign_link_id' => 1, 'visits' => 1, 'converted_visits' => 1]);
+        $this->assertDatabaseHas('campaign_link_countries', ['country_code' => 'RO', 'campaign_link_id' => 3, 'visits' => 1, 'converted_visits' => 1]);
+
+        $admin = PlatformAdmin::create(['name' => 'Test Admin', 'email' => 'admin@example.test', 'password' => 'test-password']);
+        $this->actingAs($admin, 'platform_admin')->withSession(['platform_admin_version' => $admin->auth_version]);
+        $response = $this->get('/admin/campaigns')->assertOk()->assertSee('Vizite și conversii pe țări')->assertSee('Cu UTM')->assertSee('Fără UTM');
+        $country = $response->viewData('countries')->firstWhere('country_code', 'RO');
+        $this->assertSame([1, 1, 1, 1], array_map('intval', [$country->tagged_visits, $country->tagged_conversions, $country->untagged_visits, $country->untagged_conversions]));
+
+        $filtered = $this->get('/admin/campaigns?q=founding_partners')->assertOk()->viewData('countries');
+        $this->assertCount(1, $filtered);
+        $this->assertSame(0, (int) $filtered->first()->untagged_visits);
+    }
+
+    public function test_missing_historical_country_is_distinct_from_new_unknown_country(): void
+    {
+        Mail::fake();
+        $this->get(self::CAMPAIGN)->assertOk();
+        DB::table('campaign_visits')->update(['country_code' => null]);
+        DB::table('campaign_link_countries')->delete();
+        $this->post('/contact', $this->contact())->assertSessionHas('contact_sent', true);
+        $this->assertDatabaseCount('campaign_link_countries', 0);
+        $this->assertDatabaseHas('campaign_links', ['visits' => 1, 'converted_visits' => 1]);
+
+        $this->travel(2)->hours();
+        $this->get(self::CAMPAIGN)->assertOk();
+        $this->assertDatabaseHas('campaign_link_countries', ['country_code' => 'ZZ', 'visits' => 1]);
+        $this->travel(2)->hours();
+        $this->artisan('gnosix:campaign-cleanup')->assertSuccessful();
+        $this->assertDatabaseCount('campaign_visits', 0);
+
+        $admin = PlatformAdmin::create(['name' => 'Test Admin', 'email' => 'admin@example.test', 'password' => 'test-password']);
+        $this->actingAs($admin, 'platform_admin')->withSession(['platform_admin_version' => $admin->auth_version]);
+        $this->get('/admin/campaigns')->assertOk()->assertSee('Țară necunoscută')->assertSee('1 vizite anterioare măsurării pe țări');
+    }
 }

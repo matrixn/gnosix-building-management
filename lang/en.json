@@ -1,5 +1,5 @@
 {
-  "Folosim adresa IP pentru a alege limba inițială a paginii principale pe baza țării estimate. Clasificarea se face pe serverul nostru.": "We use your IP address to choose the initial homepage language based on the estimated country. This lookup runs on our server.",
+  "Folosim adresa IP pentru a estima țara la intrarea pe site. Această estimare alege limba inițială și adaugă vizita în raportul pe țări. Clasificarea se face pe serverul nostru, iar raportul reține doar codul țării.": "We use your IP address to estimate the country when you arrive. This estimate chooses the initial homepage language and adds the visit to the country report. The lookup runs on our server and the report retains only the country code.",
   "Localizare IP oferită de DB-IP": "IP geolocation by DB-IP",
   "MEMORIA DIGITALĂ A CLĂDIRILOR": "THE DIGITAL MEMORY OF BUILDINGS",
   "Clădirile au": "Buildings have",

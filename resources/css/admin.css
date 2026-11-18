@@ -36,3 +36,14 @@
 .campaign-sources dl, .campaign-sources dd { margin: 0; }
 .campaign-sources dl > div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding: 6px 0; }
 .campaign-sources dt { overflow-wrap: anywhere; min-width: 0; }
+
+.campaign-country-panel > p { margin: 8px 0; }
+.campaign-country-panel > p:last-child { margin-bottom: 0; }
+.campaign-country-panel > p a { text-decoration: underline; }
+.campaign-country-scroll { overflow-x: auto; }
+.campaign-country-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.campaign-country-table { width: 100%; border-collapse: collapse; }
+.campaign-country-table th, .campaign-country-table td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: right; }
+.campaign-country-table th[scope="row"], .campaign-country-table th:first-child[scope="col"] { text-align: left; }
+.campaign-country-table th[scope="colgroup"] { color: var(--accent); }
+.campaign-country-table td { font-variant-numeric: tabular-nums; }

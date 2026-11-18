@@ -1,5 +1,9 @@
 # Publicare GNOSIX pe Laravel Forge
 
+## Raport de trafic pe țări — 0.19.4
+
+Scriptul Forge standard aplică migrarea aditivă pentru indicatorii pe țări și distribuie indexurile IPv4/IPv6 din release. Pragul de măsurare este momentul publicării. Totalurile anterioare rămân disponibile. După deploy, verifică în **Administrare → Trafic și campanii** coloanele cu UTM și fără UTM și distribuția unui link.
+
 ## Trafic și campanii — 0.19.2
 
 Scriptul Forge standard aplică migrarea care adaugă proveniența pe domeniu și păstrează totalurile campaniilor existente. După deploy, verifică o intrare fără UTM și un link de campanie în **Administrare → Trafic și campanii**. Proveniența se colectează pentru vizitele noi.

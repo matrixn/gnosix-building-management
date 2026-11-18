@@ -1,4 +1,4 @@
-"""Build a local Romania/foreign index from the official DB-IP Country Lite CSV."""
+"""Build a local country code index from the official DB-IP Country Lite CSV."""
 import argparse
 import csv
 import gzip
@@ -25,7 +25,9 @@ with gzip.open(args.csv_gz, "rt", encoding="utf-8", newline="") as stream:
         endpoints[family] = high
         if country in {"ZZ", "XX", ""}:
             continue
-        status = b"R" if country == "RO" else b"F"
+        if len(country) != 2 or not (country.isascii() and country.isupper() and country.isalpha()):
+            raise ValueError(f"Unexpected country code: {country}")
+        status = country.encode("ascii")
         records = ranges[family]
         if records and records[-1][1] + 1 == low and records[-1][2] == status:
             records[-1] = (records[-1][0], high, status)
@@ -36,9 +38,18 @@ for family, size in [(4, 4), (6, 16)]:
     records = ranges[family]
     if not records:
         raise ValueError(f"No ranges for IPv{family}")
+    boundaries = []
+    next_address = 0
+    for low, high, status in records:
+        if next_address < low:
+            boundaries.append((next_address, b"ZZ"))
+        boundaries.append((low, status))
+        next_address = high + 1
+    if next_address < 1 << (size * 8):
+        boundaries.append((next_address, b"ZZ"))
     path = out / f"ipv{family}.bin"
-    path.write_bytes(b"".join(low.to_bytes(size, "big") + high.to_bytes(size, "big") + status for low, high, status in records))
-    print(f"{path.name}: {len(records)} ranges / {path.stat().st_size} bytes")
+    path.write_bytes(b"".join(low.to_bytes(size, "big") + status for low, status in boundaries))
+    print(f"{path.name}: {len(boundaries)} boundaries / {path.stat().st_size} bytes")
 digest = hashlib.sha256(args.csv_gz.read_bytes()).hexdigest()
 (out / "SOURCE.md").write_text(f"""# Landing geolocation data
 
@@ -47,5 +58,5 @@ Source: https://download.db-ip.com/free/dbip-country-lite-{args.release}.csv.gz
 Source SHA-256: {digest}
 
 IP geolocation data by [DB-IP.com](https://db-ip.com), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-GNOSIX reduces country labels to Romania, foreign or unknown and merges adjacent ranges with the same classification.
+GNOSIX keeps the country codes and merges neighboring ranges where the code is the same. Unknown ranges use ZZ. Each packed record contains a range start and two ASCII bytes for the country code. The next record starts the next range.
 """, encoding="utf-8")

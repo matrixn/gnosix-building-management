@@ -31,7 +31,8 @@ class ChooseLandingLanguage
 
         if ($root) {
             $preference = $choice ?? $request->session()->get(self::PREFERENCE);
-            $english = $preference === 'en' || ($preference !== 'ro' && $this->country->isForeign($request->ip()));
+            $english = $preference === 'en' || ($preference !== 'ro'
+                && ! in_array($this->country->forRequest($request), ['RO', LandingCountry::UNKNOWN], true));
             if ($english) {
                 $query = http_build_query($request->query(), '', '&', PHP_QUERY_RFC3986);
 

@@ -2,6 +2,15 @@
 @section('title', 'Trafic și campanii')
 @section('content')
 @php
+    $countryName = static function (string $code): string {
+        if ($code === \App\Support\LandingCountry::UNKNOWN) {
+            return 'Țară necunoscută';
+        }
+
+        $name = class_exists(\Locale::class) ? \Locale::getDisplayRegion('und_'.$code, 'ro') : false;
+
+        return $name && $name !== $code ? $name.' ('.$code.')' : $code;
+    };
     $number = fn ($value) => number_format((int) $value, 0, ',', '.');
     $rate = fn ($passed, $all) => $all ? number_format((int) $passed * 100 / (int) $all, 1, ',', '.').'%' : '—';
 @endphp
@@ -33,6 +42,36 @@
 </dl>
 <p class="fine campaign-explanation">Conversia este o vizită cu cel puțin un formular de contact trimis cu succes sau un cont creat. Dacă apar ambele, vizita intră o singură dată în rată. Atribuirea folosește ultimul link UTM activ sau, în lipsa lui, ultima intrare fără UTM din sesiune. Fereastra este de două ore.</p>
 
+<section class="panel campaign-country-panel" aria-labelledby="campaign-countries">
+    <h2 id="campaign-countries">Vizite și conversii pe țări</h2>
+    <p class="fine">Țara este estimată la intrarea pe site. Conversiile se atribuie acelei vizite.</p>
+    @if($countries->isNotEmpty())
+        <div class="campaign-country-scroll" role="region" aria-labelledby="campaign-countries" tabindex="0">
+            <table class="campaign-country-table">
+                <thead>
+                    <tr><th rowspan="2" scope="col">Țară</th><th colspan="2" scope="colgroup">Cu UTM</th><th colspan="2" scope="colgroup">Fără UTM</th></tr>
+                    <tr><th scope="col">Vizite</th><th scope="col">Conversii</th><th scope="col">Vizite</th><th scope="col">Conversii</th></tr>
+                </thead>
+                <tbody>
+                    @foreach($countries as $country)
+                        <tr data-country="{{ $country->country_code }}">
+                            <th scope="row">{{ $countryName($country->country_code) }}</th>
+                            <td>{{ $number($country->tagged_visits) }}</td><td>{{ $number($country->tagged_conversions) }}</td>
+                            <td>{{ $number($country->untagged_visits) }}</td><td>{{ $number($country->untagged_conversions) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <p class="empty-state">Nu există încă vizite cu țară măsurată pentru filtrele selectate.</p>
+    @endif
+    @if($countryCoverage > 0)
+        <p class="fine">{{ $number($countryCoverage) }} vizite anterioare măsurării pe țări apar doar în totalurile linkurilor.</p>
+    @endif
+    <p class="fine"><a href="https://db-ip.com">Date IP de la DB-IP</a></p>
+</section>
+
 <section aria-labelledby="campaign-links">
     <h2 id="campaign-links">Linkuri înregistrate</h2>
     @forelse($links as $link)
@@ -54,6 +93,21 @@
                 <div><dt>Vizite convertite</dt><dd>{{ $number($link->converted_visits) }}</dd></div>
                 <div class="campaign-rate"><dt>Conversie</dt><dd>{{ $rate($link->converted_visits, $link->visits) }}</dd></div>
             </dl>
+            @if($link->countries->isNotEmpty())
+                <details class="campaign-sources">
+                    <summary>Țări pentru acest link</summary>
+                    <div class="campaign-country-scroll">
+                        <table class="campaign-country-table">
+                            <thead><tr><th scope="col">Țară</th><th scope="col">Vizite</th><th scope="col">Conversii</th></tr></thead>
+                            <tbody>
+                                @foreach($link->countries as $country)
+                                    <tr><th scope="row">{{ $countryName($country->country_code) }}</th><td>{{ $number($country->visits) }}</td><td>{{ $number($country->converted_visits) }}</td></tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            @endif
             <details class="campaign-sources">
                 <summary>Proveniența vizitelor</summary>
                 <dl>

@@ -1,5 +1,5 @@
 {
-  "Folosim adresa IP pentru a alege limba inițială a paginii principale pe baza țării estimate. Clasificarea se face pe serverul nostru.": "Folosim adresa IP pentru a alege limba inițială a paginii principale pe baza țării estimate. Clasificarea se face pe serverul nostru.",
+  "Folosim adresa IP pentru a estima țara la intrarea pe site. Această estimare alege limba inițială și adaugă vizita în raportul pe țări. Clasificarea se face pe serverul nostru, iar raportul reține doar codul țării.": "Folosim adresa IP pentru a estima țara la intrarea pe site. Această estimare alege limba inițială și adaugă vizita în raportul pe țări. Clasificarea se face pe serverul nostru, iar raportul reține doar codul țării.",
   "MEMORIA DIGITALĂ A CLĂDIRILOR": "MEMORIA DIGITALĂ A CLĂDIRILOR",
   "Clădirile au": "Clădirile au",
   "o viață.": "o viață.",
