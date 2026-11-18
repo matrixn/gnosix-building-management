@@ -11,7 +11,7 @@ class CustomerSession
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user('web');
-        if (! $user || (int) $request->session()->get('customer_auth_version', 0) !== $user->auth_version) {
+        if (! $user || $user->isArchived() || (int) $request->session()->get('customer_auth_version', 0) !== $user->auth_version) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

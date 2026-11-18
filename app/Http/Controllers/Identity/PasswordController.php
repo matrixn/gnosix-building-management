@@ -23,7 +23,7 @@ class PasswordController extends Controller
     {
         $data = $request->validate(['email' => ['required', 'string', 'email:rfc', 'max:255']]);
         try {
-            Password::broker('users')->sendResetLink(['email' => strtolower($data['email'])]);
+            Password::broker('users')->sendResetLink(['email' => strtolower($data['email']), 'archived_at' => null]);
         } catch (\Throwable $exception) {
             Log::warning('customer_reset_delivery_failed', ['exception_type' => get_class($exception)]);
         }
@@ -44,7 +44,7 @@ class PasswordController extends Controller
             'password' => CustomerIdentity::passwordRules(),
         ]);
         $data['email'] = strtolower($data['email']);
-        $status = Password::broker('users')->reset($data, function (User $user, string $password) {
+        $status = Password::broker('users')->reset($data + ['archived_at' => null], function (User $user, string $password) {
             $user->forceFill(['password' => $password, 'remember_token' => Str::random(60)])->save();
             $user->increment('auth_version');
             event(new PasswordReset($user));

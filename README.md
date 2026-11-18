@@ -6,6 +6,13 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
 
+### Utilizatori și evoluția traficului — 0.19.5
+
+- [x] Conturi client în administrarea platformei, cu căutare, detalii, creare, editare, arhivare și restaurare.
+- [x] Sumar cu profil, acces pe organizații, proprietăți, clădiri, spații, active și mentenanță.
+- [x] Filtre de trafic Azi, 7 zile, 30 de zile și interval ales, cu grafice distincte și tabel zilnic accesibil pentru UTM și fără UTM.
+- [x] [Documentație Utilizatori](docs/ADMIN-CUSTOMERS.md) și [Trafic](docs/CAMPAIGNS.md), migrare aditivă și pachet Forge.
+
 ### Trafic pe țări — 0.19.4
 
 - [x] Vizite și conversii pe țară, separate pentru cu UTM și fără UTM, pe total și pentru fiecare link.
@@ -362,6 +369,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.19.4.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.19.5.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

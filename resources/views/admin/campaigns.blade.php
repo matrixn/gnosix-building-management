@@ -18,7 +18,17 @@
     <h1>Trafic și campanii</h1>
     <p>Vezi de unde vin vizitele pe pagina publică și ce linkuri duc la solicitări de contact sau conturi noi.</p>
 </header>
-<form class="campaign-filter" action="{{ route('admin.campaigns') }}" method="get">
+<form class="campaign-filter" action="{{ route('admin.campaigns') }}" method="get" data-traffic-filters>
+    <label>Perioadă <select name="period" data-traffic-period>
+        @foreach(['all'=>'Toată perioada','today'=>'Azi','7d'=>'Ultimele 7 zile','30d'=>'Ultimele 30 de zile','custom'=>'Interval ales'] as $value=>$label)
+            <option value="{{ $value }}" @selected($period->name === $value)>{{ $label }}</option>
+        @endforeach
+    </select></label>
+    <fieldset class="campaign-dates" data-traffic-dates>
+        <legend>Interval ales</legend>
+        <label>De la <input type="date" name="from" value="{{ request()->query('period') === 'custom' ? $period->start->toDateString() : '' }}" max="{{ $today }}"></label>
+        <label>Până la <input type="date" name="to" value="{{ request()->query('period') === 'custom' ? $period->end->toDateString() : '' }}" max="{{ $today }}"></label>
+    </fieldset>
     <label>Caută în UTM, adresă sau domeniu <input type="search" name="q" value="{{ $search }}" maxlength="120" placeholder="Ex. outreach sau google.com"></label>
     <label>Tip de trafic <select name="kind">
         <option value="all" @selected($kind === 'all')>Tot traficul</option>
@@ -31,7 +41,7 @@
         <option value="conversions" @selected($sort === 'conversions')>Cele mai multe vizite convertite</option>
     </select></label>
     <button class="button" type="submit">Aplică</button>
-    @if($search !== '' || $sort !== 'recent' || $kind !== 'all')<a class="button ghost" href="{{ route('admin.campaigns') }}">Resetează</a>@endif
+    @if($search !== '' || $sort !== 'recent' || $kind !== 'all' || $period->limited())<a class="button ghost" href="{{ route('admin.campaigns') }}">Resetează</a>@endif
 </form>
 <dl class="campaign-metrics" aria-label="Totaluri pentru linkurile filtrate">
     <div><dt>Linkuri</dt><dd>{{ $number($totals->links) }}</dd></div>
@@ -41,6 +51,11 @@
     <div class="campaign-rate"><dt>Rată de conversie</dt><dd>{{ $rate($totals->converted_visits, $totals->visits) }}</dd></div>
 </dl>
 <p class="fine campaign-explanation">Conversia este o vizită cu cel puțin un formular de contact trimis cu succes sau un cont creat. Dacă apar ambele, vizita intră o singură dată în rată. Atribuirea folosește ultimul link UTM activ sau, în lipsa lui, ultima intrare fără UTM din sesiune. Fereastra este de două ore.</p>
+
+@include('admin.campaign-chart')
+@if($period->limited())
+    <p class="fine campaign-explanation">Filtrul include doar traficul măsurat zilnic. Totalurile dinaintea acestei măsurări sunt disponibile la „Toată perioada”.</p>
+@endif
 
 <section class="panel campaign-country-panel" aria-labelledby="campaign-countries">
     <h2 id="campaign-countries">Vizite și conversii pe țări</h2>
@@ -78,7 +93,11 @@
         <article class="panel campaign-entry">
             <div class="campaign-entry-heading">
                 <h3>{{ $link->tags['utm_campaign'] ?? 'Trafic fără UTM' }}</h3>
-                <time datetime="{{ \Illuminate\Support\Carbon::parse($link->last_seen_at, 'UTC')->toIso8601String() }}">Ultima vizită: {{ \Illuminate\Support\Carbon::parse($link->last_seen_at, 'UTC')->setTimezone('Europe/Bucharest')->format('d.m.Y H:i') }}</time>
+                @if($period->limited())
+                    <time datetime="{{ $link->last_seen_at }}">Ultima zi cu vizite · {{ \Carbon\CarbonImmutable::parse($link->last_seen_at)->format('d.m.Y') }}</time>
+                @else
+                    <time datetime="{{ \Illuminate\Support\Carbon::parse($link->last_seen_at, 'UTC')->toIso8601String() }}">Ultima vizită · {{ \Illuminate\Support\Carbon::parse($link->last_seen_at, 'UTC')->setTimezone('Europe/Bucharest')->format('d.m.Y H:i') }}</time>
+                @endif
             </div>
             <dl class="campaign-tags">
                 @foreach(['utm_source'=>'Sursă', 'utm_medium'=>'Canal', 'utm_content'=>'Conținut', 'utm_term'=>'Termen', 'utm_id'=>'ID campanie'] as $key => $label)

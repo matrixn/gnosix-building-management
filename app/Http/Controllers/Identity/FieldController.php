@@ -166,7 +166,7 @@ class FieldController extends Controller
     {
         $l = QrLocator::where('locator', $locator)->whereNull('revoked_at')->first();
         $u = $r->user('web');
-        if (! $u) {
+        if (! $u || $u->isArchived() || (int) $r->session()->get('customer_auth_version', 0) !== $u->auth_version) {
             $r->session()->put('field_entry', true);
             $r->session()->put('field_locator', $locator);
 

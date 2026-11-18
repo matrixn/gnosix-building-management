@@ -10,6 +10,14 @@ Fiecare link oferă distribuția vizitelor după domeniul transmis în antetul R
 
 Conversia se atribuie ultimului link UTM activ din aceeași sesiune sau, în lipsa lui, intrării fără UTM. Fereastra este de două ore. Rata împarte vizitele cu cel puțin o conversie la vizitele înregistrate. Se contorizează o singură dată per vizită fiecare categorie: formular trimis cu succes și cont client creat. Confirmarea emailului este un pas separat.
 
+## Perioadă și grafic
+
+Filtrele **Azi**, **Ultimele 7 zile**, **Ultimele 30 de zile** și **Interval ales** folosesc zile calendaristice în fusul Europe/Bucharest și includ ambele capete. Intervalul ales permite maximum 366 de zile. Sumarul, lista de linkuri, țările, referrerii și graficul folosesc filtrele active. Căutarea găsește linkurile potrivite și păstrează totalurile lor din perioadă.
+
+Graficul afișează separat vizite și conversii pentru **Cu UTM** și **Fără UTM**. Conversia se raportează la ziua vizitei inițiale, inclusiv când formularul este trimis după miezul nopții. Deschide **Vezi valorile pe zile** pentru cifrele exacte.
+
+Agregarea zilnică începe odată cu acest release. Vizitele vechi nu au o zi cunoscută, așa că totalurile lor rămân la **Toată perioada**. În acest mod graficul arată ultimele 30 de zile măsurate din fereastra curentă, iar cardurile folosesc totalurile istorice.
+
 ## Raport pe țări
 
 Tabelul **Vizite și conversii pe țări** urmărește filtrele existente și arată separat traficul cu UTM și fără UTM. Deschide **Țări pentru acest link** pentru distribuția linkului. Conversiile păstrează țara estimată la intrarea pe site, chiar dacă IP-ul se schimbă ulterior.

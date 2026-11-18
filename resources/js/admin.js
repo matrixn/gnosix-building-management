@@ -51,3 +51,17 @@ for (const button of document.querySelectorAll('[data-copy-campaign]')) {
         }
     });
 }
+
+const trafficFilters = document.querySelector('[data-traffic-filters]');
+if (trafficFilters) {
+    const period = trafficFilters.querySelector('[data-traffic-period]');
+    const dates = trafficFilters.querySelector('[data-traffic-dates]');
+    const updateDates = () => {
+        const custom = period.value === 'custom';
+        dates.hidden = !custom;
+        dates.disabled = !custom;
+        for (const field of dates.querySelectorAll('input')) field.required = custom;
+    };
+    period.addEventListener('change', updateDates);
+    updateDates();
+}

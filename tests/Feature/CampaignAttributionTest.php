@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\PlatformAdmin;
 use App\Models\User;
 use App\Support\SiteSettings;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -199,5 +200,34 @@ class CampaignAttributionTest extends TestCase
         $admin = PlatformAdmin::create(['name' => 'Test Admin', 'email' => 'admin@example.test', 'password' => 'test-password']);
         $this->actingAs($admin, 'platform_admin')->withSession(['platform_admin_version' => $admin->auth_version]);
         $this->get('/admin/campaigns')->assertOk()->assertSee('Țară necunoscută')->assertSee('1 vizite anterioare măsurării pe țări');
+    }
+
+    public function test_daily_windows_include_entry_day_conversions_and_filtered_country_and_referrer_counts(): void
+    {
+        Mail::fake();
+        $this->travelTo(CarbonImmutable::parse('2026-11-10 23:40:00', 'Europe/Bucharest'));
+        $this->withServerVariables(['REMOTE_ADDR' => '86.34.0.1'])->withHeaders(['Referer' => 'https://older.example.com/'])->get(self::CAMPAIGN)->assertOk();
+        $this->travel(25)->minutes();
+        $this->flushHeaders()->post('/contact', $this->contact())->assertSessionHas('contact_sent', true);
+        $this->assertDatabaseHas('campaign_daily_totals', ['traffic_day' => '2026-11-10', 'country_code' => 'RO', 'converted_visits' => 1]);
+
+        $this->travelTo(CarbonImmutable::parse('2026-11-18 09:00:00', 'Europe/Bucharest'));
+        $this->withServerVariables(['REMOTE_ADDR' => '8.8.8.8'])->withHeaders(['Referer' => 'https://newer.example.com/'])->get('/en')->assertOk();
+        $this->flushHeaders()->post('/en/contact', $this->contact())->assertSessionHas('contact_sent', true);
+        $admin = PlatformAdmin::create(['name' => 'Test Admin', 'email' => 'admin@example.test', 'password' => 'test-password']);
+        $this->actingAs($admin, 'platform_admin')->withSession(['platform_admin_version' => $admin->auth_version]);
+
+        $today = $this->get('/admin/campaigns?period=today')->assertOk()->assertSee('Evoluția vizitelor și conversiilor')->assertSee('newer.example.com')->assertDontSee('older.example.com');
+        $this->assertSame(1, (int) $today->viewData('totals')->visits);
+        $this->assertSame(1, $today->viewData('series')[0]['untagged_conversions']);
+        $this->assertSame('US', $today->viewData('countries')->first()->country_code);
+        $this->assertSame(7, count($this->get('/admin/campaigns?period=7d')->assertOk()->viewData('series')));
+        $this->assertSame(2, (int) $this->get('/admin/campaigns?period=30d')->assertOk()->viewData('totals')->visits);
+
+        $custom = $this->get('/admin/campaigns?period=custom&from=2026-11-10&to=2026-11-10&kind=tagged')->assertOk()
+            ->assertSee('older.example.com')->assertDontSee('newer.example.com');
+        $this->assertSame(1, (int) $custom->viewData('totals')->converted_visits);
+        $this->assertSame(1, $custom->viewData('series')[0]['tagged_conversions']);
+        $this->getJson('/admin/campaigns?period=custom&from=2025-01-01&to=2026-11-18')->assertUnprocessable()->assertJsonValidationErrors('to');
     }
 }

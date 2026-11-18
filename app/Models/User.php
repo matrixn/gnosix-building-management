@@ -29,12 +29,18 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
     {
         return [
             'email_verified_at' => 'datetime',
+            'archived_at' => 'datetime',
             'password' => 'hashed',
             'first_signed_in_at' => 'datetime',
             'last_signed_in_at' => 'datetime',
             'onboarding_completed_at' => 'datetime',
             'auth_version' => 'integer',
         ];
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived_at !== null;
     }
 
     public function preferredLocale(): string

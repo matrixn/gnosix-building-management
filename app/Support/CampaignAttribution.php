@@ -55,7 +55,8 @@ class CampaignAttribution
             $id = (string) Str::uuid();
             $expires = $now->copy()->addHours(2);
             $country = $this->country->forRequest($request);
-            DB::transaction(function () use ($id, $path, $fingerprint, $tags, $tagged, $referrer, $now, $expires, $country) {
+            $day = $now->copy()->setTimezone(CampaignPeriod::TIMEZONE)->toDateString();
+            DB::transaction(function () use ($id, $path, $fingerprint, $tags, $tagged, $referrer, $now, $expires, $country, $day) {
                 DB::table('campaign_links')->insertOrIgnore([
                     'fingerprint' => $fingerprint,
                     'path' => $path,
@@ -64,7 +65,7 @@ class CampaignAttribution
                     'last_seen_at' => $now,
                 ]);
                 $link = DB::table('campaign_links')->where('fingerprint', $fingerprint)->first(['id']);
-                DB::table('campaign_visits')->insert(['id' => $id, 'campaign_link_id' => $link->id, 'country_code' => $country, 'expires_at' => $expires]);
+                DB::table('campaign_visits')->insert(['id' => $id, 'campaign_link_id' => $link->id, 'country_code' => $country, 'traffic_day' => $day, 'referrer_host' => $referrer, 'expires_at' => $expires]);
                 DB::table('campaign_links')->where('id', $link->id)->increment('visits', 1, ['last_seen_at' => $now]);
                 $source = ['campaign_link_id' => $link->id, 'host' => $referrer];
                 DB::table('campaign_link_referrers')->insertOrIgnore($source);
@@ -72,6 +73,9 @@ class CampaignAttribution
                 $location = ['campaign_link_id' => $link->id, 'country_code' => $country];
                 DB::table('campaign_link_countries')->insertOrIgnore($location);
                 DB::table('campaign_link_countries')->where($location)->increment('visits');
+                $daily = $location + ['traffic_day' => $day, 'referrer_host' => $referrer];
+                DB::table('campaign_daily_totals')->insertOrIgnore($daily);
+                DB::table('campaign_daily_totals')->where($daily)->increment('visits');
             }, 3);
             $request->session()->put($sessionKey, ['id' => $id, 'fingerprint' => $touchKey, 'expires' => $expires->timestamp]);
         } catch (Throwable $exception) {
@@ -177,6 +181,14 @@ class CampaignAttribution
                 if ($firstConversion && $visit->country_code !== null) {
                     DB::table('campaign_link_countries')->where('campaign_link_id', $visit->campaign_link_id)
                         ->where('country_code', $visit->country_code)->increment('converted_visits');
+                }
+                if ($visit->traffic_day !== null) {
+                    DB::table('campaign_daily_totals')->where([
+                        'campaign_link_id' => $visit->campaign_link_id,
+                        'country_code' => $visit->country_code,
+                        'traffic_day' => $visit->traffic_day,
+                        'referrer_host' => $visit->referrer_host,
+                    ])->incrementEach($increments);
                 }
             }, 3);
         } catch (Throwable $exception) {

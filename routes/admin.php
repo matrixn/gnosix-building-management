@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthenticationController;
 use App\Http\Controllers\Admin\CampaignController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\PasskeyController;
 use App\Http\Controllers\Admin\SettingsController;
 use Illuminate\Support\Facades\Route;
@@ -15,10 +16,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('platform.admin')->group(function () {
         Route::redirect('/', '/admin/settings');
         Route::get('campaigns', CampaignController::class)->name('campaigns');
+        Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::get('customers/create', [CustomerController::class, 'create'])->name('customers.create');
+        Route::get('customers/{customer}', [CustomerController::class, 'show'])->whereNumber('customer')->name('customers.show');
+        Route::get('customers/{customer}/edit', [CustomerController::class, 'edit'])->whereNumber('customer')->name('customers.edit');
         Route::get('settings', [SettingsController::class, 'show'])->name('settings');
         Route::post('logout', [AuthenticationController::class, 'destroy'])->name('logout');
         Route::post('confirm-password', [AuthenticationController::class, 'confirm'])->middleware('throttle:platform-login')->name('confirm');
         Route::middleware(['platform.recent', 'throttle:platform-sensitive'])->group(function () {
+            Route::post('customers', [CustomerController::class, 'store'])->name('customers.store');
+            Route::patch('customers/{customer}', [CustomerController::class, 'update'])->whereNumber('customer')->name('customers.update');
+            Route::delete('customers/{customer}', [CustomerController::class, 'archive'])->whereNumber('customer')->name('customers.archive');
+            Route::post('customers/{customer}/restore', [CustomerController::class, 'restore'])->whereNumber('customer')->name('customers.restore');
             Route::put('settings/dna', [SettingsController::class, 'updateDna'])->name('dna.update');
             Route::put('settings/field', [SettingsController::class, 'updateField'])->name('field.update');
             Route::put('settings/maintenance', [SettingsController::class, 'updateMaintenance'])->name('maintenance.update');

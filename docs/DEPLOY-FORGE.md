@@ -1,5 +1,9 @@
 # Publicare GNOSIX pe Laravel Forge
 
+## Utilizatori și evoluția traficului — 0.19.5
+
+Deploy-ul standard aplică migrarea aditivă pentru arhivarea conturilor, jurnalul administrativ și totalurile de trafic pe zile. Verifică după publicare **Administrare → Utilizatori** și **Trafic și campanii**. Filtrele de perioadă folosesc numai vizitele măsurate zilnic după acest release. Totalurile anterioare rămân la „Toată perioada”.
+
 ## Raport de trafic pe țări — 0.19.4
 
 Scriptul Forge standard aplică migrarea aditivă pentru indicatorii pe țări și distribuie indexurile IPv4/IPv6 din release. Pragul de măsurare este momentul publicării. Totalurile anterioare rămân disponibile. După deploy, verifică în **Administrare → Trafic și campanii** coloanele cu UTM și fără UTM și distribuția unui link.

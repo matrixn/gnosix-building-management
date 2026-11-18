@@ -20,7 +20,7 @@ class AuthenticationController extends Controller
     public function authenticate(Request $request)
     {
         $data = $request->validate(['email' => ['required', 'string', 'email:rfc', 'max:255'], 'password' => ['required', 'string', 'max:255']]);
-        if (! Auth::guard('web')->attempt(['email' => strtolower($data['email']), 'password' => $data['password']], false)) {
+        if (! Auth::guard('web')->attempt(['email' => strtolower($data['email']), 'password' => $data['password'], 'archived_at' => null], false)) {
             throw ValidationException::withMessages(['email' => __('identity.credentials_invalid')]);
         }
         $user = Auth::guard('web')->user();
