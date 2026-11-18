@@ -30,3 +30,9 @@
     .admin-navigation .sidebar-link { display: flex; padding: 8px 12px; }
     .campaign-entry { padding: 16px; }
 }
+
+.campaign-sources { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.campaign-sources summary { color: var(--accent); cursor: pointer; width: fit-content; }
+.campaign-sources dl, .campaign-sources dd { margin: 0; }
+.campaign-sources dl > div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding: 6px 0; }
+.campaign-sources dt { overflow-wrap: anywhere; min-width: 0; }

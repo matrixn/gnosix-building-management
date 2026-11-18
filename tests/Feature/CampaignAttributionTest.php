@@ -82,12 +82,13 @@ class CampaignAttributionTest extends TestCase
         $this->get('/?utm_source=outreach')->assertOk();
         $this->withHeaders(['Sec-Purpose' => 'prefetch'])->get(self::CAMPAIGN)->assertOk();
         $this->flushHeaders()->withHeaders(['Sec-GPC' => '1'])->get(self::CAMPAIGN)->assertOk();
-        $this->assertDatabaseCount('campaign_links', 0);
+        $this->assertDatabaseMissing('campaign_links', ['is_tagged' => true]);
+        $this->assertDatabaseHas('campaign_links', ['is_tagged' => false, 'visits' => 1]);
 
         $this->flushHeaders()->get(self::CAMPAIGN)->assertOk();
         $this->withHeaders(['DNT' => '1'])->post('/contact', $this->contact())->assertSessionHas('contact_sent', true);
         $this->assertDatabaseHas('campaign_links', ['visits' => 1, 'converted_visits' => 0]);
-        $this->assertDatabaseCount('campaign_visits', 1);
+        $this->assertDatabaseCount('campaign_visits', 2);
     }
 
     public function test_only_platform_admin_can_see_searchable_links_and_their_conversion_rate(): void
@@ -107,5 +108,48 @@ class CampaignAttributionTest extends TestCase
             ->assertSee('100,0%')
             ->assertDontSee('unrelated');
         $this->get('/admin/campaigns?q=foundingXpartners')->assertOk()->assertSee('Niciun link');
+    }
+
+    public function test_untagged_entries_show_referrer_counts_without_storing_referrer_paths(): void
+    {
+        Mail::fake();
+        $this->get('/?lead=visitor@example.test')->assertOk();
+        $this->withHeaders(['Referer' => 'https://gnosix.zion3d.ro/'])->get('/en')->assertOk();
+        $this->assertDatabaseCount('campaign_links', 1);
+
+        $this->withHeaders(['Referer' => 'https://www.Google.com/private/path?email=visitor@example.test'])->get('/en')->assertOk();
+        $this->get('/en')->assertOk();
+        $this->flushHeaders()->post('/en/contact', $this->contact())->assertSessionHas('contact_sent', true);
+
+        $this->assertDatabaseHas('campaign_links', ['path' => '/', 'tags' => '[]', 'visits' => 1, 'converted_visits' => 0]);
+        $row = DB::table('campaign_links')->where('path', '/en')->first();
+        $this->assertFalse((bool) $row->is_tagged);
+        $this->assertSame(1, (int) $row->visits);
+        $this->assertSame(1, (int) $row->converted_visits);
+        $this->assertSame(['google.com'], DB::table('campaign_link_referrers')->where('campaign_link_id', $row->id)->pluck('host')->all());
+
+        $admin = PlatformAdmin::create(['name' => 'Test Admin', 'email' => 'admin@example.test', 'password' => 'test-password']);
+        $this->actingAs($admin, 'platform_admin')->withSession(['platform_admin_version' => $admin->auth_version]);
+        $this->get('/admin/campaigns?kind=untagged&q=google.com')->assertOk()->assertSee('google.com')->assertSee('100,0%')
+            ->assertDontSee('/private/path')->assertDontSee('visitor@example.test')->assertDontSee('Directă / necunoscută');
+    }
+
+    public function test_referrer_breakdown_preserves_existing_campaign_and_its_conversion_priority(): void
+    {
+        Mail::fake();
+        $this->get(self::CAMPAIGN)->assertOk();
+        // Simulate totals accumulated before referrers were measured.
+        DB::table('campaign_link_referrers')->delete();
+        $this->travel(2)->hours();
+        $this->withHeaders(['Referer' => 'https://linkedin.com/feed/'])->get(self::CAMPAIGN)->assertOk();
+        $this->withHeaders(['Referer' => 'https://google.com/search'])->get('/en')->assertOk();
+        $this->flushHeaders()->post('/en/contact', $this->contact())->assertSessionHas('contact_sent', true);
+
+        $this->assertDatabaseHas('campaign_links', ['is_tagged' => true, 'visits' => 2, 'contacts' => 1, 'converted_visits' => 1]);
+        $this->assertDatabaseHas('campaign_links', ['is_tagged' => false, 'visits' => 1, 'contacts' => 0, 'converted_visits' => 0]);
+        $admin = PlatformAdmin::create(['name' => 'Test Admin', 'email' => 'admin@example.test', 'password' => 'test-password']);
+        $this->actingAs($admin, 'platform_admin')->withSession(['platform_admin_version' => $admin->auth_version]);
+        $this->get('/admin/campaigns?kind=tagged')->assertOk()->assertSee('linkedin.com')->assertSee('Vizite anterioare, fără măsurarea provenienței')
+            ->assertSee('50,0%')->assertDontSee('google.com/search');
     }
 }

@@ -1,5 +1,9 @@
 # Publicare GNOSIX pe Laravel Forge
 
+## Trafic și campanii — 0.19.2
+
+Scriptul Forge standard aplică migrarea care adaugă proveniența pe domeniu și păstrează totalurile campaniilor existente. După deploy, verifică o intrare fără UTM și un link de campanie în **Administrare → Trafic și campanii**. Proveniența se colectează pentru vizitele noi.
+
 ## Campanii UTM — 0.19.1
 
 Scriptul Forge standard rulează migrarea pentru totalurile de campanie și vizitele temporare. Verifică schedulerul Laravel existent, care rulează curățarea vizitelor expirate la fiecare oră. După deploy, testează un link UTM pe landing și verifică apariția lui în **Administrare → Campanii**. Detalii despre atribuire și conversie în [Campanii UTM](CAMPAIGNS.md).

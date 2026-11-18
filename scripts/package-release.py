@@ -20,7 +20,7 @@ for name in directories:
 selected.extend(f for f in (ROOT / 'storage').rglob('.gitignore'))
 selected = sorted({p for p in selected if p.name != 'hot' and p.suffix not in ['.sqlite', '.log'] and not p.name.endswith(('-wal', '-shm')) and not ('bootstrap/cache' in p.as_posix() and p.name != '.gitignore')})
 
-out = ROOT / 'build/gnosix-atlas-forge-0.19.1.zip'
+out = ROOT / 'build/gnosix-atlas-forge-0.19.2.zip'
 out.parent.mkdir(exist_ok=True)
 with ZipFile(out, 'w', ZIP_DEFLATED) as archive:
     for p in selected:
