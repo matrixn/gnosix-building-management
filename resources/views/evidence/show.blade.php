@@ -2,7 +2,7 @@
 @section('title', __('evidence.memory').' · '.$building->name)
 @section('content')
 <div class="bld-shell evidence-studio" data-evidence-studio>
-<header class="bld-heading"><div><a class="identity-link" href="{{ route('app.declarations.show',[$organization,$property,$building->uuid]) }}">← {{ $building->name }}</a><span class="identity-kicker">GNOSIX / EVIDENCE ENGINE</span><h1>{{ __('evidence.memory') }}</h1><p>{{ __('evidence.intro') }}</p></div><span class="bld-verification">{{ $building->reference }}</span></header>
+<header class="bld-heading"><div><a class="identity-link" href="{{ route('app.declarations.show',[$organization,$property,$building->uuid]) }}">← {{ $building->name }}</a><span class="identity-kicker">GNOSIX / EVIDENCE ENGINE</span><h1>{{ __('evidence.memory') }}</h1><p>{{ __('evidence.intro') }}</p></div>@include('time-machine.link', ['tmBuilding' => $building, 'tmProperty' => $property])<span class="bld-verification">{{ $building->reference }}</span></header>
 <div class="ev-summary"><div class="identity-card"><strong>{{ $documentCount }}</strong><span>{{ __('evidence.documents') }}</span></div><div class="identity-card"><strong>{{ $confirmed }}</strong><span>{{ __('evidence.confirmed') }}</span></div><div class="identity-card"><strong>{{ $conflicts }}</strong><span>{{ __('evidence.attention') }}</span></div><div class="identity-card"><strong>{{ $coverage }} / 7</strong><span>{{ __('evidence.coverage') }}</span></div></div>
 <p class="field-help">{{ __('evidence.completeness_note') }} {{ __('evidence.identity_separate') }}</p>
 @if(!$available)<p class="identity-notice warning">{{ __('evidence.provider_unavailable') }}</p>@endif

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'cap_time_view' => 'Time Machine',
     'cap_assets_view' => 'View assets',
     'cap_assets_manage' => 'Manage assets',
     'cap_assets_review' => 'Review asset facts',

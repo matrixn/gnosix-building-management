@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'cap_time_view' => 'Mașina timpului',
     'cap_assets_view' => 'Vizualizarea activelor',
     'cap_assets_manage' => 'Administrarea activelor',
     'cap_assets_review' => 'Review pentru active',

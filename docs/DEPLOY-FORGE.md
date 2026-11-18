@@ -1,5 +1,11 @@
 # Publicare GNOSIX pe Laravel Forge
 
+## Time Machine — 0.19.0
+
+Deploy cu scriptul standard din \`deploy/forge-zero-downtime.sh\`. Acesta rulează \`php artisan migrate --force\` înainte de activarea release-ului. Migrarea Time Machine adaugă indexuri în tabelele de istoric existente. Pentru baze voluminoase, verifică durata indexării pe staging și programează o fereastră potrivită. Proiecția folosește funcții SQL fereastră și JSON pe MySQL/MariaDB. Exportul PDF utilizează Dompdf deja instalat și directorul privat de cache din \`storage\`.
+
+După deploy, deschide Mașina timpului într-o organizație activă, alege o clădire cu înregistrări din două date și verifică modul „Cunoscut la fiecare dată”, PDF-ul, linkurile către dovezi și un cont cu acces restricționat. Linkurile către originale folosesc aceleași permisiuni ca Evidence Review. La revenirea codului, indexurile adăugate pot rămâne în loc.
+
 ## Building DNA — 0.18.0
 
 Deploy-ul standard din `deploy/forge-zero-downtime.sh` rămâne valabil: Composer install, `npm ci`, build production, config cache, `php artisan migrate --force`, cache rute/view-uri și restart workers. Păstrează backup DB + storage înainte de aplicare. Migrarea `2026_11_17_180000_create_building_dna` este aditivă: UUID pentru proprietățile existente, tabele DNA/proveniență/revizii/decizii și index invers pe spațiile deservite. UUID-urile clădirilor, nivelurilor, spațiilor și activelor nu se schimbă. Proprietățile introduse încă de release-ul vechi în timpul deploy-ului primesc idempotent identitatea lipsă la încărcarea în aplicația nouă, fără regenerarea UUID-urilor existente. Nu folosi migrate:fresh sau rollback pe date reale.

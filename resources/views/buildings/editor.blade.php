@@ -5,6 +5,7 @@
 <header class="bld-heading"><div><a class="identity-link" href="{{ route('app.properties.show',[$organization,$property]) }}">← {{ $property->name }}</a><a class="identity-link bld-library-back" href="{{ route('app.spaces.index', $organization) }}">{{ __('building.library_title') }} ↗</a><span class="identity-kicker">GNOSIX / BUILDING STUDIO</span><h1>{{ $draft->building_id ? $draft->state['identity']['name'] : __('building.headline') }}</h1><p>{{ __('building.intro') }}</p></div>@if($draft->building_id)@if(app(\App\Support\CapabilityService::class)->allows(auth('web')->user(),$organization,'evidence.upload') || app(\App\Support\CapabilityService::class)->allows(auth('web')->user(),$organization,'evidence.review'))<a class="identity-link" href="{{ route('app.evidence.show',[$organization,$property,\App\Models\Building::findOrFail($draft->building_id)->uuid]) }}">{{ __('evidence.memory') }} ↗</a>@endif
 @endif
 @if($draft->building_id)@include('dna.link',['dnaProperty'=>$property,'dnaFocus'=>'building:'.\App\Models\Building::findOrFail($draft->building_id)->uuid])@endif
+@if($draft->building_id)@include('time-machine.link', ['tmBuilding' => $draft->building, 'tmProperty' => $property])@endif
 <span class="bld-live"><i></i>{{ __('building.live') }}</span></header>
 <div class="bld-interactive">
 <nav class="bld-stages" aria-label="{{ __('building.steps') }}">@foreach(['identity','structure','review'] as $key)<button type="button" data-stage="{{ $key }}">{{ __('building.step_'.$key) }}</button>@endforeach</nav>

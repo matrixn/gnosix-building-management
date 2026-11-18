@@ -10,6 +10,7 @@
             <p>{{ $building->classification ? __('building.preset_'.$building->classification) : __('building.unknown') }} · {{ __('building.state_'.$building->state) }}</p>
         </div>
         <div class="bld-dashboard-actions">
+@include('time-machine.link', ['tmBuilding' => $building, 'tmProperty' => $property])
 @if(app(\App\Policies\MaintenancePolicy::class)->report(auth('web')->user(),$property))<a class="identity-button" href="{{ route('app.maintenance.issue.create',[$organization,'property'=>$property->id,'building'=>$building->id]) }}">＋ {{ __('maintenance.report') }}</a><a class="identity-link" href="{{ route('app.maintenance.index',[$organization,'property'=>$property->id,'building'=>$building->id]) }}">{{ __('maintenance.center') }} ↗</a>@endif
 @if(app(\App\Support\CapabilityService::class)->allows(auth('web')->user(),$organization,'evidence.upload') || app(\App\Support\CapabilityService::class)->allows(auth('web')->user(),$organization,'evidence.review'))<a class="identity-button" href="{{ route('app.evidence.show',[$organization,$property,$building->uuid]) }}">{{ __('evidence.memory') }} ↗</a>@endif
             @can('update', $property)

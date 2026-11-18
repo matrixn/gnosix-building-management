@@ -12,6 +12,11 @@ class BuildingDeclarationDraft extends Model
 
     protected $guarded = [];
 
+    public function building()
+    {
+        return $this->belongsTo(Building::class);
+    }
+
     protected function casts(): array
     {
         return ['state' => 'array', 'version' => 'integer', 'base_version' => 'integer', 'completed_at' => 'datetime'];

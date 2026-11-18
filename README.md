@@ -6,6 +6,16 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
 
+### Time Machine — 0.19.0
+
+- [x] Reconstrucție la o dată de valabilitate și o limită de cunoaștere, din istoricul existent.
+- [x] Ierarhie istorică, poziții și garanții documentate, relații DNA, intervenții și dovezi verificate.
+- [x] Date efective separate de înregistrare, verificare și încărcarea sursei. Sunt vizibile necunoscutele, contradicțiile și descoperirile târzii.
+- [x] Comparație vizuală RO/EN, schemă navigabilă, repere istorice, acces mobil și export PDF cu surse și limite.
+- [x] Autorizare pe proprietate și modul, revizuire concurentă pe snapshot consistent, procesare plafonată și teste automate.
+- [x] 293 teste PHP / 2.494 aserțiuni, 17 scenarii JS, build și verificare browser desktop/mobil.
+- [x] Migrare aditivă, [documentație Time Machine](docs/TIME-MACHINE-019.md) și arhivă Forge 0.19.0.
+
 ### Building DNA — 0.18.0
 
 - [x] Audit 0.17; Laravel/Blade/Vite, autentificarea, tenant/granturile, Asset Registry, Maintenance și Evidence păstrate.
@@ -23,7 +33,7 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 - [x] 286 teste PHP / 2.428 aserțiuni și 17 scenarii JS trecute; dataset 10.000 active / 2.500 relații, build, lint/Pint/cache și browser desktop/mobil RO/EN.
 - [x] Documentație arhitectură/securitate/limite/deploy și pachet Forge 0.18.0 cu checksum.
 - [ ] Smoke pe VPS/MariaDB/MySQL, corpus tehnic real și validare asistivă pe dispozitive reale; acestea nu au fost executate local.
-- [ ] Time Machine operațional, calcule inginerești/capacități, indisponibilitate PMS și IoT fizic rămân dezvoltări viitoare.
+- [ ] Calcule inginerești/capacități, indisponibilitate PMS și IoT fizic rămân dezvoltări viitoare.
 
 Arhitectură, fișiere, rezultate și limite: [DNA-018.md](docs/DNA-018.md). Deploy: [DEPLOY-FORGE.md](docs/DEPLOY-FORGE.md).
 
@@ -246,7 +256,7 @@ Implementare, fișiere, limite și verificări: [GENESIS-005.md](docs/GENESIS-00
 - [x] Încărcarea/stocarea/versionarea și revizuirea documentelor/dovezilor reale — livrate în Task 005; extracția live necesită configurarea furnizorului.
 - [x] Evidence Engine operațional: proveniență și detectarea contradicțiilor — Task 005, extins prin rapoartele 0.17.0.
 - [x] Building DNA cu relații reale între active — 0.18.0.
-- [ ] Time Machine operațional, bazat pe istoricul verificabil al datelor.
+- [x] Time Machine operațional, bazat pe istoricul verificabil al datelor — 0.19.0.
 - [ ] Trust Passport, Zero-Entry asistat AI, Handover între organizații și LifeCycle Simulator.
 - [ ] Invitații prin email, transfer de proprietar și delegare granulară dincolo de proprietate.
 - [ ] Passkeys pentru clienți, social login și 2FA.
@@ -327,6 +337,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.18.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.19.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

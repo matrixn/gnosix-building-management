@@ -8,6 +8,7 @@ require __DIR__.'/building-studio.php';
 require __DIR__.'/evidence.php';
 require __DIR__.'/assets.php';
 require __DIR__.'/dna.php';
+require __DIR__.'/time-machine.php';
 require __DIR__.'/maintenance.php';
 require __DIR__.'/field-admin.php';
 
