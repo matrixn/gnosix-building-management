@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AuthenticationController;
+use App\Http\Controllers\Admin\CampaignController;
 use App\Http\Controllers\Admin\PasskeyController;
 use App\Http\Controllers\Admin\SettingsController;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware('platform.admin')->group(function () {
         Route::redirect('/', '/admin/settings');
+        Route::get('campaigns', CampaignController::class)->name('campaigns');
         Route::get('settings', [SettingsController::class, 'show'])->name('settings');
         Route::post('logout', [AuthenticationController::class, 'destroy'])->name('logout');
         Route::post('confirm-password', [AuthenticationController::class, 'confirm'])->middleware('throttle:platform-login')->name('confirm');

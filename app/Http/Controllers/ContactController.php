@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ContactRequest;
 use App\Mail\ContactMessage;
 use App\Rules\ContactPhone;
+use App\Support\CampaignAttribution;
 use App\Support\ContactAvailability;
 use App\Support\PublicSite;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,8 @@ class ContactController extends Controller
             return redirect($redirect)->withErrors(['delivery' => __('Mesajul nu a putut fi trimis. Datele sunt păstrate în formular pentru o nouă încercare.')])
                 ->withInput($request->safe()->only(['name', 'email', 'phone', 'subject', 'message', 'consent']));
         }
+        app(CampaignAttribution::class)->contact($request);
+
         return redirect($redirect)->with('contact_sent', true);
     }
 }

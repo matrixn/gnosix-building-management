@@ -14,12 +14,15 @@
         <a class="wordmark" href="{{ route('admin.settings') }}"><span>G×</span> GNOSIX</a>
         <span class="scope">ADMINISTRAREA PLATFORMEI</span>
         <p class="sidebar-label">CONFIGURARE</p>
-        <a class="sidebar-link active" href="{{ route('admin.settings') }}">⚙ <span>Setări platformă</span><b>↗</b></a>
+        <nav class="admin-navigation" aria-label="Administrarea platformei">
+            <a @class(['sidebar-link', 'active' => request()->routeIs('admin.settings')]) @if(request()->routeIs('admin.settings')) aria-current="page" @endif href="{{ route('admin.settings') }}">⚙ <span>Setări platformă</span><b>↗</b></a>
+            <a @class(['sidebar-link', 'active' => request()->routeIs('admin.campaigns')]) @if(request()->routeIs('admin.campaigns')) aria-current="page" @endif href="{{ route('admin.campaigns') }}">↗ <span>Campanii</span><b>↗</b></a>
+        </nav>
         <div class="sidebar-note"><span class="dot"></span> Acces intern GNOSIX<p>Această zonă este separată de spațiul de administrare al clienților.</p></div>
         <a class="back-link" href="{{ route('home') }}">← Vezi pagina publică</a>
     </aside>
     <div class="admin-main">
-        <header class="admin-header"><span>GNOSIX / Platformă / Setări</span><div><span class="admin-identity">{{ auth('platform_admin')->user()->email }}</span><form method="POST" action="{{ route('admin.logout') }}">@csrf<button class="button ghost small">Ieșire ↗</button></form></div></header>
+        <header class="admin-header"><span>GNOSIX / Platformă / {{ request()->routeIs('admin.campaigns') ? 'Campanii' : 'Setări' }}</span><div><span class="admin-identity">{{ auth('platform_admin')->user()->email }}</span><form method="POST" action="{{ route('admin.logout') }}">@csrf<button class="button ghost small">Ieșire ↗</button></form></div></header>
         <main id="main-content" class="content">
 @else
 <main id="main-content" class="login-layout">

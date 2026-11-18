@@ -1,5 +1,9 @@
 # Publicare GNOSIX pe Laravel Forge
 
+## Campanii UTM — 0.19.1
+
+Scriptul Forge standard rulează migrarea pentru totalurile de campanie și vizitele temporare. Verifică schedulerul Laravel existent, care rulează curățarea vizitelor expirate la fiecare oră. După deploy, testează un link UTM pe landing și verifică apariția lui în **Administrare → Campanii**. Detalii despre atribuire și conversie în [Campanii UTM](CAMPAIGNS.md).
+
 ## Time Machine — 0.19.0
 
 Deploy cu scriptul standard din \`deploy/forge-zero-downtime.sh\`. Acesta rulează \`php artisan migrate --force\` înainte de activarea release-ului. Migrarea Time Machine adaugă indexuri în tabelele de istoric existente. Pentru baze voluminoase, verifică durata indexării pe staging și programează o fereastră potrivită. Proiecția folosește funcții SQL fereastră și JSON pe MySQL/MariaDB. Exportul PDF utilizează Dompdf deja instalat și directorul privat de cache din \`storage\`.

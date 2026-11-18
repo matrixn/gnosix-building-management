@@ -34,3 +34,20 @@ registration?.addEventListener('submit',e=>{
         window.location.reload();
     });
 });
+
+const campaignCopyStatus = document.querySelector('[data-campaign-copy-status]');
+for (const button of document.querySelectorAll('[data-copy-campaign]')) {
+    if (!navigator.clipboard) {
+        button.hidden = true;
+        continue;
+    }
+    button.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(button.dataset.copyCampaign);
+            campaignCopyStatus.textContent = 'Link copiat.';
+            button.textContent = 'Copiat';
+        } catch {
+            campaignCopyStatus.textContent = 'Selectează adresa afișată pentru a copia linkul.';
+        }
+    });
+}

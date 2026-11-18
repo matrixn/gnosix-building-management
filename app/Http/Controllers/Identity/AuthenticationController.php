@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Identity;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\CampaignAttribution;
 use App\Support\CustomerIdentity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,6 +47,7 @@ class AuthenticationController extends Controller
         $user = new User(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password']]);
         $user->locale = app()->getLocale();
         $user->save();
+        app(CampaignAttribution::class)->registration($request);
         CustomerIdentity::establish($request, $user);
         $sent = CustomerIdentity::verifyEmail($user);
         return redirect()->route('verification.notice')->with('delivery_warning', ! $sent)->with('status', __($sent ? 'identity.verification_sent' : 'identity.mail_unavailable'));
