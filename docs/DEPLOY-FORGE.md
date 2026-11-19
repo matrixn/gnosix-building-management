@@ -1,5 +1,9 @@
 # Publicare GNOSIX pe Laravel Forge
 
+## Hospitality Intelligence Center — 0.20.0
+
+Deploy-ul standard aplică migrarea aditivă pentru proveniența înscrierii, rapoarte și preferințe. Rapoartele și sumarul opțional folosesc workerul existent de pe coada `maintenance`. Rulează schedulerul Laravel în fiecare minut pentru rezumatul de luni, ora 08:00 în Europe/Bucharest, și curățarea orară a PDF-urilor expirate. Stocarea privată a rapoartelor se află în `storage/app/private/operations`, partajată între release-uri. Păstrează `retry_after` peste 60 de secunde pentru conexiunea de lucru. Verifică printr-un raport de test, o descărcare cu același cont și apoi printr-un rol fără drept de acces.
+
 ## Utilizatori și evoluția traficului — 0.19.5
 
 Deploy-ul standard aplică migrarea aditivă pentru arhivarea conturilor, jurnalul administrativ și totalurile de trafic pe zile. Verifică după publicare **Administrare → Utilizatori** și **Trafic și campanii**. Filtrele de perioadă folosesc numai vizitele măsurate zilnic după acest release. Totalurile anterioare rămân la „Toată perioada”.

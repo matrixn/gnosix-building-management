@@ -97,4 +97,53 @@ class AdminCustomersTest extends TestCase
             $this->assertSame(1, (int) $metrics[$metric]->get($org->id));
         }
     }
+
+    public function test_signup_source_is_captured_from_the_attributed_visit_and_visible_only_in_platform_admin(): void
+    {
+        Notification::fake();
+        $this->withServerVariables(['REMOTE_ADDR' => '86.34.0.1'])->withHeader('Referer', 'https://www.linkedin.com/private?email=hidden@example.test')
+            ->get('/?utm_source=outreach&utm_medium=email&utm_campaign=founding_partners&utm_content=hotel')->assertOk();
+        $this->flushHeaders()->withServerVariables(['REMOTE_ADDR' => '8.8.8.8'])
+            ->post('/app/register?utm_campaign=forged', [
+                'name' => 'Signup Candidate', 'email' => 'candidate@example.test', 'privacy' => 1,
+                'password' => 'Signup-password-2026!', 'password_confirmation' => 'Signup-password-2026!',
+            ])->assertRedirect(route('verification.notice'));
+        $user = User::where('email', 'candidate@example.test')->firstOrFail();
+        $this->assertSame('RO', $user->registration_source['country']);
+        $this->assertSame('linkedin.com', $user->registration_source['referrer']);
+        $this->assertSame('founding_partners', $user->registration_source['utm']['utm_campaign']);
+        $this->assertArrayNotHasKey('registration_source', $user->toArray());
+        $this->getJson('/admin/customers/'.$user->id)->assertUnauthorized();
+        $this->admin(false);
+        $this->get('/admin/customers/'.$user->id)->assertOk()->assertSee('Proveniența înregistrării')->assertSee('founding_partners')
+            ->assertSee('linkedin.com')->assertDontSee('/private')->assertDontSee('forged');
+    }
+
+    public function test_opt_out_does_not_store_signup_source(): void
+    {
+        Notification::fake();
+        $this->get('/?utm_campaign=pilot')->assertOk();
+        $this->withHeader('Sec-GPC', '1')->post('/app/register', [
+            'name' => 'Private Signup', 'email' => 'private@example.test', 'privacy' => 1,
+            'password' => 'Signup-password-2026!', 'password_confirmation' => 'Signup-password-2026!',
+        ])->assertRedirect(route('verification.notice'));
+        $this->assertNull(User::where('email', 'private@example.test')->firstOrFail()->registration_source);
+        $this->assertDatabaseHas('campaign_links', ['visits' => 1, 'registrations' => 0]);
+    }
+
+    public function test_direct_signup_link_retains_its_external_referrer_and_utm_without_inventing_a_landing_visit(): void
+    {
+        Notification::fake();
+        $this->withServerVariables(['REMOTE_ADDR' => '8.8.8.8'])->withHeader('Referer', 'https://newsletter.example.test/r/123')
+            ->get('/app/register?utm_campaign=direct_signup&utm_medium=email')->assertOk();
+        $this->flushHeaders()->post('/app/register', [
+            'name' => 'Direct Signup', 'email' => 'direct@example.test', 'privacy' => 1,
+            'password' => 'Signup-password-2026!', 'password_confirmation' => 'Signup-password-2026!',
+        ])->assertRedirect(route('verification.notice'));
+        $source = User::where('email', 'direct@example.test')->firstOrFail()->registration_source;
+        $this->assertSame('US', $source['country']);
+        $this->assertSame('newsletter.example.test', $source['referrer']);
+        $this->assertSame(['utm_medium' => 'email', 'utm_campaign' => 'direct_signup'], $source['utm']);
+        $this->assertDatabaseCount('campaign_visits', 0);
+    }
 }

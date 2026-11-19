@@ -30,8 +30,14 @@ class AuthenticationController extends Controller
         return redirect()->route(CustomerIdentity::destination($user));
     }
 
-    public function register()
+    public function register(Request $request)
     {
+        try {
+            app(CampaignAttribution::class)->registrationEntry($request);
+        } catch (\Throwable $exception) {
+            logger()->warning('Registration entry not attributed.', ['type' => $exception::class]);
+        }
+
         return view('identity.register');
     }
 
@@ -46,8 +52,14 @@ class AuthenticationController extends Controller
         ]);
         $user = new User(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password']]);
         $user->locale = app()->getLocale();
+        $attribution = app(CampaignAttribution::class);
+        try {
+            $user->registration_source = $attribution->registrationSource($request);
+        } catch (\Throwable $exception) {
+            logger()->warning('Registration attribution unavailable.', ['type' => $exception::class]);
+        }
         $user->save();
-        app(CampaignAttribution::class)->registration($request);
+        $attribution->registration($request);
         CustomerIdentity::establish($request, $user);
         $sent = CustomerIdentity::verifyEmail($user);
         return redirect()->route('verification.notice')->with('delivery_warning', ! $sent)->with('status', __($sent ? 'identity.verification_sent' : 'identity.mail_unavailable'));

@@ -1,4 +1,5 @@
 {
+  "La înscriere putem asocia contului țara estimată, domeniul de proveniență și etichetele UTM ale vizitei. Aceste informații sunt vizibile în administrarea platformei și respectă semnalele Do Not Track și Global Privacy Control.": "On registration, we may associate the account with the estimated country, referring domain and UTM tags from the visit. This information is visible in platform administration and honours Do Not Track and Global Privacy Control signals.",
   "Folosim adresa IP pentru a estima țara la intrarea pe site. Această estimare alege limba inițială și adaugă vizita în raportul pe țări. Clasificarea se face pe serverul nostru, iar raportul reține doar codul țării.": "We use your IP address to estimate the country when you arrive. This estimate chooses the initial homepage language and adds the visit to the country report. The lookup runs on our server and the report retains only the country code.",
   "Localizare IP oferită de DB-IP": "IP geolocation by DB-IP",
   "MEMORIA DIGITALĂ A CLĂDIRILOR": "THE DIGITAL MEMORY OF BUILDINGS",

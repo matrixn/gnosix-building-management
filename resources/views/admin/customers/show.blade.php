@@ -26,6 +26,26 @@
     </dl>
 </section>
 
+<section class="panel" aria-labelledby="customer-source">
+    <h2 id="customer-source">Proveniența înregistrării</h2>
+    @if($source = $customer->registration_source)
+        @php
+            $country = $source['country'];
+            $region = $country === 'ZZ' ? 'Necunoscută' : (class_exists(\Locale::class) ? \Locale::getDisplayRegion('und_'.$country, 'ro') ?: $country : $country);
+        @endphp
+        <dl class="definition-list customer-definition">
+            <div><dt>Țară estimată</dt><dd>{{ $region }}</dd></div>
+            <div><dt>Referrer</dt><dd>{{ $source['referrer'] ?: 'Direct / necunoscut' }}</dd></div>
+            <div><dt>Campanie UTM</dt><dd>{{ $source['utm']['utm_campaign'] ?? 'Fără UTM' }}</dd></div>
+            @foreach(\Illuminate\Support\Arr::except($source['utm'], ['utm_campaign']) as $key => $value)
+                <div><dt>{{ $key }}</dt><dd>{{ $value }}</dd></div>
+            @endforeach
+        </dl>
+    @else
+        <p>Proveniența nu a fost înregistrată pentru acest cont.</p>
+    @endif
+</section>
+
 <section aria-labelledby="customer-scope">
     <h2 id="customer-scope">Sumar operațional</h2>
     <p class="fine">Datele din organizații sunt numărate după proprietățile din accesul configurat pentru cont. Clădirile create personal sunt identificate din istoricul declarațiilor.</p>

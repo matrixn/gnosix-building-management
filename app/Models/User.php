@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'registration_source'])]
 class User extends Authenticatable implements MustVerifyEmail, HasLocalePreference
 {
     protected $attributes = ['locale' => 'ro', 'auth_version' => 1];
@@ -30,6 +30,7 @@ class User extends Authenticatable implements MustVerifyEmail, HasLocalePreferen
         return [
             'email_verified_at' => 'datetime',
             'archived_at' => 'datetime',
+            'registration_source' => 'array',
             'password' => 'hashed',
             'first_signed_in_at' => 'datetime',
             'last_signed_in_at' => 'datetime',

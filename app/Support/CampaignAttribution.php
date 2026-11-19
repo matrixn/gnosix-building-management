@@ -13,6 +13,8 @@ class CampaignAttribution
 
     private const UNTAGGED_KEY = 'untagged_attribution';
 
+    private const SIGNUP_KEY = 'registration_entry';
+
     private const TAGS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id'];
 
     public function __construct(private LandingCountry $country) {}
@@ -20,7 +22,7 @@ class CampaignAttribution
     public function observe(Request $request): void
     {
         if ($request->headers->get('Sec-GPC') === '1' || $request->headers->get('DNT') === '1') {
-            $request->session()->forget([self::SESSION_KEY, self::UNTAGGED_KEY]);
+            $request->session()->forget([self::SESSION_KEY, self::UNTAGGED_KEY, self::SIGNUP_KEY]);
 
             return;
         }
@@ -148,10 +150,62 @@ class CampaignAttribution
         $this->convert($request, 'registered', 'registrations');
     }
 
+    public function registrationEntry(Request $request): void
+    {
+        if ($request->header('Sec-GPC') === '1' || $request->header('DNT') === '1') {
+            $request->session()->forget([self::SESSION_KEY, self::UNTAGGED_KEY, self::SIGNUP_KEY]);
+
+            return;
+        }
+        if (! $request->isMethod('GET') || preg_match('/prefetch|prerender/i', $request->header('Sec-Purpose', '').' '.$request->header('Purpose', ''))) {
+            return;
+        }
+
+        $tags = $this->tags($request);
+        $referrer = $this->referrer($request);
+        $previous = $request->session()->get(self::SIGNUP_KEY);
+        if ($tags === [] && $referrer === '' && $this->active($previous, now()->timestamp)) {
+            return;
+        }
+        $request->session()->put(self::SIGNUP_KEY, [
+            'country' => $this->country->forRequest($request), 'referrer' => $referrer, 'utm' => $tags,
+            'expires' => now()->addHours(2)->timestamp,
+        ]);
+    }
+
+    public function registrationSource(Request $request): ?array
+    {
+        if ($request->header('Sec-GPC') === '1' || $request->header('DNT') === '1') {
+            return null;
+        }
+
+        $timestamp = now()->timestamp;
+        $touch = $request->session()->get(self::SESSION_KEY);
+        if (! $this->active($touch, $timestamp)) {
+            $touch = $request->session()->get(self::UNTAGGED_KEY);
+        }
+        $visit = $this->active($touch, $timestamp)
+            ? DB::table('campaign_visits as visit')->join('campaign_links as link', 'link.id', '=', 'visit.campaign_link_id')
+                ->where('visit.id', $touch['id'])->where('visit.expires_at', '>', now())
+                ->first(['visit.country_code', 'visit.referrer_host', 'link.tags'])
+            : null;
+
+        $entry = $request->session()->pull(self::SIGNUP_KEY);
+        if (! $visit && $this->active($entry, $timestamp)) {
+            return ['country' => $entry['country'], 'referrer' => $entry['referrer'], 'utm' => $entry['utm']];
+        }
+
+        return [
+            'country' => $visit?->country_code ?? $this->country->forRequest($request),
+            'referrer' => $visit?->referrer_host ?? $this->referrer($request),
+            'utm' => $visit ? json_decode($visit->tags, true, flags: JSON_THROW_ON_ERROR) : [],
+        ];
+    }
+
     private function convert(Request $request, string $flag, string $counter): void
     {
         if ($request->header('Sec-GPC') === '1' || $request->header('DNT') === '1') {
-            $request->session()->forget([self::SESSION_KEY, self::UNTAGGED_KEY]);
+            $request->session()->forget([self::SESSION_KEY, self::UNTAGGED_KEY, self::SIGNUP_KEY]);
 
             return;
         }

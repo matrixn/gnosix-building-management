@@ -8,7 +8,7 @@ return [
             'enabled' => true, 'icon' => 'hotel', 'schema_version' => 1,
             'kinds' => ['independent', 'company', 'portfolio'],
             'recommended_property_types' => ['hotel', 'guesthouse', 'apartment', 'mixed'],
-            'capabilities' => ['time.view', 'dna.view', 'dna.manage', 'dna.review', 'hospitality.workspace', 'hospitality.buildings', 'hospitality.rooms', 'hospitality.maintenance', 'evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.view', 'assets.manage', 'assets.review', 'assets.types'],
+            'capabilities' => ['operations.view', 'time.view', 'dna.view', 'dna.manage', 'dna.review', 'hospitality.workspace', 'hospitality.buildings', 'hospitality.rooms', 'hospitality.maintenance', 'evidence.upload', 'evidence.review', 'evidence.conflicts', 'assets.view', 'assets.manage', 'assets.review', 'assets.types'],
         ],
         'construction' => [
             'enabled' => false, 'icon' => 'construction', 'schema_version' => 1,
@@ -24,6 +24,7 @@ return [
         ],
     ],
     'capabilities' => [
+        'operations.view' => ['requires' => 'hospitality.buildings', 'enabled' => true, 'operational' => true, 'icon' => '◇', 'route' => 'app.operations.index', 'nav_label' => 'ops.title'],
         'time.view' => ['requires' => 'hospitality.buildings', 'enabled' => true, 'operational' => true, 'icon' => '◴', 'route' => 'app.time-machine.index', 'nav_label' => 'time.title'],
         'dna.view' => ['requires' => 'assets.view', 'enabled' => true, 'operational' => true, 'icon' => '⌬', 'route' => 'app.dna.index', 'nav_label' => 'dna.title'],
         'dna.manage' => ['requires' => 'dna.view', 'enabled' => true, 'operational' => true, 'icon' => '⌬', 'route' => 'app.dna.index', 'nav_label' => 'dna.title'],
