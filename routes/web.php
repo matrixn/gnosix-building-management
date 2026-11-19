@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 require __DIR__.'/admin.php';
 require __DIR__.'/identity.php';
 require __DIR__.'/field.php';
+require __DIR__.'/handover.php';
 
 Route::middleware([ChooseLandingLanguage::class, ObserveCampaign::class])->group(function () {
     Route::view('/', 'landing.index')->name('home');
@@ -24,7 +25,7 @@ Route::post('/program-pilot', ContactController::class)
 
 Route::get('/robots.txt', function () {
     $content = SiteSettings::value('indexable')
-        ? "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /app\nSitemap: ".SiteSettings::value('canonical_url')."/sitemap.xml\n"
+        ? "User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /app\nDisallow: /handover\nSitemap: ".SiteSettings::value('canonical_url')."/sitemap.xml\n"
         : "User-agent: *\nDisallow: /\n";
 
     return response($content)->header('Content-Type', 'text/plain; charset=UTF-8');

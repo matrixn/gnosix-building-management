@@ -11,6 +11,7 @@ require __DIR__.'/dna.php';
 require __DIR__.'/time-machine.php';
 require __DIR__.'/maintenance.php';
 require __DIR__.'/operations.php';
+require __DIR__.'/trust.php';
 require __DIR__.'/field-admin.php';
 
 Route::get('organizations', [OrganizationController::class, 'index'])->name('app.organizations.index');

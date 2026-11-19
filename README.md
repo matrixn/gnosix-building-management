@@ -6,6 +6,16 @@ Laravel 13 / Blade / Vite, pentru `https://gnosix.zion3d.ro` pe Laravel Forge. L
 
 `[x]` înseamnă implementat și verificat; `[ ]` înseamnă planificat sau incomplet. Acest checklist se actualizează la fiecare task. O demonstrație vizuală nu înseamnă că modulul operațional este livrat.
 
+### Trust Passport & Smart Building Handover — 0.21.0
+
+- [x] Pașaportul clădirii cu indicatori explicabili, observații cu trimiteri la sursă și recomputare după corecții.
+- [x] Studiou RO/EN cu ciornă, selecție pe secțiuni și versiuni, mandat explicit, checklist și cronologie.
+- [x] Portal cu identitate verificată, recenzenți multipli, întrebări/răspunsuri, acceptare, returnare, expirare și revocare.
+- [x] Acces operațional limitat la pachetul aprobat, fără modificarea proprietății, identității sau apartenenței la organizație.
+- [x] PDF, JSON versionat și ZIP cu manifest SHA-256 și verificator offline.
+- [x] [Documentație Trust Passport](docs/TRUST-021.md), migrare aditivă și pachet Forge.
+- [ ] Semnături electronice externe, evaluări profesionale atestate și integrare cu registre oficiale.
+
 ### Hospitality Intelligence Center — 0.20.0
 
 - [x] Centru operațional cu scop autorizat, priorități explicabile, indicatori, comparații și investigații către modulele sursă.
@@ -377,6 +387,6 @@ Pe Windows, dacă OpenSSL nu poate genera cheile sintetice, setează `OPENSSL_CO
 python scripts/package-release.py
 ```
 
-Arhiva `build/gnosix-atlas-forge-0.20.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
+Arhiva `build/gnosix-atlas-forge-0.21.0.zip` include sursele, traducerile, frontend-ul compilat și documentația, fără `.env`, `vendor`, baze de date, loguri sau sesiuni. Necesită Composer pe server. Forge preia în mod normal codul din Git.
 
 Modelele HTML sunt păstrate în `design/concepts`, în afara document root-ului. Sursele landing-ului sunt în `resources/views/landing`, iar administrarea în `resources/views/admin` și `app/Http/Controllers/Admin`. Fonturile sunt locale, cu licența inclusă. Datele clădirii din landing sunt demonstrative.

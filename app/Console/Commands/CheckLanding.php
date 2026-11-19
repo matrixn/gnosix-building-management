@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Support\ContactAvailability;
+use App\Support\SiteSettings;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
@@ -31,16 +32,18 @@ class CheckLanding extends Command
             'Customer identity migrated' => $databaseReady && Schema::hasColumn('users', 'auth_version') && Schema::hasColumn('users', 'onboarding_completed_at'),
             'Building declarations migrated' => $databaseReady && collect(['building_declaration_drafts', 'building_revisions', 'building_assertions', 'space_beds', 'accommodation_units', 'accommodation_unit_space'])->every(fn ($table) => Schema::hasTable($table)) && Schema::hasColumn('buildings', 'uuid') && Schema::hasColumn('building_declaration_drafts', 'stage'),
             'Adaptive workspace migrated' => $databaseReady && collect(['workspace_groups', 'legal_entities', 'properties', 'buildings', 'floors', 'spaces', 'property_accesses', 'workspace_drafts'])->every(fn ($table) => Schema::hasTable($table)) && Schema::hasColumn('organizations', 'unit_system') && Schema::hasColumn('organization_memberships', 'access_scope'),
+            'Trust Passport migrated' => $databaseReady && collect(['building_handovers', 'handover_recipients', 'building_stewardships', 'handover_events'])->every(fn ($table) => Schema::hasTable($table)),
+            'Trust Passport ZIP support' => extension_loaded('zip'),
             'Organization profiling migrated' => $databaseReady && collect(['organizations', 'organization_memberships', 'organization_profiles', 'organization_capabilities', 'user_preferences', 'onboarding_sessions'])->every(fn ($table) => Schema::hasTable($table)),
         ];
 
         if ($this->option('production') || $this->option('launch')) {
-            $canonical = $databaseReady ? \App\Support\SiteSettings::value('canonical_url') : '';
+            $canonical = $databaseReady ? SiteSettings::value('canonical_url') : '';
             $checks += [
                 'Production environment' => app()->environment('production'),
                 'Debug disabled' => ! config('app.debug'),
                 'Correct HTTPS application URL' => rtrim(config('app.url'), '/') === 'https://gnosix.zion3d.ro',
-                'Canonical URL uses HTTPS' => \App\Support\SiteSettings::normalizeCanonicalUrl($canonical) !== null && str_starts_with($canonical, 'https://'),
+                'Canonical URL uses HTTPS' => SiteSettings::normalizeCanonicalUrl($canonical) !== null && str_starts_with($canonical, 'https://'),
                 'Secure encrypted sessions' => config('session.secure') && config('session.encrypt'),
                 'HTTP-only SameSite sessions' => config('session.http_only') && in_array(config('session.same_site'), ['lax', 'strict'], true),
                 'Server-side session storage' => in_array(config('session.driver'), ['file', 'database', 'redis', 'memcached', 'dynamodb'], true),
@@ -50,7 +53,7 @@ class CheckLanding extends Command
             ];
         }
         if ($this->option('launch')) {
-            $checks['Search indexing enabled'] = \App\Support\SiteSettings::value('indexable');
+            $checks['Search indexing enabled'] = SiteSettings::value('indexable');
             $checks['Contact delivery configured'] = $databaseReady && ContactAvailability::ready();
         }
 

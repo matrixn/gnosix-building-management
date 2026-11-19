@@ -1,5 +1,5 @@
 @php
-    $shell = request()->routeIs('app.dashboard', 'app.account', 'app.organizations.index', 'app.organizations.show', 'app.organizations.module', 'app.properties.*', 'app.spaces.*', 'app.workspace.settings', 'app.studio', 'app.declarations.*', 'app.evidence.*', 'app.assets.*', 'app.maintenance.*','app.field.*','app.qr.*','app.dna.*', 'app.time-machine.*', 'app.operations.*');
+    $shell = request()->routeIs('app.dashboard', 'app.account', 'app.organizations.index', 'app.organizations.show', 'app.organizations.module', 'app.properties.*', 'app.spaces.*', 'app.workspace.settings', 'app.studio', 'app.declarations.*', 'app.evidence.*', 'app.assets.*', 'app.maintenance.*','app.field.*','app.qr.*','app.dna.*', 'app.time-machine.*', 'app.operations.*', 'app.trust.*', 'handover.portal', 'handover.show');
     $routeOrganization = request()->route('organization');
     $activeOrganization = $routeOrganization instanceof \App\Models\Organization && \Illuminate\Support\Facades\Gate::forUser(auth('web')->user())->allows('view', $routeOrganization) ? $routeOrganization : app(\App\Support\TenantContext::class)->current();
     $profileRegistry = app(\App\Support\ProfileRegistry::class);
@@ -8,6 +8,7 @@
     $currentRoute = request()->route()?->getName();
     $localeQuery = request()->routeIs('app.time-machine.*') ? request()->only(['at','compare','known','mode','section','page','history_cursor']) : (request()->routeIs('app.assets.*','app.maintenance.*','app.qr.*','app.dna.*','app.field.*') ? request()->only(['q','property','building','space','type','state','status','system','candidate','page','evidence_page','documents_page','history_page','spaces_page','components_page','group','tab','view','assigned','overdue','priority','category','asset','issue','files_page','comments_page','related_page','focus','relation','relations_page','decisions_page','insights_page','simulate','depth']) : (request()->routeIs('app.evidence.show') ? request()->only(['page','version','fact','status','facts_page','documents_page','audit_page']) : (request()->routeIs('app.declarations.editor') ? request()->only('space') : (request()->routeIs('app.spaces.index') ? request()->only(['q', 'property', 'state', 'buildings_page', 'unassigned_page']) : []))));
     if (request()->routeIs('app.operations.index')) $localeQuery = request()->only(['group','property','building','floor','space','asset','from','to','metric','view','simulate','explorer','portfolios','items']);
+    if (request()->routeIs('app.trust.*', 'handover.portal')) $localeQuery = request()->only(['page', 'documents', 'events']);
     $localeRoute = request()->isMethod('GET') && $currentRoute && ! request()->routeIs('verification.verify') ? $currentRoute : 'login';
 @endphp
 <!doctype html>

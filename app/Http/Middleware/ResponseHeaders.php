@@ -20,11 +20,14 @@ class ResponseHeaders
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
         }
 
-        if ($request->is('field', 'field/*', 'q/*')) {
+        $field = $request->is('field', 'field/*', 'q/*');
+        if ($field || $request->is('handover', 'handover/*')) {
             $response->headers->set('Referrer-Policy', 'no-referrer');
             $response->headers->set('Cache-Control', 'no-store, private');
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
-            $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
+            if ($field) {
+                $response->headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
+            }
             if (! $response->headers->has('Content-Disposition')) {
                 $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
             }

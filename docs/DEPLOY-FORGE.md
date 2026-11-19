@@ -1,5 +1,13 @@
 # Publicare GNOSIX pe Laravel Forge
 
+## Trust Passport & Smart Building Handover — 0.21.0
+
+Verifică PHP 8.4 cu extensia **ZIP** activă în CLI și PHP-FPM. Verifică backupul bazei de date și storage-ului privat. Scriptul Forge existent compilează Vite, aplică migrarea aditivă a predărilor și verifică ZIP prin gnosix:check --production înainte de activare. Păstrează URL-ul canonic HTTPS din Admin → GNOSIX și livrarea centralizată pentru verificarea adreselor de email. Linkurile de predare se trimit manual către destinatarii desemnați.
+
+Pe o clădire de test, pregătește un pachet cu un singur document. Intră cu un cont verificat din afara organizației, activează linkul, verifică descărcarea și refuzul pentru o versiune exclusă, acceptă pachetul, finalizează, apoi revocă accesul. Descarcă ZIP-ul autorizat și rulează verificatorul offline. Păstrează endpointurile de invitație în afara serviciilor de analytics și redactează corpurile cererilor și răspunsurile din monitorizare.
+
+Pentru revenire, reactivează release-ul 0.20.0 în Forge și păstrează cele patru tabele noi, care sunt aditive. Revenirea codului închide accesul la portal până la reactivarea versiunii 0.21.0. Nu rula rollback-ul SQL de rutină, pentru că elimină predările, auditul și granturile înregistrate. Restaurarea bazei din backup se face separat, după verificarea impactului asupra înregistrărilor mai noi. Detalii în [Trust Passport](TRUST-021.md).
+
 ## Hospitality Intelligence Center — 0.20.0
 
 Deploy-ul standard aplică migrarea aditivă pentru proveniența înscrierii, rapoarte și preferințe. Rapoartele și sumarul opțional folosesc workerul existent de pe coada `maintenance`. Rulează schedulerul Laravel în fiecare minut pentru rezumatul de luni, ora 08:00 în Europe/Bucharest, și curățarea orară a PDF-urilor expirate. Stocarea privată a rapoartelor se află în `storage/app/private/operations`, partajată între release-uri. Păstrează `retry_after` peste 60 de secunde pentru conexiunea de lucru. Verifică printr-un raport de test, o descărcare cu același cont și apoi printr-un rol fără drept de acces.
